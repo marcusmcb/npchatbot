@@ -1,0 +1,27 @@
+{
+  "name": "serato-nowplaying-twitch",
+  "version": "1.0.0",
+  "description": "!np (now playing) Twitch Chat Bot and command built with TMI.js",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "twitch",
+    "serato",
+    "node",
+    "javascript",
+    "streaming-tools"
+  ],
+  "author": "Marcus McBride",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.26.0",
+    "cheerio": "^1.0.0-rc.10",
+    "dotenv": "^16.0.0",
+    "tmi": "^2.0.0"
+  },
+  "engines": {
+    "node": "14.x"
+  }
+}
