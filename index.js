@@ -42,15 +42,14 @@ client.on("message", (channel, tags, message, self) => {
       );
       break;
     // now playing
-    case "np":
-      // serato live playlist page to scrape
-      
+    case "np":      
       // *** NOTE ***
       
       // SERATO_DISPLAY_NAME is set to the user's Serato profile display name by default
-      // when starting a Serato live playlist session the user can update/edit their display name
-      // if they do so, this bot will NOT work unless it's also updated in the .env file
+      // When starting a Serato live playlist session the user can update/edit their display name.
+      // If they do so, this bot will NOT work unless it's also updated match what's in their .env file
 
+      // serato live playlist page to scrape
       const url = `https://serato.com/playlists/${process.env.SERATO_DISPLAY_NAME}/live`;
       const scrapeData = async () => {
         try {
@@ -59,6 +58,7 @@ client.on("message", (channel, tags, message, self) => {
           const results = $("div.playlist-trackname");
           // return the most recent entry as chat response
           let nowplaying = results.last().text()          
+          // trim any leading whitespace from the response before posting
           client.say(channel, `Now playing: ${nowplaying.trim()}`);
         } catch (err) {
           console.error(err);
