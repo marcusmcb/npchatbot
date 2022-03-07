@@ -58,7 +58,8 @@ client.on("message", (channel, tags, message, self) => {
           const $ = cheerio.load(data);          
           const results = $("div.playlist-trackname");
           // return the most recent entry as chat response
-          client.say(channel, `Now playing: ${results.last().text()}`);
+          let nowplaying = results.last().text()          
+          client.say(channel, `Now playing: ${nowplaying.trim()}`);
         } catch (err) {
           console.error(err);
           client.say(channel, "Looks like that isn't working right now.");
