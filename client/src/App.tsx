@@ -56,6 +56,8 @@ const App = (): JSX.Element => {
 	const messageTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 	const ipcRenderer = window.electron.ipcRenderer
 
+	console.log(reportData)
+
 	/* EFFECT HOOKS */
 
 	// hook for successful twitch auth callback
@@ -106,6 +108,9 @@ const App = (): JSX.Element => {
 			ipcRendererInstance.send('getUserData', {})
 			const handleGetUserDataResponse = (response: any) => {
 				if (response && Object.keys(response.data).length > 0) {
+					console.log("USER DATA: ")
+					console.log(response.data)
+					console.log("-------------------------")
 					setFormData(response.data)
 					setIsObsResponseEnabled(response.data.isObsResponseEnabled)
 					setIsIntervalEnabled(response.data.isIntervalEnabled)

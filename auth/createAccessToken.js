@@ -148,6 +148,7 @@ const getRefreshToken = async (refreshToken) => {
 		// console.log('TOKEN DATA: ')
 		// console.log(response.data)
 		console.log('Twitch Auth Token Returned')
+		console.log(response.data)
 		console.log('--------------------------------------')
 		return response.data
 	} catch (error) {
@@ -184,7 +185,8 @@ const updateUserToken = async (db, event, token) => {
 						} else if (user) {
 							logToFile(`USER DATA AFTER TOKEN UPDATE: ${JSON.stringify(user)}`)
 							logToFile("*******************************")
-							// console.log('USER DATA AFTER TOKEN UPDATE: ', user)
+							console.log('USER DATA AFTER TOKEN UPDATE: ', user)
+							console.log('--------------------------------------')
 							event.reply('userDataUpdated', user)
 							return {
 								success: true,

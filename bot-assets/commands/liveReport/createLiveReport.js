@@ -249,7 +249,7 @@ const createLiveReport = async (url) => {
 			//
 			// any tracks below the cutoff length should be removed
 			// from the timeDiffs array and used to calculate the
-			// shorest track played below
+			// shortest track played below
 			//
 			// add cutoff length as a dynamic value that can be set
 			// by the user in the UI with a default value of 30 seconds
