@@ -231,29 +231,38 @@ ipcMain.on('startBotScript', async (event, arg) => {
 		return
 	}
 
+	// refactor the following sequence to properly await the user
+	// token update before the loadConfigurations method is called
+
+	// setTimeout as a stop-gap solution solves the problem but the
+	// configuration should not be called until the users.db file
+	// update with the new token returned has completed
+
 	// load configurations and initialize chatbot script
-	loadConfigurations()
-		.then((config) => {
-			setTimeout(async () => {
-				const init = await initializeBot(config)
-				tmiInstance = init
-				botProcess === true
-				event.reply('startBotResponse', {
-					success: true,
-					message: 'Bot started successfully.',
-				})
-			}, 1000)
-		})
-		.catch((err) => {
-			logToFile(`Error loading configurations: ${err}`)
-			logToFile('*******************************')
-			console.error('Error loading configurations:', err)
-		})
-		.finally(() => {
-			console.log('------------------')
-			console.log('Bot started successfully')
-			console.log('------------------')
-		})
+	setTimeout(() => {
+		loadConfigurations()
+			.then((config) => {
+				setTimeout(async () => {
+					const init = await initializeBot(config)
+					tmiInstance = init
+					botProcess === true
+					event.reply('startBotResponse', {
+						success: true,
+						message: 'Bot started successfully.',
+					})
+				}, 1000)
+			})
+			.catch((err) => {
+				logToFile(`Error loading configurations: ${err}`)
+				logToFile('*******************************')
+				console.error('Error loading configurations:', err)
+			})
+			.finally(() => {
+				console.log('------------------')
+				console.log('Bot started successfully')
+				console.log('------------------')
+			})
+	}, 1000)
 })
 
 // ipc method to disconnect npChatbot script from Twitch
@@ -284,11 +293,12 @@ ipcMain.on('stopBotScript', async (event, arg) => {
 		dj_name: reportData.dj_name,
 		set_start_time: reportData.set_start_time,
 		playlist_date: reportData.playlist_date,
+		average_track_length: reportData.average_track_length,
+		total_tracks_played: reportData.total_tracks_played,
 		set_length: reportData.set_length.length_value,
 		set_length_hours: reportData.set_length.hours,
 		set_length_minutes: reportData.set_length.minutes,
 		set_length_seconds: reportData.set_length.seconds,
-		average_track_length: reportData.average_track_length,
 		shortest_track_name: reportData.shortest_track.name,
 		shortest_track_length: reportData.shortest_track.length_value,
 		shortest_track_minutes: reportData.shortest_track.minutes,
@@ -297,7 +307,7 @@ ipcMain.on('stopBotScript', async (event, arg) => {
 		longest_track_length: reportData.longest_track.length_value,
 		longest_track_minutes: reportData.longest_track.minutes,
 		longest_track_seconds: reportData.longest_track.seconds,
-		total_tracks_played: reportData.total_tracks_played,
+		doubles_played: reportData.doubles_played,
 	}
 
 	if (tmiInstance) {
