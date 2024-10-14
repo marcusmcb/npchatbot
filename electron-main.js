@@ -238,6 +238,9 @@ ipcMain.on('startBotScript', async (event, arg) => {
 	// configuration should not be called until the users.db file
 	// update with the new token returned has completed
 
+	// optionally, move the entire loadConfigurations sequence into 
+	// the try/catch block above
+	
 	// load configurations and initialize chatbot script
 	setTimeout(() => {
 		loadConfigurations()
