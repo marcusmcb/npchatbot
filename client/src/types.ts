@@ -1,4 +1,8 @@
 // src/types.ts
+export interface DoublePlayed {
+  name: string;  
+}
+
 export interface ReportData {
   dj_name: string;
   set_start_time: string;
@@ -17,4 +21,5 @@ export interface ReportData {
   longest_track_minutes: number;
   longest_track_seconds: number;
   total_tracks_played: number;
+  doubles_played: DoublePlayed[];
 }

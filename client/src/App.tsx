@@ -108,9 +108,9 @@ const App = (): JSX.Element => {
 			ipcRendererInstance.send('getUserData', {})
 			const handleGetUserDataResponse = (response: any) => {
 				if (response && Object.keys(response.data).length > 0) {
-					console.log("USER DATA: ")
+					console.log('USER DATA: ')
 					console.log(response.data)
-					console.log("-------------------------")
+					console.log('-------------------------')
 					setFormData(response.data)
 					setIsObsResponseEnabled(response.data.isObsResponseEnabled)
 					setIsIntervalEnabled(response.data.isIntervalEnabled)
@@ -333,18 +333,30 @@ const App = (): JSX.Element => {
 	return (
 		<div className='App'>
 			<div className='top-panel'>
-				<TitleBar isAuthorized={isAuthorized} isBotConnected={isBotConnected} />
-				<MessagePanel
-					message={currentMessage || ''}
-					error={error}
-					showTooltip={showTooltip}
-				/>
+				{reportView ? (
+					<></>
+				) : (
+					<>
+						<TitleBar
+							isAuthorized={isAuthorized}
+							isBotConnected={isBotConnected}
+						/>
+						<MessagePanel
+							message={currentMessage || ''}
+							error={error}
+							showTooltip={showTooltip}
+						/>
+					</>
+				)}
 			</div>
 			<div>
 				{reportView ? (
-					<div className='app-container'>						
+					<div className='app-container'>
 						<div className='main-report-panel'>
-							<ReportViewer reportData={reportData} setReportView={setReportView}/>
+							<ReportViewer
+								reportData={reportData}
+								setReportView={setReportView}
+							/>
 						</div>
 					</div>
 				) : (
