@@ -16,9 +16,9 @@ const {
 } = require('../liveReport/LiveReportHelpers/liveReportHelpers')
 
 const createLiveReport = async (url) => {
-	console.log("------------------")
-	console.log("URL: ", url)
-	console.log("------------------")
+	console.log('------------------')
+	console.log('URL: ', url)
+	console.log('------------------')
 	const playlistArtistName = extractPlaylistName(url)
 	try {
 		const response = await scrapeData(url)
@@ -89,7 +89,7 @@ const createLiveReport = async (url) => {
 
 		// check track log length to determine seratoLiveReport data returned
 		// full data will be returned for playlists with 4 or more tracks played
-		
+
 		// the logic for determining average track length, etc could produce
 		// errors until at 3-4 tracks have been played in the stream
 

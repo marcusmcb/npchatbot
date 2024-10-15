@@ -23,7 +23,7 @@ body {
 .app-container {
 	display: flex;
 	flex-direction: row;
-	color: var(--main-text-color);
+	color: var(--main-text-color);	
 }
 
 .creds-prefs-panel {
@@ -71,7 +71,9 @@ body {
 }
 
 .main-report-panel {
-	width: 100%;
+	width: 100%;	
+	height: 100vh;
+	margin-top: 20px;
 }
 
 .bot-control-button-panel {

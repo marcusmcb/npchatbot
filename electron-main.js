@@ -271,26 +271,8 @@ ipcMain.on('startBotScript', async (event, arg) => {
 // ipc method to disconnect npChatbot script from Twitch
 ipcMain.on('stopBotScript', async (event, arg) => {
 	const seratoDisplayName = arg.seratoDisplayName.replaceAll(' ', '_')
-	const url = `https://serato.com/playlists/${seratoDisplayName}/7-21-2024`
-	console.log('URL: ', url)
-	const reportData = await createLiveReport(url)
-
-	if (reportData !== undefined) {
-		// console.log('FINAL REPORT DATA: ', reportData)
-		console.log('DJ NAME: ', reportData.dj_name)
-		console.log('SET START TIME: ', reportData.set_start_time)
-		console.log('PLAYLIST DATE: ', reportData.playlist_date)
-		console.log('SET LENGTH: ', reportData.set_length.length_value)
-		console.log('AVERAGE TRACK LENGTH: ', reportData.average_track_length)
-		console.log('SHORTEST TRACK NAME: ', reportData.shortest_track.name)
-		console.log(
-			'SHORTEST TRACK LENGTH: ',
-			reportData.shortest_track.length_value
-		)
-		console.log('LONGEST TRACK NAME: ', reportData.longest_track.name)
-		console.log('LONGEST TRACK LENGTH: ', reportData.longest_track.length_value)
-		console.log('TOTAL TRACKS PLAYED: ', reportData.total_tracks_played)
-	}
+	const url = `https://serato.com/playlists/${seratoDisplayName}/twitch-stream`	
+	const reportData = await createLiveReport(url)	
 
 	const finalReportData = {
 		dj_name: reportData.dj_name,

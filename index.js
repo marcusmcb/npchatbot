@@ -35,13 +35,17 @@ const initializeBot = async (config) => {
 	// const url = `https://serato.com/playlists/${seratoDisplayName}/6-17-2024_1`
 
 	/* 2 hour playlist examples */
-	const url = `https://serato.com/playlists/${seratoDisplayName}/7-21-2024`
+	// const url = `https://serato.com/playlists/${seratoDisplayName}/7-21-2024`
 	// const url = `https://serato.com/playlists/${seratoDisplayName}/7-5-2024_1`
 
 	/* 3 hour playlist examples */
 
-	// const url = `https://serato.com/playlists/${seratoDisplayName}/3-23-2024_1`
+	// const url = `https://serato.com/playlists/${seratoDisplayName}/3-23-2024_1`	
 	// const url = `https://serato.com/playlists/${seratoDisplayName}/3-1-2024`	
+
+	/* doubles playlist example */
+
+	const url = `https://serato.com/playlists/${seratoDisplayName}/twitch-stream`
 
 	/* ---------------------------------------- */
 
