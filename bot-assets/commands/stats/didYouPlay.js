@@ -53,7 +53,7 @@ const dypCommand = async (channel, tags, args, twitchClient, obs, url, config) =
 				let searchTerm = `${args}`.replaceAll(',', ' ')
 				console.log('SEARCH TERM: ', searchTerm)
 				console.log("--------------------")
-				dypSearchTerms.push({ searchTerm: searchTerm})
+				dypSearchTerms.push({ name: searchTerm})
 				for (let i = 0; i < reportData.track_array.length; i++) {
 					if (
 						reportData.track_array[i]

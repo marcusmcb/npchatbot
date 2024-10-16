@@ -53,7 +53,7 @@ const handleDefault = (
 	const currentTrackPlaying =
 		reportData.track_log[reportData.track_log.length - 1]
 	const message = `Now playing: ${currentTrackPlaying.trackId}`
-	npSongsQueried.push({ trackId: currentTrackPlaying.trackId })
+	npSongsQueried.push({ name: currentTrackPlaying.trackId })
 	twitchClient.say(channel, message)
 	updateOBSWithText(
 		obs,
@@ -75,7 +75,7 @@ const handlePrevious = (
 	const previousTrackPlayed =
 		reportData.track_log[reportData.track_log.length - 2]
 	const message = `Previous song: ${previousTrackPlayed.trackId}`
-	npSongsQueried.push({ trackId: previousTrackPlayed.trackId })
+	npSongsQueried.push({ name: previousTrackPlayed.trackId })
 	twitchClient.say(channel, message)
 	updateOBSWithText(
 		obs,
