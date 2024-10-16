@@ -3,6 +3,7 @@ const clearOBSResponse = require('../../../obs/obsHelpers/obsHelpers')
 const { shortestTrackCommand } = require('../stats/shortestTrack')
 const { longestTrackCommand } = require('../stats/longestTrack')
 const { doublesCommand } = require('../stats/doublesPlayed')
+const { songsQueried } = require('../../songs-queried/songsQueried')
 
 const {
 	NO_LIVE_DATA_MESSAGE,
@@ -52,6 +53,7 @@ const handleDefault = (
 	const currentTrackPlaying =
 		reportData.track_log[reportData.track_log.length - 1]
 	const message = `Now playing: ${currentTrackPlaying.trackId}`
+	songsQueried.push({ trackId: currentTrackPlaying.trackId })
 	twitchClient.say(channel, message)
 	updateOBSWithText(
 		obs,
