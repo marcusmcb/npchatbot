@@ -7,7 +7,7 @@ const {
 const { obs, connectToOBS } = require('./obs/obsConnection')
 const { returnRefreshTokenConfig } = require('./auth/accessTokenConfig')
 const logToFile = require('./scripts/logger')
-const { songsQueried } = require('./bot-assets/songs-queried/songsQueried')
+const { npSongsQueried, dypSearchTerms } = require('./bot-assets/command-use/commandUse')
 
 const initializeBot = async (config) => {
 	let userCommandHistory = {}
@@ -78,7 +78,8 @@ const initializeBot = async (config) => {
 	autoCommandsConfig(twitchClient, obs, config)
 
 	twitchClient.on('disconnected', () => {
-		console.log(songsQueried)
+		console.log(npSongsQueried)
+		console.log(dypSearchTerms)
 		console.log('---------------------------------')
 		console.log('Twitch client has been disconnected')
 		console.log('---------------------------------')
