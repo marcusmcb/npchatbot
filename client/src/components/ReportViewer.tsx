@@ -7,26 +7,22 @@ interface ReportDataProps {
 	setReportView: (value: boolean) => void
 }
 
-// Helper function to format the set length
+// helper method to format the set length string
 const formatSetLength = (
 	hours: number,
 	minutes: number,
 	seconds: number
 ): string => {
 	const parts: string[] = []
-
 	if (hours > 0) {
 		parts.push(`${hours} hour${hours > 1 ? 's' : ''}`)
 	}
-
 	if (minutes > 0) {
 		parts.push(`${minutes} minute${minutes > 1 ? 's' : ''}`)
 	}
-
 	if (seconds > 0) {
 		parts.push(`${seconds} second${seconds > 1 ? 's' : ''}`)
 	}
-
 	return parts.length > 0 ? parts.join(', ') : '0 seconds'
 }
 
@@ -34,7 +30,6 @@ const ReportViewer: React.FC<ReportDataProps> = ({
 	reportData,
 	setReportView,
 }): JSX.Element => {
-	// Use the helper function to format the set length based on the report data
 	const formattedSetLength = reportData
 		? formatSetLength(
 				reportData.set_length_hours,
@@ -54,27 +49,29 @@ const ReportViewer: React.FC<ReportDataProps> = ({
 					</div>
 					<div className='report-subtitle'>{reportData?.playlist_date}</div>
 					<div className='report-panel-item-row'>
-						<div className='report-panel-item'>You began this DJ set at <span className='foo'>{reportData?.set_start_time}</span>.</div>
-						{/* <div className='report-panel-item'>Set Start Time: </div> */}
-						{/* <div className='report-panel-item-span'>
-							{reportData?.set_start_time}
-						</div> */}
-					</div>
-					<div className='report-panel-item-row'>
-						<div className='report-panel-item'>Your DJ set was <span className='foo'>{formattedSetLength}</span> in length.</div>
-						{/* <div className='report-panel-item'>Set Length: </div>
-						<div className='report-panel-item-span'>{formattedSetLength}</div> */}
-					</div>
-					<div className='report-panel-item-row'>
-						<div className='report-panel-item'>Tracks Played: </div>
-						<div className='report-panel-item-span'>
-							{reportData?.total_tracks_played}
+						<div className='report-panel-item'>
+							You began this DJ set at{' '}
+							<span className='foo'>{reportData?.set_start_time}</span>.
 						</div>
 					</div>
 					<div className='report-panel-item-row'>
-						<div className='report-panel-item'>Average Track Length: </div>
-						<div className='report-panel-item-span'>
-							{reportData?.average_track_length}
+						<div className='report-panel-item'>
+							Your DJ set was <span className='foo'>{formattedSetLength}</span>{' '}
+							in length.
+						</div>
+					</div>
+					<div className='report-panel-item-row'>
+						<div className='report-panel-item'>
+							You played a total of{' '}
+							<span className='foo'>{reportData?.total_tracks_played}</span>{' '}
+							tracks in this set.
+						</div>
+					</div>
+					<div className='report-panel-item-row'>
+						<div className='report-panel-item'>
+							The average track length was{' '}
+							<span className='foo'>{reportData?.average_track_length}</span>{' '}
+							for this set.
 						</div>
 					</div>
 				</div>
@@ -96,14 +93,7 @@ const ReportViewer: React.FC<ReportDataProps> = ({
 								</div>
 							))}
 						</div>
-						{/* <div className='report-panel-item-detail'>
-							{reportData?.longest_track_name}{' '}
-						</div>
-						<div className='report-panel-item-detail-caption'>
-							({reportData?.longest_track_length})
-						</div> */}
 					</div>
-
 					<div className='report-panel-group'>
 						<div className='report-panel-item-header'>
 							Shortest Songs Played:{' '}
@@ -120,14 +110,7 @@ const ReportViewer: React.FC<ReportDataProps> = ({
 								</div>
 							))}
 						</div>
-						{/* <div className='report-panel-item-detail'>
-							{reportData?.shortest_track_name}{' '}
-						</div>
-						<div className='report-panel-item-detail-caption'>
-							({reportData?.shortest_track_length})
-						</div> */}
 					</div>
-
 					<div className='report-panel-group'>
 						<div className='report-panel-item-header'>
 							Doubles Detected:{' '}

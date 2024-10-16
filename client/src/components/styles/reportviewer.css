@@ -14,7 +14,7 @@
 .report-title {
 	font-size: 1.5em;
 	font-weight: bold;
-	margin-top: 15px;
+	margin-top: 35px;
 	font-family: var(--fira-sans);
 	color: var(--highlight-color);
 }
@@ -45,6 +45,10 @@
 .report-panel-right {
 	flex: 1; /* Take up equal available width */
 	text-align: left; /* Ensure left alignment */
+}
+
+.report-panel-right {
+	margin-top: 25px;
 }
 
 .report-panel-item {
@@ -87,7 +91,7 @@
 
 .doubles-text {
 	margin-top: 10px;
-	font-size: 0.8em;
+	font-size: 1em;
 	font-weight: 400;
 }
 
