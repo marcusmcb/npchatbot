@@ -91,10 +91,15 @@ html, body {
 	justify-content: space-between;
 }
 
+.default-button {
+	font-family: var(--fira-sans);
+	font-weight: 400;	
+}
+
 .button-row button {
 	flex: 1;
 	margin: 0 5px;
-	margin-top: 20px;
+	margin-top: 20px;	
 }
 
 label {

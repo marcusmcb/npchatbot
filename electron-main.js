@@ -293,6 +293,8 @@ ipcMain.on('stopBotScript', async (event, arg) => {
 		longest_track_minutes: reportData.longest_track.minutes,
 		longest_track_seconds: reportData.longest_track.seconds,
 		doubles_played: reportData.doubles_played,
+		top_three_longest: reportData.top_three_longest,
+		top_three_shortest: reportData.top_three_shortest,
 	}
 
 	if (tmiInstance) {

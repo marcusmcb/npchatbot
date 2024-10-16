@@ -3,6 +3,16 @@ export interface DoublePlayed {
   name: string;  
 }
 
+export interface LongSongPlayed {
+  name: string;
+  length: string;
+}
+
+export interface ShortSongPlayed {
+  name: string;
+  length: string;
+}
+
 export interface ReportData {
   dj_name: string;
   set_start_time: string;
@@ -22,4 +32,6 @@ export interface ReportData {
   longest_track_seconds: number;
   total_tracks_played: number;
   doubles_played: DoublePlayed[];
+  top_three_longest: LongSongPlayed[];
+  top_three_shortest: ShortSongPlayed[]; 
 }

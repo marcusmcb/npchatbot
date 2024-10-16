@@ -135,6 +135,7 @@ const CredentialsPanel: React.FC<CredentialsPanelProps> = (props) => {
 
 				<div className='button-row'>
 					<button
+						className='default-button'
 						disabled={props.isBotConnected || !props.isAuthorized}
 						type='submit'
 						onClick={() => {

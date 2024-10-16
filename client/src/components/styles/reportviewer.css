@@ -49,13 +49,20 @@
 
 .report-panel-item {
 	margin-top: 10px;
-	color: var(--session-info-label-color);
-	font-size: 1em;
+	/* color: var(--session-info-label-color); */
+	font-size: 1.2em;
+}
+
+.foo {
+	color: var(--session-info-label-color)
 }
 
 .report-panel-item-header {
 	margin-top: 5px;
+	margin-bottom: 10px;
 	color: var(--highlight-color);
+	font-weight: 500;
+	font-size: 1.2em;
 }
 
 .report-panel-item-span {
@@ -66,13 +73,13 @@
 }
 
 .report-panel-item-detail {
-	margin-top: 5px;
-	font-size: 1.1em;
-	font-weight: 500;
+	margin-top: 10px;
+	font-size: 1em;
+	font-weight: 400;
 }
 
 .report-panel-item-detail-caption {
-	font-size: 0.9em;
+	font-size: 0.8em;
 	margin-top: 5px;
 	font-weight: 400;
 	color: var(--session-info-label-color);
@@ -98,7 +105,7 @@
 .report-panel-item-row {
 	display: flex;
 	flex-direction: row;
-	width: 80%;
+	width: 100%;
 	justify-content: space-between;
 }
 
@@ -109,5 +116,5 @@
 }
 
 .report-panel-group {
-	margin-bottom: 15px;
+	margin-bottom: 15px;	
 }

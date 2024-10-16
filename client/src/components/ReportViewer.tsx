@@ -8,7 +8,11 @@ interface ReportDataProps {
 }
 
 // Helper function to format the set length
-const formatSetLength = (hours: number, minutes: number, seconds: number): string => {
+const formatSetLength = (
+	hours: number,
+	minutes: number,
+	seconds: number
+): string => {
 	const parts: string[] = []
 
 	if (hours > 0) {
@@ -26,7 +30,10 @@ const formatSetLength = (hours: number, minutes: number, seconds: number): strin
 	return parts.length > 0 ? parts.join(', ') : '0 seconds'
 }
 
-const ReportViewer: React.FC<ReportDataProps> = ({ reportData, setReportView }): JSX.Element => {
+const ReportViewer: React.FC<ReportDataProps> = ({
+	reportData,
+	setReportView,
+}): JSX.Element => {
 	// Use the helper function to format the set length based on the report data
 	const formattedSetLength = reportData
 		? formatSetLength(
@@ -47,16 +54,16 @@ const ReportViewer: React.FC<ReportDataProps> = ({ reportData, setReportView }):
 					</div>
 					<div className='report-subtitle'>{reportData?.playlist_date}</div>
 					<div className='report-panel-item-row'>
-						<div className='report-panel-item'>Set Start Time: </div>
-						<div className='report-panel-item-span'>
+						<div className='report-panel-item'>You began this DJ set at <span className='foo'>{reportData?.set_start_time}</span>.</div>
+						{/* <div className='report-panel-item'>Set Start Time: </div> */}
+						{/* <div className='report-panel-item-span'>
 							{reportData?.set_start_time}
-						</div>
+						</div> */}
 					</div>
 					<div className='report-panel-item-row'>
-						<div className='report-panel-item'>Set Length: </div>
-						<div className='report-panel-item-span'>
-							{formattedSetLength}
-						</div>
+						<div className='report-panel-item'>Your DJ set was <span className='foo'>{formattedSetLength}</span> in length.</div>
+						{/* <div className='report-panel-item'>Set Length: </div>
+						<div className='report-panel-item-span'>{formattedSetLength}</div> */}
 					</div>
 					<div className='report-panel-item-row'>
 						<div className='report-panel-item'>Tracks Played: </div>
@@ -75,26 +82,50 @@ const ReportViewer: React.FC<ReportDataProps> = ({ reportData, setReportView }):
 				<div className='report-panel-right'>
 					<div className='report-panel-group'>
 						<div className='report-panel-item-header'>
-							Longest Song Played:{' '}
+							Longest Songs Played:{' '}
 						</div>
-						<div className='report-panel-item-detail'>
+						<div>
+							{reportData?.top_three_longest.map((longest, index) => (
+								<div key={index}>
+									<div className='report-panel-item-detail'>
+										* {longest.name}{' '}
+										<span className='report-panel-item-detail-caption'>
+											({longest.length})
+										</span>
+									</div>
+								</div>
+							))}
+						</div>
+						{/* <div className='report-panel-item-detail'>
 							{reportData?.longest_track_name}{' '}
 						</div>
 						<div className='report-panel-item-detail-caption'>
 							({reportData?.longest_track_length})
-						</div>
+						</div> */}
 					</div>
 
 					<div className='report-panel-group'>
 						<div className='report-panel-item-header'>
-							Shortest Song Played:{' '}
+							Shortest Songs Played:{' '}
 						</div>
-						<div className='report-panel-item-detail'>
+						<div>
+							{reportData?.top_three_shortest.map((shortest, index) => (
+								<div key={index}>
+									<div className='report-panel-item-detail'>
+										* {shortest.name}{' '}
+										<span className='report-panel-item-detail-caption'>
+											({shortest.length})
+										</span>
+									</div>
+								</div>
+							))}
+						</div>
+						{/* <div className='report-panel-item-detail'>
 							{reportData?.shortest_track_name}{' '}
 						</div>
 						<div className='report-panel-item-detail-caption'>
 							({reportData?.shortest_track_length})
-						</div>
+						</div> */}
 					</div>
 
 					<div className='report-panel-group'>
@@ -115,7 +146,7 @@ const ReportViewer: React.FC<ReportDataProps> = ({ reportData, setReportView }):
 				</div>
 			</div>
 			<button
-				className='report-close-button'
+				className='report-close-button default-button'
 				onClick={() => {
 					console.log(reportData)
 					setReportView(false)
