@@ -298,8 +298,7 @@ ipcMain.on('stopBotScript', async (event, arg) => {
 	}
 
 	if (tmiInstance) {
-		await tmiInstance.disconnect().then((data) => {
-			console.log("- - - - - - - - - - - - - - - - - -")
+		await tmiInstance.disconnect().then((data) => {			
 			console.log("TWITCH CHAT HAS BEEN DISCONNECTED")
 			console.log("- - - - - - - - - - - - - - - - - -")
 		})

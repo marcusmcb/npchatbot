@@ -7,23 +7,26 @@ const {
 const { obs, connectToOBS } = require('./obs/obsConnection')
 const { returnRefreshTokenConfig } = require('./auth/accessTokenConfig')
 const logToFile = require('./scripts/logger')
+const { songsQueried } = require('./bot-assets/songs-queried/songsQueried')
 
-const initializeBot = async (config) => {	
+const initializeBot = async (config) => {
 	let userCommandHistory = {}
 	let urlCommandCooldown = false
 	const COOLDOWN_DURATION = 5000
 	const COMMAND_REPEAT_LIMIT = 10
 	const displayOBSMessage = config.isObsResponseEnabled
-	const seratoDisplayName = config.seratoDisplayName.replaceAll(" ", "_")
+	const seratoDisplayName = config.seratoDisplayName.replaceAll(' ', '_')
+
+	/* ---------------------------------------- */
 
 	// const url = `https://serato.com/playlists/${seratoDisplayName}/live`
-
-	// const url = `https://serato.com/playlists/${seratoDisplayName}/9-9-2024`
 
 	/* ---------------------------------------- */
 	/* Serato Playlist URLs for command testing	*/
 	/* ---------------------------------------- */
-	
+
+	// const url = `https://serato.com/playlists/${seratoDisplayName}/9-9-2024`
+
 	/* long song data outlier example */
 	// const url = `https://serato.com/playlists/${seratoDisplayName}/6-13-2024`
 
@@ -40,8 +43,8 @@ const initializeBot = async (config) => {
 
 	/* 3 hour playlist examples */
 
-	// const url = `https://serato.com/playlists/${seratoDisplayName}/3-23-2024_1`	
-	// const url = `https://serato.com/playlists/${seratoDisplayName}/3-1-2024`	
+	// const url = `https://serato.com/playlists/${seratoDisplayName}/3-23-2024_1`
+	// const url = `https://serato.com/playlists/${seratoDisplayName}/3-1-2024`
 
 	/* doubles playlist example */
 
@@ -53,9 +56,9 @@ const initializeBot = async (config) => {
 		config,
 		config.twitchAccessToken
 	)
-	
-	logToFile(`REFRESH TOKEN CONFIG: ${JSON.stringify(refreshTokenConfig)}`)	
-	logToFile("*******************************")
+
+	logToFile(`REFRESH TOKEN CONFIG: ${JSON.stringify(refreshTokenConfig)}`)
+	logToFile('*******************************')
 
 	const twitchClient = new tmi.Client(refreshTokenConfig)
 
@@ -63,7 +66,7 @@ const initializeBot = async (config) => {
 		twitchClient.connect()
 	} catch (error) {
 		logToFile(`TWITCH CONNECTION ERROR: ${error}`)
-		logToFile("*******************************")
+		logToFile('*******************************')
 		console.error('TWITCH CONNECTION ERROR: ', error)
 		return error
 	}
@@ -75,7 +78,10 @@ const initializeBot = async (config) => {
 	autoCommandsConfig(twitchClient, obs, config)
 
 	twitchClient.on('disconnected', () => {
-		console.log("--- CHATBOT DISCONNECT EVENT DETECTED ---")
+		console.log(songsQueried)
+		console.log('---------------------------------')
+		console.log('Twitch client has been disconnected')
+		console.log('---------------------------------')
 	})
 
 	twitchClient.on('message', (channel, tags, message, self) => {
@@ -116,12 +122,28 @@ const initializeBot = async (config) => {
 						return
 					}
 					urlCommandCooldown = true
-					commandList[command](channel, tags, args, twitchClient, obs, url, config)
+					commandList[command](
+						channel,
+						tags,
+						args,
+						twitchClient,
+						obs,
+						url,
+						config
+					)
 					setTimeout(() => {
 						urlCommandCooldown = false
 					}, COOLDOWN_DURATION)
 				} else {
-					commandList[command](channel, tags, args, twitchClient, obs, url, config)
+					commandList[command](
+						channel,
+						tags,
+						args,
+						twitchClient,
+						obs,
+						url,
+						config
+					)
 				}
 			}
 		}
