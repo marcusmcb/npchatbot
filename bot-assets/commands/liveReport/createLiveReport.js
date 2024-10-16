@@ -308,12 +308,22 @@ const createLiveReport = async (url) => {
 				length: `${track.minutes}:${track.seconds}`,
 			}))
 
-			let sortedShortest = [...trackLengths].sort((a, b) => a.length - b.length)
+			let doublesPlayedNames = doublesPlayed.map((double) => double.name)
+			let filteredShortestTracks = trackLengths.filter(
+				(track) => !doublesPlayedNames.includes(track.name)
+			)
 
-			let topThreeShortest = sortedShortest.slice(0, 3).map((track) => ({
-				name: track.name,
-				length: `${track.minutes}:${track.seconds}`,
-			}))
+			let sortedShortest = filteredShortestTracks.sort(
+				(a, b) => a.length - b.length
+			)
+
+			let topThreeShortest = sortedShortest.slice(0, 3).map((track) => {
+				let formattedSeconds = track.seconds.toString().padStart(2, '0')
+				return {
+					name: track.name,
+					length: `${track.minutes}:${formattedSeconds}`,
+				}
+			})
 
 			const seratoLiveReport = {
 				track_length_array: timeDiffs,
