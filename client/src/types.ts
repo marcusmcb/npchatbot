@@ -13,6 +13,14 @@ export interface ShortSongPlayed {
   length: string;
 }
 
+export interface npSongQueried {
+  name: string;
+}
+
+export interface dypSearchTerm {
+  name: string;
+}
+
 export interface ReportData {
   dj_name: string;
   set_start_time: string;
@@ -34,4 +42,6 @@ export interface ReportData {
   doubles_played: DoublePlayed[];
   top_three_longest: LongSongPlayed[];
   top_three_shortest: ShortSongPlayed[]; 
+  np_songs_queried: npSongQueried[];
+  dyp_search_terms: dypSearchTerm[];
 }

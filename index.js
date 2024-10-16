@@ -78,8 +78,8 @@ const initializeBot = async (config) => {
 	autoCommandsConfig(twitchClient, obs, config)
 
 	twitchClient.on('disconnected', () => {
-		console.log(npSongsQueried)
-		console.log(dypSearchTerms)
+		// console.log(npSongsQueried)
+		// console.log(dypSearchTerms)
 		console.log('---------------------------------')
 		console.log('Twitch client has been disconnected')
 		console.log('---------------------------------')

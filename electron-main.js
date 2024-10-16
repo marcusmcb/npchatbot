@@ -12,6 +12,7 @@ const { URL } = require('url')
 const logToFile = require('./scripts/logger')
 const loadConfigurations = require('./config')
 const initializeBot = require('./index')
+const { npSongsQueried, dypSearchTerms } = require('./bot-assets/command-use/commandUse')
 
 const createLiveReport = require('./bot-assets/commands/liveReport/createLiveReport')
 
@@ -295,6 +296,8 @@ ipcMain.on('stopBotScript', async (event, arg) => {
 		doubles_played: reportData.doubles_played,
 		top_three_longest: reportData.top_three_longest,
 		top_three_shortest: reportData.top_three_shortest,
+		np_songs_queried: npSongsQueried,
+		dyp_search_terms: dypSearchTerms,
 	}
 
 	if (tmiInstance) {
@@ -306,10 +309,19 @@ ipcMain.on('stopBotScript', async (event, arg) => {
 		botProcess = false
 		console.log('npChatbot successfully disconnected from Twitch')
 		console.log('--------------------------------------')
+
+		// add logic to save playlist stats and search/query data
+		// to NEDB instance when bot script is disconnected from Twitch
+
+		// console.log("Songs Queried: ")
+		// console.log(npSongsQueried)
+		// console.log("Search Terms: ")
+		// console.log(dypSearchTerms)
+		// console.log('--------------------------------------')
 		event.reply('stopBotResponse', {
 			success: true,
 			message: 'ipcMain: bot client successfully disconnected',
-			data: finalReportData,
+			data: finalReportData,			
 		})
 	} else {
 		event.reply('stopBotResponse', {
