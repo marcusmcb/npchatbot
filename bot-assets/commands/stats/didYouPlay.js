@@ -4,6 +4,7 @@ const {
 	NO_LIVE_DATA_MESSAGE,
 	ERROR_MESSAGE,
 } = require('../../constants/constants')
+const { dypSearchTerms } = require('../../command-use/commandUse')
 
 const timeDifference = (time1, time2) => {
 	const convertToTimeDate = (timeStr) => {
@@ -50,6 +51,9 @@ const dypCommand = async (channel, tags, args, twitchClient, obs, url, config) =
 				// add logic check for trackLog length here
 				let searchResults = []
 				let searchTerm = `${args}`.replaceAll(',', ' ')
+				console.log('SEARCH TERM: ', searchTerm)
+				console.log("--------------------")
+				dypSearchTerms.push({ searchTerm: searchTerm})
 				for (let i = 0; i < reportData.track_array.length; i++) {
 					if (
 						reportData.track_array[i]
