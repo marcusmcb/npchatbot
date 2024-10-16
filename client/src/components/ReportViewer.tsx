@@ -74,14 +74,25 @@ const ReportViewer: React.FC<ReportDataProps> = ({
 							for this set.
 						</div>
 					</div>
-				</div>
-				{/* REPORT PANEL RIGHT */}
-				<div className='report-panel-right'>
-					<div className='report-panel-group'>
-						<div className='report-panel-item-header'>
-							Longest Songs Played:{' '}
-						</div>
-						<div>
+					<hr
+						style={{
+							marginRight: '10%',
+							marginTop: '20px',
+							marginBottom: '10px',
+						}}
+					/>
+					<div className='report-panel-group-left'>
+						<div className='report-panel-group'>
+							<div className='report-panel-item-header'>
+								Longest Song Played:{' '}
+							</div>
+							<div className='report-panel-item-detail'>
+								{reportData?.longest_track_name}{' '}
+								<span className='report-panel-item-detail-caption'>
+									({reportData?.longest_track_length})
+								</span>
+							</div>
+							{/* <div>
 							{reportData?.top_three_longest.map((longest, index) => (
 								<div key={index}>
 									<div className='report-panel-item-detail'>
@@ -92,13 +103,19 @@ const ReportViewer: React.FC<ReportDataProps> = ({
 									</div>
 								</div>
 							))}
+						</div> */}
 						</div>
-					</div>
-					<div className='report-panel-group'>
-						<div className='report-panel-item-header'>
-							Shortest Songs Played:{' '}
-						</div>
-						<div>
+						<div className='report-panel-group'>
+							<div className='report-panel-item-header'>
+								Shortest Song Played:{' '}
+							</div>
+							<div className='report-panel-item-detail'>
+								{reportData?.shortest_track_name}{' '}
+								<span className='report-panel-item-detail-caption'>
+									({reportData?.shortest_track_length})
+								</span>
+							</div>
+							{/* <div>
 							{reportData?.top_three_shortest.map((shortest, index) => (
 								<div key={index}>
 									<div className='report-panel-item-detail'>
@@ -109,50 +126,88 @@ const ReportViewer: React.FC<ReportDataProps> = ({
 									</div>
 								</div>
 							))}
+						</div> */}
 						</div>
 					</div>
+				</div>
+				{/* REPORT PANEL RIGHT */}
+				<div className='report-panel-right'>
 					<div className='report-panel-group'>
-						<div className='report-panel-item-header'>
-							Doubles Detected:{' '}
-							<span className='doubles-length'>
-								{reportData?.doubles_played.length}
-							</span>
-						</div>
-						<div className='report-panel-item-detail'>
-							{reportData?.doubles_played.map((double, index) => (
-								<div className='doubles-text' key={index}>
-									* {double.name}
+						{reportData?.doubles_played.length === 0 ? (
+							<>
+								<div className='report-panel-item-header'>
+									There were no doubles detected during this set.
 								</div>
-							))}
-						</div>
+							</>
+						) : (
+							<>
+								<div className='report-panel-item-header'>
+									Doubles Detected:{' '}
+									<span className='doubles-length'>
+										{reportData?.doubles_played.length}
+									</span>
+								</div>
+								<div className='report-panel-item-detail'>
+									{reportData?.doubles_played.map((double, index) => (
+										<div className='doubles-text' key={index}>
+											* {double.name}
+										</div>
+									))}
+								</div>
+							</>
+						)}
 					</div>
 					<div className='report-panel-group'>
-						<div className='report-panel-item-header'>
-							Songs Queried:{' '}<span className='doubles-length'>
-								{reportData?.np_songs_queried.length}
-							</span>							
-						</div>
-						<div className='report-panel-item-detail'>
-							{reportData?.np_songs_queried.map((song, index) => (
-								<div className='doubles-text' key={index}>
-									* {song.name}
+						{reportData?.np_songs_queried.length === 0 ? (
+							<>
+								<div className='report-panel-item-header'>
+									The <span className='foo'>!np</span> command was not used
+									during this stream.
 								</div>
-							))}
-						</div>
+							</>
+						) : (
+							<>
+								<div className='report-panel-item-header'>
+									Songs queried:{' '}
+									<span className='doubles-length'>
+										{reportData?.np_songs_queried.length}
+									</span>
+								</div>
+								<div className='report-panel-item-detail'>
+									{reportData?.np_songs_queried.map((song, index) => (
+										<div className='doubles-text' key={index}>
+											* {song.name}
+										</div>
+									))}
+								</div>
+							</>
+						)}
 					</div>
 					<div className='report-panel-group'>
-						<div className='report-panel-item-header'>
-							Terms Searched:{' '}<span className='doubles-length'>
-								{reportData?.dyp_search_terms.length}
-							</span>							
-						</div>
-						<div className='report-panel-item-detail'>
-							{reportData?.dyp_search_terms.map((song, index) => (
-								<div className='doubles-text' key={index}>
-									"{song.name}"
+						{reportData?.dyp_search_terms.length === 0 ? (
+							<>
+								<div className='report-panel-item-header'>
+									The <span className='foo'>!dyp</span> command was not used
+									during this stream.
 								</div>
-							))}
-						</div>
+							</>
+						) : (
+							<>
+								<div className='report-panel-item-header'>
+								Terms searched:{' '}
+									<span className='doubles-length'>
+										{reportData?.dyp_search_terms.length}
+									</span>
+								</div>
+								<div className='report-panel-item-detail'>
+									{reportData?.dyp_search_terms.map((song, index) => (
+										<div className='doubles-text' key={index}>
+											"{song.name}"
+										</div>
+									))}
+								</div>
+							</>
+						)}
 					</div>
 				</div>
 			</div>
