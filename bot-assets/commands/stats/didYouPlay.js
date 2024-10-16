@@ -25,12 +25,12 @@ const timeDifference = (time1, time2) => {
 	return `${diff} minutes`
 }
 
-const dypCommand = async (channel, tags, args, client, obs, url, config) => {
+const dypCommand = async (channel, tags, args, twitchClient, obs, url, config) => {
 	const obsClearDisplayTime = config.obsClearDisplayTime
 	let searchItem = args.join(' ')
 	// check if user has entered a query value after the command
 	if (args.length === 0) {
-		client.say(
+		twitchClient.say(
 			channel,
 			`Add an artist's name after the command to see if ${config.twitchChannelName} has played them yet in this stream.`
 		)
@@ -38,10 +38,10 @@ const dypCommand = async (channel, tags, args, client, obs, url, config) => {
 		try {
 			const reportData = await createLiveReport(url)
 			if (reportData === undefined) {
-				client.say(channel, NO_LIVE_DATA_MESSAGE)
+				twitchClient.say(channel, NO_LIVE_DATA_MESSAGE)
 				return
 			} else if (reportData.total_tracks_played < 4) {
-				client.say(
+				twitchClient.say(
 					channel,
 					`${config.twitchChannelName} hasn't played enough music in this stream to search just yet.`
 				)
@@ -76,7 +76,7 @@ const dypCommand = async (channel, tags, args, client, obs, url, config) => {
 				}
 
 				if (searchResults.length === 0) {
-					client.say(
+					twitchClient.say(
 						channel,
 						`${config.twitchChannelName} has not played '${searchItem}' so far in this stream.`
 					)
@@ -102,7 +102,7 @@ const dypCommand = async (channel, tags, args, client, obs, url, config) => {
 
 					if (searchResults.length === 1) {
 						// add lastSongPlayed logic check here
-						client.say(
+						twitchClient.say(
 							channel,
 							`${config.twitchChannelName} has played '${searchItem}' ${searchResults.length} time so far in this stream. Their last song was \n${lastSongPlayed}, played ${timeSincePlayed} ago.`
 						)
@@ -116,7 +116,7 @@ const dypCommand = async (channel, tags, args, client, obs, url, config) => {
 							clearOBSResponse(obs, obsClearDisplayTime)
 						}
 					} else {
-						client.say(
+						twitchClient.say(
 							channel,
 							`${config.twitchChannelName} has played '${searchItem}' ${searchResults.length} times so far in this stream. Their last song played was \n${lastSongPlayed}, played ${timeSincePlayed} ago.`
 						)
@@ -134,7 +134,7 @@ const dypCommand = async (channel, tags, args, client, obs, url, config) => {
 			}
 		} catch (error) {
 			console.log('DYP command error: ', error)
-			client.say(channel, ERROR_MESSAGE)
+			twitchClient.say(channel, ERROR_MESSAGE)
 		}
 	}
 }

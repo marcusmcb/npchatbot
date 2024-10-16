@@ -7,7 +7,7 @@ const {
 
 const doublesCommand = async (
 	channel,
-	client,
+	twitchClient,
 	reportData,
 	obs,
 	config,
@@ -16,16 +16,16 @@ const doublesCommand = async (
 	try {
 		// const reportData = await createLiveReport(url)
 		if (reportData === undefined) {
-			client.say(channel, NO_LIVE_DATA_MESSAGE)
+			twitchClient.say(channel, NO_LIVE_DATA_MESSAGE)
 			return
 		} else if (reportData.total_tracks_played < 4) {
-			client.say(
+			twitchClient.say(
 				channel,
 				`${config.twitchChannelName} hasn't played enough music in this stream just yet to determine if doubles were played.`
 			)
 			return
 		} else if (reportData.doubles_played.length === 0) {
-			client.say(
+			twitchClient.say(
 				channel,
 				`${channel.slice(1)} has not rocked doubles so far in this set.`
 			)
@@ -39,11 +39,14 @@ const doublesCommand = async (
 				clearOBSResponse(obs, config.obsClearDisplayTime)
 			}
 		} else {
-			client.say(
+			twitchClient.say(
 				channel,
 				`${channel.slice(1)} has rocked doubles ${
 					reportData.doubles_played.length
-				} time(s) so far in this set.`
+				} time(s) so far in this set.  The last song they played doubles with was ${
+					reportData.doubles_played[reportData.doubles_played.length - 1]
+						.name
+				}.`
 			)
 			if (config.isObsResponseEnabled === true) {
 				obs.call('SetInputSettings', {
@@ -51,7 +54,7 @@ const doublesCommand = async (
 					inputSettings: {
 						text: `${config.twitchChannelName} has rocked doubles\n${
 							reportData.doubles_played.length
-						} time(s) so far in this set.\n\nLast song he played doubles with:\n${
+						} time(s) so far in this set.\n\nLast song they played doubles with:\n${
 							reportData.doubles_played[reportData.doubles_played.length - 1]
 								.name
 						}`,
@@ -62,7 +65,7 @@ const doublesCommand = async (
 		}
 	} catch (error) {
 		console.log('Doubles command error: ', error)
-		client.say(channel, ERROR_MESSAGE)
+		twitchClient.say(channel, ERROR_MESSAGE)
 	}
 }
 
