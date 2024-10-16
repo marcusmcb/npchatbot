@@ -75,7 +75,7 @@ const SessionPanel: React.FC<SessionPanelProps> = (props) => {
 			<div className='app-form-title start-chatbot'>Chatbot Controls:</div>
 			<div className='bot-control-button-panel'>
 				<button
-					className='bot-control-button'
+					className='bot-control-button default-button'
 					type='submit'
 					onClick={props.handleConnect}
 					disabled={
@@ -87,7 +87,7 @@ const SessionPanel: React.FC<SessionPanelProps> = (props) => {
 					{!props.isBotConnected ? 'Connect' : 'Connected'}
 				</button>
 				<button
-					className='bot-control-button'
+					className='bot-control-button default-button'
 					disabled={!props.isBotConnected}
 					type='submit'
 					onClick={(event) => {
@@ -97,11 +97,11 @@ const SessionPanel: React.FC<SessionPanelProps> = (props) => {
 						}, 500)
 					}}
 				>
-					End Session
+					Disconnect
 				</button>
 				{props.isReportReady && (
 					<button
-						className='bot-control-button'
+						className='bot-control-button default-button'
 						onClick={() => {
 							props.setReportView(true)
 						}}

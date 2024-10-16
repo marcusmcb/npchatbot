@@ -54,9 +54,7 @@ const App = (): JSX.Element => {
 	const [isReportReady, setIsReportReady] = useState(false)
 	const [reportView, setReportView] = useState(false)
 	const messageTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-	const ipcRenderer = window.electron.ipcRenderer
-
-	console.log(reportData)
+	const ipcRenderer = window.electron.ipcRenderer	
 
 	/* EFFECT HOOKS */
 

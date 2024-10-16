@@ -301,13 +301,18 @@ const createLiveReport = async (url) => {
 				seconds: Math.floor((track.length % 60000) / 1000), // remainder seconds
 			}))
 
-			// Sort track lengths in descending order (longest first)
-			trackLengths.sort((a, b) => b.length - a.length)
+			let sortedLongest = [...trackLengths].sort((a, b) => b.length - a.length)
 
-			// Get the top 3 longest tracks
-			let topThreeLongest = trackLengths.slice(0, 3).map((track) => ({
+			let topThreeLongest = sortedLongest.slice(0, 3).map((track) => ({
 				name: track.name,
-				length_value: `${track.minutes} min ${track.seconds} sec`,
+				length: `${track.minutes}:${track.seconds}`,
+			}))
+
+			let sortedShortest = [...trackLengths].sort((a, b) => a.length - b.length)
+
+			let topThreeShortest = sortedShortest.slice(0, 3).map((track) => ({
+				name: track.name,
+				length: `${track.minutes}:${track.seconds}`,
 			}))
 
 			const seratoLiveReport = {
@@ -353,6 +358,7 @@ const createLiveReport = async (url) => {
 				playlist_title: playlistTitle,
 				track_array: tracksPlayed,
 				top_three_longest: topThreeLongest,
+				top_three_shortest: topThreeShortest,
 			}
 			console.log('---------------')
 			console.log('Serato Live Report: ', seratoLiveReport)
