@@ -298,7 +298,11 @@ ipcMain.on('stopBotScript', async (event, arg) => {
 	}
 
 	if (tmiInstance) {
-		tmiInstance.disconnect()
+		await tmiInstance.disconnect().then((data) => {
+			console.log("- - - - - - - - - - - - - - - - - -")
+			console.log("TWITCH CHAT HAS BEEN DISCONNECTED")
+			console.log("- - - - - - - - - - - - - - - - - -")
+		})
 		tmiInstance = null
 		botProcess = false
 		console.log('npChatbot successfully disconnected from Twitch')

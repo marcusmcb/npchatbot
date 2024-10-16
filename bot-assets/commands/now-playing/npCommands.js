@@ -29,21 +29,21 @@ const updateOBSWithText = (obs, text, obsClearDisplayTime, config) => {
 }
 
 // !np test response
-const handleTest = (channel, client, tags) => {
-	client.say(channel, 'npChatbot is properly linked to your Twitch channel.')
+const handleTest = (channel, twitchClient, tags) => {
+	twitchClient.say(channel, 'npChatbot is properly linked to your Twitch channel.')
 }
 
 // !np options response
-const handleOptions = (channel, client) => {
+const handleOptions = (channel, twitchClient) => {
 	const message =
 		'You can find the full npChatbot command list at www.npchatbot.com/commands'
-	client.say(channel, message)
+	twitchClient.say(channel, message)
 }
 
 // !np response
 const handleDefault = (
 	channel,
-	client,
+	twitchClient,
 	reportData,
 	obs,
 	obsClearDisplayTime,
@@ -52,7 +52,7 @@ const handleDefault = (
 	const currentTrackPlaying =
 		reportData.track_log[reportData.track_log.length - 1]
 	const message = `Now playing: ${currentTrackPlaying.trackId}`
-	client.say(channel, message)
+	twitchClient.say(channel, message)
 	updateOBSWithText(
 		obs,
 		`Now playing:\n${currentTrackPlaying.trackId}`,
@@ -64,7 +64,7 @@ const handleDefault = (
 // !np previous response
 const handlePrevious = (
 	channel,
-	client,
+	twitchClient,
 	reportData,
 	obs,
 	obsClearDisplayTime,
@@ -73,7 +73,7 @@ const handlePrevious = (
 	const previousTrackPlayed =
 		reportData.track_log[reportData.track_log.length - 2]
 	const message = `Previous song: ${previousTrackPlayed.trackId}`
-	client.say(channel, message)
+	twitchClient.say(channel, message)
 	updateOBSWithText(
 		obs,
 		`Previous song:\n${previousTrackPlayed.trackId}`,
@@ -85,7 +85,7 @@ const handlePrevious = (
 // !np start response
 const handleStart = (
 	channel,
-	client,
+	twitchClient,
 	reportData,
 	obs,
 	obsClearDisplayTime,
@@ -94,7 +94,7 @@ const handleStart = (
 ) => {
 	const firstTrackPlayed = reportData.track_log[0]
 	const message = `${config.twitchChannelName} kicked off this stream with ${firstTrackPlayed.trackId}`
-	client.say(channel, message)
+	twitchClient.say(channel, message)
 	updateOBSWithText(
 		obs,
 		`${config.twitchChannelName} kicked off this stream with :\n${firstTrackPlayed.trackId}`,
@@ -106,7 +106,7 @@ const handleStart = (
 // !np vibecheck response
 const handleVibeCheck = (
 	channel,
-	client,
+	twitchClient,
 	reportData,
 	obs,
 	obsClearDisplayTime,
@@ -120,7 +120,7 @@ const handleVibeCheck = (
 	if (hours > 0) {
 		if (hours > 1) {
 			const message = `${config.twitchChannelName} played "${vibeCheckSelection.trackId}" ${hours} hours & ${minutes} minutes ago in this stream.`
-			client.say(channel, message)
+			twitchClient.say(channel, message)
 			updateOBSWithText(
 				obs,
 				`vibecheck:\n\n${config.twitchChannelName} played\n"${vibeCheckSelection.trackId}"\n${hours} hours & ${minutes} minutes ago in this stream.`,
@@ -129,7 +129,7 @@ const handleVibeCheck = (
 			)
 		} else {
 			const message = `${config.twitchChannelName} played "${vibeCheckSelection.trackId}" ${hours} hour & ${minutes} minutes ago in this stream.`
-			client.say(channel, message)
+			twitchClient.say(channel, message)
 			updateOBSWithText(
 				obs,
 				`vibecheck:\n\n${config.twitchChannelName} played\n"${vibeCheckSelection.trackId}"\n${hours} hour & ${minutes} minutes ago in this stream.`,
@@ -139,7 +139,7 @@ const handleVibeCheck = (
 		}
 	} else {
 		const message = `${config.twitchChannelName} played "${vibeCheckSelection.trackId}" ${minutes} minutes ago in this stream.`
-		client.say(channel, message)
+		twitchClient.say(channel, message)
 		updateOBSWithText(
 			obs,
 			`vibe check:\n\n${config.twitchChannelName} played\n"${vibeCheckSelection.trackId}"\n${minutes} minutes ago in this stream.`,
@@ -152,45 +152,45 @@ const handleVibeCheck = (
 // !np shortest response
 const handleShortest = (
 	channel,
-	client,
+	twitchClient,
 	reportData,
 	obs,
 	obsClearDisplayTime,
 	config,
 	tags
 ) => {
-	shortestTrackCommand(channel, client, reportData, obs, config, tags)
+	shortestTrackCommand(channel, twitchClient, reportData, obs, config, tags)
 }
 
 // !np longest response
 const handleLongest = (
 	channel,
-	client,
+	twitchClient,
 	reportData,
 	obs,
 	obsClearDisplayTime,
 	config,
 	tags
 ) => {
-	longestTrackCommand(channel, client, reportData, obs, config, tags)
+	longestTrackCommand(channel, twitchClient, reportData, obs, config, tags)
 }
 
 // !np doubles response
 const handleDoubles = (
 	channel,
-	client,
+	twitchClient,
 	reportData,
 	obs,
 	obsClearDisplayTime,
 	config,
 	tags
 ) => {
-	doublesCommand(channel, client, reportData, obs, config, tags)
+	doublesCommand(channel, twitchClient, reportData, obs, config, tags)
 }
 
 const handleStats = (
 	channel,
-	client,
+	twitchClient,
 	reportData,
 	obs,
 	obsClearDisplayTime,
@@ -198,7 +198,7 @@ const handleStats = (
 	tags
 ) => {
 	console.log('--------------> ', config.twitchChannelName)
-	statsCommand(channel, client, reportData, obs, config, tags)
+	statsCommand(channel, twitchClient, reportData, obs, config, tags)
 }
 
 const COMMAND_MAP = {
@@ -214,25 +214,25 @@ const COMMAND_MAP = {
 	stats: handleStats,
 }
 
-const npCommands = async (channel, tags, args, client, obs, url, config) => {
+const npCommands = async (channel, tags, args, twitchClient, obs, url, config) => {
 	const obsClearDisplayTime = config.obsClearDisplayTime
 	try {
 		const handler = COMMAND_MAP[args[0]]
 		if (args[0] === 'test') {
-			handler(channel, client, tags)
+			handler(channel, twitchClient, tags)
 			return
 		}
 
 		const reportData = await createLiveReport(url)
 		if (reportData === undefined) {
-			client.say(channel, NO_LIVE_DATA_MESSAGE)
+			twitchClient.say(channel, NO_LIVE_DATA_MESSAGE)
 			return
 		}
 
 		if (handler) {
 			handler(
 				channel,
-				client,
+				twitchClient,
 				reportData,
 				obs,
 				obsClearDisplayTime,
@@ -240,11 +240,11 @@ const npCommands = async (channel, tags, args, client, obs, url, config) => {
 				tags
 			)
 		} else {
-			client.say(channel, NP_OPTIONS)
+			twitchClient.say(channel, NP_OPTIONS)
 		}
 	} catch (error) {
 		console.log('np Command error: ', error)
-		client.say(channel, ERROR_MESSAGE)
+		twitchClient.say(channel, ERROR_MESSAGE)
 	}
 }
 

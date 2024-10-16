@@ -5,8 +5,8 @@ const {
 	ERROR_MESSAGE,
 } = require('../../constants/constants')
 
-const sendChatMessage = (client, channel, username, reportData) => {
-	client.say(
+const sendChatMessage = (twitchClient, channel, username, reportData) => {
+	twitchClient.say(
 		channel,
 		`${username} has played ${reportData.total_tracks_played} songs so far in this set with an average length of ${reportData.average_track_length} per song.`
 	)
@@ -34,21 +34,21 @@ const displayStatsMessage = (obs, tags, reportData, config, trendIndicator) => {
 	clearOBSResponse(obs, obsClearDisplayTime)
 }
 
-const statsCommand = async (channel, client, reportData, obs, config, tags) => {
+const statsCommand = async (channel, twitchClient, reportData, obs, config, tags) => {
 	try {		
 		if (reportData === undefined) {
-			client.say(channel, NO_LIVE_DATA_MESSAGE)
+			twitchClient.say(channel, NO_LIVE_DATA_MESSAGE)
 			return
 		}
 		if (reportData.track_log.length < 4) {
-			client.say(
+			twitchClient.say(
 				channel,
 				`${config.twitchChannelName} has played ${reportData.total_tracks_played} songs so far in this stream.`
 			)
 			return
 		}
 
-		sendChatMessage(client, channel, config.twitchChannelName, reportData)
+		sendChatMessage(twitchClient, channel, config.twitchChannelName, reportData)
 
 		if (config.isObsResponseEnabled === true) {
 			if (reportData.average_change.isLarger) {
@@ -64,7 +64,7 @@ const statsCommand = async (channel, client, reportData, obs, config, tags) => {
 		}
 	} catch (err) {
 		console.error(err)
-		client.say(channel, ERROR_MESSAGE)
+		twitchClient.say(channel, ERROR_MESSAGE)
 	}
 }
 

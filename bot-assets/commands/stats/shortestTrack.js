@@ -18,7 +18,7 @@ const displayShortestTrackMessage = (obs, tags, reportData, config) => {
 
 const shortestTrackCommand = async (
 	channel,
-	client,
+	twitchClient,
 	reportData,
 	obs,	
 	config,
@@ -26,17 +26,17 @@ const shortestTrackCommand = async (
 ) => {
 	try {		
 		if (reportData === undefined) {
-			client.say(channel, NO_LIVE_DATA_MESSAGE)
+			twitchClient.say(channel, NO_LIVE_DATA_MESSAGE)
 			return
 		}
 		if (reportData.total_tracks_played < 4) {
-			client.say(
+			twitchClient.say(
 				channel,
 				`${config.twitchChannelName} hasn't played enough music in this stream just yet to determine the shortest song.`
 			)
 			return
 		} else {
-			client.say(
+			twitchClient.say(
 				channel,
 				`The shortest song in ${config.twitchChannelName}'s set (so far) is ${reportData.shortest_track.name} (${reportData.shortest_track.length_value}), played ${reportData.shortest_track.time_since_played_string}`
 			)
@@ -46,7 +46,7 @@ const shortestTrackCommand = async (
 		}
 	} catch (error) {
 		console.log('Shortest Track command error: ', error)
-		client.say(channel, ERROR_MESSAGE)
+		twitchClient.say(channel, ERROR_MESSAGE)
 	}
 }
 

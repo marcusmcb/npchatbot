@@ -57,10 +57,10 @@ const initializeBot = async (config) => {
 	logToFile(`REFRESH TOKEN CONFIG: ${JSON.stringify(refreshTokenConfig)}`)	
 	logToFile("*******************************")
 
-	const tmiClient = new tmi.Client(refreshTokenConfig)
+	const twitchClient = new tmi.Client(refreshTokenConfig)
 
 	try {
-		tmiClient.connect()
+		twitchClient.connect()
 	} catch (error) {
 		logToFile(`TWITCH CONNECTION ERROR: ${error}`)
 		logToFile("*******************************")
@@ -72,9 +72,13 @@ const initializeBot = async (config) => {
 		await connectToOBS(config)
 	}
 
-	autoCommandsConfig(tmiClient, obs, config)
+	autoCommandsConfig(twitchClient, obs, config)
 
-	tmiClient.on('message', (channel, tags, message, self) => {
+	twitchClient.on('disconnected', () => {
+		console.log("--- CHATBOT DISCONNECT EVENT DETECTED ---")
+	})
+
+	twitchClient.on('message', (channel, tags, message, self) => {
 		if (self || !message.startsWith('!')) {
 			return
 		}
@@ -98,31 +102,31 @@ const initializeBot = async (config) => {
 				history.length >= COMMAND_REPEAT_LIMIT &&
 				history.every((hist) => hist === command)
 			) {
-				tmiClient.say(
+				twitchClient.say(
 					channel,
 					`@${tags.username}, try a different command before using that one again.`
 				)
 			} else {
 				if (command in urlCommandList && displayOBSMessage) {
 					if (urlCommandCooldown) {
-						tmiClient.say(
+						twitchClient.say(
 							channel,
 							`@${tags.username}, please wait for the current command on screen to clear before using that one.`
 						)
 						return
 					}
 					urlCommandCooldown = true
-					commandList[command](channel, tags, args, tmiClient, obs, url, config)
+					commandList[command](channel, tags, args, twitchClient, obs, url, config)
 					setTimeout(() => {
 						urlCommandCooldown = false
 					}, COOLDOWN_DURATION)
 				} else {
-					commandList[command](channel, tags, args, tmiClient, obs, url, config)
+					commandList[command](channel, tags, args, twitchClient, obs, url, config)
 				}
 			}
 		}
 	})
-	return tmiClient
+	return twitchClient
 }
 
 module.exports = initializeBot

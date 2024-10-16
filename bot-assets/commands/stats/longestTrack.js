@@ -18,7 +18,7 @@ const displayLongestTrackMessage = (obs, tags, reportData, config) => {
 
 const longestTrackCommand = async (
 	channel,
-	client,
+	twitchClient,
 	reportData,
 	obs,	
 	config,
@@ -26,21 +26,21 @@ const longestTrackCommand = async (
 ) => {
 	try {
 		if (reportData === undefined) {
-			client.say(channel, NO_LIVE_DATA_MESSAGE)
+			twitchClient.say(channel, NO_LIVE_DATA_MESSAGE)
 			return
 		} else if (reportData.total_tracks_played < 4) {
-			client.say(
+			twitchClient.say(
 				channel,
 				`${config.twitchChannelName} hasn't played enough music in this stream just yet to determine the longest song.`
 			)
 			return
 		} else if (reportData.longest_track.isOutlier === true) {
-			client.say(
+			twitchClient.say(
 				channel,
 				`The longest song in ${config.twitchChannelName}'s set (so far) is ${reportData.longest_track.name}, played ${reportData.longest_track.time_since_played}.`
 			)
 		} else {
-			client.say(
+			twitchClient.say(
 				channel,
 				`The longest song in ${config.twitchChannelName}'s set (so far) is ${reportData.longest_track.name} (${reportData.longest_track.length_value}), played ${reportData.longest_track.time_since_played}.`
 			)
@@ -50,7 +50,7 @@ const longestTrackCommand = async (
 		}
 	} catch (error) {
 		console.log('Longest Track command error: ', error)
-		client.say(channel, ERROR_MESSAGE)
+		twitchClient.say(channel, ERROR_MESSAGE)
 	}
 }
 

@@ -370,9 +370,9 @@ const createLiveReport = async (url) => {
 				top_three_longest: topThreeLongest,
 				top_three_shortest: topThreeShortest,
 			}
-			console.log('---------------')
-			console.log('Serato Live Report: ', seratoLiveReport)
-			console.log('---------------')
+			// console.log('---------------')
+			// console.log('Serato Live Report: ', seratoLiveReport)
+			// console.log('---------------')
 			return seratoLiveReport
 		}
 	} catch (err) {
