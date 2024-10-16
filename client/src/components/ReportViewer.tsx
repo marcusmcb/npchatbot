@@ -1,4 +1,3 @@
-// src/components/ReportViewer.js
 import React, { Fragment } from 'react'
 import { ReportData } from '../types'
 import './styles/reportviewer.css'
@@ -8,15 +7,37 @@ interface ReportDataProps {
 	setReportView: (value: boolean) => void
 }
 
-const ReportViewer: React.FC<ReportDataProps> = ({
-	reportData,
-	setReportView,
-}): JSX.Element => {
+// Helper function to format the set length
+const formatSetLength = (hours: number, minutes: number, seconds: number): string => {
+	const parts: string[] = []
+
+	if (hours > 0) {
+		parts.push(`${hours} hour${hours > 1 ? 's' : ''}`)
+	}
+
+	if (minutes > 0) {
+		parts.push(`${minutes} minute${minutes > 1 ? 's' : ''}`)
+	}
+
+	if (seconds > 0) {
+		parts.push(`${seconds} second${seconds > 1 ? 's' : ''}`)
+	}
+
+	return parts.length > 0 ? parts.join(', ') : '0 seconds'
+}
+
+const ReportViewer: React.FC<ReportDataProps> = ({ reportData, setReportView }): JSX.Element => {
+	// Use the helper function to format the set length based on the report data
+	const formattedSetLength = reportData
+		? formatSetLength(
+				reportData.set_length_hours,
+				reportData.set_length_minutes,
+				reportData.set_length_seconds
+		  )
+		: ''
+
 	return (
 		<Fragment>
-			{/* <div className='hr'>
-				<hr />
-			</div> */}
 			<div className='report-panel'>
 				{/* REPORT PANEL LEFT */}
 				<div className='report-panel-left'>
@@ -34,7 +55,7 @@ const ReportViewer: React.FC<ReportDataProps> = ({
 					<div className='report-panel-item-row'>
 						<div className='report-panel-item'>Set Length: </div>
 						<div className='report-panel-item-span'>
-							{reportData?.set_length}
+							{formattedSetLength}
 						</div>
 					</div>
 					<div className='report-panel-item-row'>
@@ -64,8 +85,6 @@ const ReportViewer: React.FC<ReportDataProps> = ({
 						</div>
 					</div>
 
-					{/* <hr className='horizontal-rule' /> */}
-
 					<div className='report-panel-group'>
 						<div className='report-panel-item-header'>
 							Shortest Song Played:{' '}
@@ -78,7 +97,6 @@ const ReportViewer: React.FC<ReportDataProps> = ({
 						</div>
 					</div>
 
-					{/* <hr className='horizontal-rule' /> */}
 					<div className='report-panel-group'>
 						<div className='report-panel-item-header'>
 							Doubles Detected:{' '}

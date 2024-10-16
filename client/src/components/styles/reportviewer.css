@@ -98,7 +98,7 @@
 .report-panel-item-row {
 	display: flex;
 	flex-direction: row;
-	width: 70%;
+	width: 80%;
 	justify-content: space-between;
 }
 

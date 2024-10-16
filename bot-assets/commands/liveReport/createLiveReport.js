@@ -294,6 +294,22 @@ const createLiveReport = async (url) => {
 				shortestTrackDifference
 			)
 
+			let trackLengths = trackLog.map((track, index) => ({
+				name: track.trackId,
+				length: track.length, // length in milliseconds
+				minutes: Math.floor(track.length / 60000), // convert ms to minutes
+				seconds: Math.floor((track.length % 60000) / 1000), // remainder seconds
+			}))
+
+			// Sort track lengths in descending order (longest first)
+			trackLengths.sort((a, b) => b.length - a.length)
+
+			// Get the top 3 longest tracks
+			let topThreeLongest = trackLengths.slice(0, 3).map((track) => ({
+				name: track.name,
+				length_value: `${track.minutes} min ${track.seconds} sec`,
+			}))
+
 			const seratoLiveReport = {
 				track_length_array: timeDiffs,
 				dj_name: playlistArtistName,
@@ -336,7 +352,11 @@ const createLiveReport = async (url) => {
 				playlist_date: playlistDateFormatted,
 				playlist_title: playlistTitle,
 				track_array: tracksPlayed,
+				top_three_longest: topThreeLongest,
 			}
+			console.log('---------------')
+			console.log('Serato Live Report: ', seratoLiveReport)
+			console.log('---------------')
 			return seratoLiveReport
 		}
 	} catch (err) {
