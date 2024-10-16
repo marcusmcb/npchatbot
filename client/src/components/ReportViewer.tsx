@@ -126,6 +126,34 @@ const ReportViewer: React.FC<ReportDataProps> = ({
 							))}
 						</div>
 					</div>
+					<div className='report-panel-group'>
+						<div className='report-panel-item-header'>
+							Songs Queried:{' '}<span className='doubles-length'>
+								{reportData?.np_songs_queried.length}
+							</span>							
+						</div>
+						<div className='report-panel-item-detail'>
+							{reportData?.np_songs_queried.map((song, index) => (
+								<div className='doubles-text' key={index}>
+									* {song.name}
+								</div>
+							))}
+						</div>
+					</div>
+					<div className='report-panel-group'>
+						<div className='report-panel-item-header'>
+							Terms Searched:{' '}<span className='doubles-length'>
+								{reportData?.dyp_search_terms.length}
+							</span>							
+						</div>
+						<div className='report-panel-item-detail'>
+							{reportData?.dyp_search_terms.map((song, index) => (
+								<div className='doubles-text' key={index}>
+									"{song.name}"
+								</div>
+							))}
+						</div>
+					</div>
 				</div>
 			</div>
 			<button
