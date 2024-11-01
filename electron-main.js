@@ -272,7 +272,7 @@ ipcMain.on('startBotScript', async (event, arg) => {
 // ipc method to disconnect npChatbot script from Twitch
 ipcMain.on('stopBotScript', async (event, arg) => {
 	const seratoDisplayName = arg.seratoDisplayName.replaceAll(' ', '_')
-	const url = `https://serato.com/playlists/${seratoDisplayName}/twitch-stream`	
+	const url = `https://serato.com/playlists/${seratoDisplayName}/10-30-2024`	
 	const reportData = await createLiveReport(url)	
 
 	const finalReportData = {

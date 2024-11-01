@@ -48,7 +48,7 @@ const initializeBot = async (config) => {
 
 	/* doubles playlist example */
 
-	const url = `https://serato.com/playlists/${seratoDisplayName}/twitch-stream`
+	const url = `https://serato.com/playlists/${seratoDisplayName}/10-30-2024`
 
 	/* ---------------------------------------- */
 
