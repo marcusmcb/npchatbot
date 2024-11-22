@@ -32,6 +32,20 @@ const createLiveReport = async (url) => {
 		let doublesPlayed = []
 		let timestampsParsed = []
 		let startTimeString
+
+		// debug playlist date change from scrape result
+
+		// rewrite logic to determine individual track play times
+		// and calculate track lengths based on them
+
+		// debug playlist start time from Serato changes
+		// debug timePlayed value for each song in track log
+		// previously displayed timestamp in HH:MM:SS format
+		// now displays as text string "13 secs/mins ago"
+
+		// console.log("Start Time: ", starttime)
+		// console.log("Playlist Date: ", playlistdate)
+
 		const starttimeParsed = createPlaylistDate(starttime, playlistdate)
 
 		// parse start time for proper display in UI
@@ -81,11 +95,24 @@ const createLiveReport = async (url) => {
 		let trackLog = tracksPlayed.map((result, index) => {
 			return {
 				trackId: result,
-				timestamp: sumTimeValues(starttimeParsed, timestampsParsed[index]),
+				// timestamp: sumTimeValues(starttimeParsed, timestampsParsed[index]),
 				timePlayed: timestamps[index].children[0].data.trim(),
-				length: timeDiffs[index],
+				// length: timeDiffs[index],
 			}
 		})
+
+		console.log("Tracks Played: ")
+		console.log(tracksPlayed)
+		console.log('------------------')
+		console.log("Timestamps (example): ")
+		console.log(timestamps[1].children[0].data.trim())
+		console.log('------------------')
+		console.log('Start Time: ')
+		console.log(starttime)
+		console.log('------------------')
+		console.log('Playlist Date: ')
+		console.log(playlistdate)
+		console.log('------------------')
 
 		// check track log length to determine seratoLiveReport data returned
 		// full data will be returned for playlists with 4 or more tracks played

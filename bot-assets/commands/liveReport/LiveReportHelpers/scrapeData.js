@@ -15,7 +15,7 @@ const scrapeData = async (url) => {
         const $ = cheerio.load(data);
         results = $("div.playlist-trackname");
         timestamps = $("div.playlist-tracktime");
-        starttime = $("div.playlist-timestamp").first().text().trim();
+        starttime = $("div.playlist-timestamp").last().text().trim();
         playlistdate = $("span.playlist-start-time").first().text().trim();
         playlisttitle = $("div.playlist-heading h1").text().trim();
         playlistartist = $("span.playlist-dj-subtitle").text().trim();
@@ -28,7 +28,7 @@ const scrapeData = async (url) => {
     console.log(error);
     return error;
   }
-  playlistartist = playlistartist.split(" ")[3];
+  playlistartist = playlistartist.split(" ")[3];  
   return [
     results,
     timestamps,

@@ -104,6 +104,13 @@ const dypCommand = async (channel, tags, args, twitchClient, obs, url, config) =
 						currentTrackTime
 					)
 
+					// for !dyp queries with more than one result, the command currently
+					// returns the time since played for the first result but displays
+					// the text and title for the most recent result.
+
+					// the command should display the most recent result and its time
+					// since played for queries with more than one result
+
 					if (searchResults.length === 1) {
 						// add lastSongPlayed logic check here
 						twitchClient.say(
