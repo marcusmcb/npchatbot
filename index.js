@@ -19,7 +19,7 @@ const initializeBot = async (config) => {
 
 	/* ---------------------------------------- */
 
-	// const url = `https://serato.com/playlists/${seratoDisplayName}/live`
+	const url = `https://serato.com/playlists/${seratoDisplayName}/live`
 
 	/* ---------------------------------------- */
 	/* Serato Playlist URLs for command testing	*/
@@ -48,7 +48,7 @@ const initializeBot = async (config) => {
 
 	/* doubles playlist example */
 
-	const url = `https://serato.com/playlists/${seratoDisplayName}/10-30-2024`
+	// const url = `https://serato.com/playlists/${seratoDisplayName}/10-30-2024`
 
 	/* ---------------------------------------- */
 
