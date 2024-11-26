@@ -23,38 +23,25 @@ const createLiveReport = async (url) => {
 	try {
 		const response = await scrapeData(url)
 		const results = response[0]
-		const timestamps = response[1]
+		let timestamps = response[1]
 		const starttime = response[2]
 		const playlistdate = response[3]
 		const playlistTitle = response[4]
 		let tracksPlayed = []
 		let trackTimestamps = []
-		let doublesPlayed = []
-		let timestampsParsed = []
-		let startTimeString
+		let startTimeParsed
 
-		// debug playlist date change from scrape result
-
-		// rewrite logic to determine individual track play times
-		// and calculate track lengths based on them
-
-		// debug playlist start time from Serato changes
-		// debug timePlayed value for each song in track log
-		// previously displayed timestamp in HH:MM:SS format
-		// now displays as text string "13 secs/mins ago"
-
-		// console.log("Start Time: ", starttime)
-		// console.log("Playlist Date: ", playlistdate)
-
-		const starttimeParsed = createPlaylistDate(starttime, playlistdate)
-
-		// parse start time for proper display in UI
-		if (starttime.length === 7) {
-			const [first, second] = parseStartTime(starttime, 5)
-			startTimeString = first + ' ' + second.toUpperCase()
+		// Parse the start time into a Date object
+		if (starttime) {
+			const [time, period] = starttime.split(/(am|pm)/i)
+			const timeParts = time.split(':').map(Number)
+			const hours =
+				period.toLowerCase() === 'pm' ? timeParts[0] + 12 : timeParts[0]
+			const minutes = timeParts[1] || 0
+			startTimeParsed = new Date()
+			startTimeParsed.setHours(hours, minutes, 0, 0) // Set start time
 		} else {
-			const [first, second] = parseStartTime(starttime, 4)
-			startTimeString = first + ' ' + second.toUpperCase()
+			throw new Error('Start time is missing or invalid.')
 		}
 
 		// loop through tracks played and clean data from scrape
@@ -63,48 +50,75 @@ const createLiveReport = async (url) => {
 			tracksPlayed.push(trackId)
 		}
 
-		// loop through track timestamps and clean data from scrape
-		for (let j = 0; j < results.length; j++) {
-			let timestamp = timestamps[j].children[0].data.trim()
-			let timestampParsed = parseDateAndTime(timestamp, playlistdate)
-			timestamp = new Date('01/01/1970 ' + timestamp)
-			timestampsParsed.push(timestampParsed)
-			trackTimestamps.push(timestamp)
+		console.log('Tracks Played: ', tracksPlayed)
+		console.log(typeof timestamps)
+
+		// Convert timestamps to an array if necessary
+		if (!Array.isArray(timestamps)) {
+			timestamps = Array.isArray(timestamps)
+				? timestamps
+				: Object.values(timestamps) // Try converting object to an array
 		}
 
-		// determine lengths of each track played
-		let timeDiffs = []
-		for (let k = 0; k < trackTimestamps.length; k++) {
-			let x = trackTimestamps[k + 1] - trackTimestamps[k]
-			if (Number.isNaN(x)) {
-			} else {
-				timeDiffs.push(x)
-			}
-		}
+		timestamps.forEach((timestampObj, index) => {
+			const timestampString = timestampObj.children?.[0]?.data?.trim()
+			if (timestampString) {
+				const timeAgoMatch = timestampString.match(/(\d+)\s(\w+)\sago/)
+				if (timeAgoMatch) {
+					const [, value, unit] = timeAgoMatch
+					const offset = parseInt(value, 10)
 
-		// check for doubles and add those tracks to array
-		for (let n = 0; n < tracksPlayed.length; n++) {
-			if (tracksPlayed[n] === tracksPlayed[n + 1]) {
-				doublesPlayed.push({
-					name: tracksPlayed[n],
-				})
-			}
-		}
-
-		// master track log
-		let trackLog = tracksPlayed.map((result, index) => {
-			return {
-				trackId: result,
-				// timestamp: sumTimeValues(starttimeParsed, timestampsParsed[index]),
-				timePlayed: timestamps[index].children[0].data.trim(),
-				// length: timeDiffs[index],
+					const adjustedTimestamp = new Date(startTimeParsed)
+					if (unit.includes('min')) {
+						adjustedTimestamp.setMinutes(
+							adjustedTimestamp.getMinutes() - offset
+						)
+					} else if (unit.includes('sec')) {
+						adjustedTimestamp.setSeconds(
+							adjustedTimestamp.getSeconds() - offset
+						)
+					}
+					trackTimestamps.push(adjustedTimestamp)
+				} else {
+					console.warn(`Unrecognized timestamp format: ${timestampString}`)
+				}
 			}
 		})
 
-		console.log("Tracks Played: ")
+		// Calculate lengths for each track based on timestamp differences
+		let timeDiffs = []
+		for (let i = 1; i < trackTimestamps.length; i++) {
+			const lengthMs = trackTimestamps[i - 1] - trackTimestamps[i] // Subtract earlier from later
+			timeDiffs.push(lengthMs > 0 ? lengthMs : 0) // Ensure non-negative lengths
+		}
+		timeDiffs.unshift(null) // First track is "Still playing"
+
+		// Build the track log with lengths included
+		const trackLog = tracksPlayed.map((trackId, index) => {
+			const timestamp = trackTimestamps[index]
+			const lengthMs = timeDiffs[index]
+			return {
+				trackId,
+				timestamp: timestamp ? timestamp.toISOString() : 'N/A',
+				timePlayed: timestamps[index]?.children?.[0]?.data?.trim(),
+				length:
+					lengthMs !== null
+						? `${Math.floor(lengthMs / 60000)}:${(
+								Math.floor(lengthMs / 1000) % 60
+						  )
+								.toString()
+								.padStart(2, '0')}`
+						: 'Still playing', // First track is currently playing
+			}
+		})
+
+		console.log('Track Log: ', trackLog)
+		console.log('------------------')
+
+		console.log('Tracks Played: ')
 		console.log(tracksPlayed)
 		console.log('------------------')
-		console.log("Timestamps (example): ")
+		console.log('Timestamps (example): ')
 		console.log(timestamps[1].children[0].data.trim())
 		console.log('------------------')
 		console.log('Start Time: ')
