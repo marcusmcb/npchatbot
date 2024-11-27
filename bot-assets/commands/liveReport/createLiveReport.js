@@ -1,34 +1,25 @@
 const scrapeData = require('../liveReport/LiveReportHelpers/scrapeData')
 
 const {
-	extractPlaylistName,
-	parseDateAndTime,
-	parseStartTime,
-	createPlaylistDate,
-	formatTimeSincePlayedString,
-	calculateTimeDifference,
-	compareTimes,
-	sumTimeValues,
-	filterLongOutliers,
-	filterShortOutliers,
-	calculateAverageTime,
-	parseTimeValues,
+	extractPlaylistName,	
+	formatDateWithSuffix,
+	lengthToMs,
+	transformTimePlayed
 } = require('../liveReport/LiveReportHelpers/liveReportHelpers')
 
-const createLiveReport = async (url) => {		
+const createLiveReport = async (url) => {
 	try {
 		const playlistArtistName = extractPlaylistName(url)
 		const response = await scrapeData(url)
 		const results = response[0]
 		let timestamps = response[1]
 		const starttime = response[2]
-		const playlistdate = response[3]
-		const playlistTitle = response[4]
+		
 		let tracksPlayed = []
 		let trackTimestamps = []
 		let startTimeParsed
 
-		// Parse the start time into a Date object
+		// parse the start time into a Date object
 		if (starttime) {
 			const [time, period] = starttime.split(/(am|pm)/i)
 			const timeParts = time.split(':').map(Number)
@@ -41,7 +32,7 @@ const createLiveReport = async (url) => {
 			throw new Error('Start time is missing or invalid.')
 		}
 
-		// Calculate the set length
+		// calculate the set length
 		const now = new Date()
 		const durationMs = now - startTimeParsed
 		const hours = Math.floor(durationMs / (1000 * 60 * 60))
@@ -52,16 +43,13 @@ const createLiveReport = async (url) => {
 		for (let i = 0; i < results.length; i++) {
 			let trackId = results[i].children[0].data.trim()
 			tracksPlayed.push(trackId)
-		}
+		}		
 
-		console.log('Tracks Played: ', tracksPlayed)
-		console.log(typeof timestamps)
-
-		// Convert timestamps to an array if necessary
+		// convert timestamps to an array if necessary
 		if (!Array.isArray(timestamps)) {
 			timestamps = Array.isArray(timestamps)
 				? timestamps
-				: Object.values(timestamps) // Try converting object to an array
+				: Object.values(timestamps) // try converting object to an array
 		}
 
 		timestamps.forEach((timestampObj, index) => {
@@ -89,24 +77,25 @@ const createLiveReport = async (url) => {
 			}
 		})
 
-		// Calculate lengths for each track based on timestamp differences
+		// calculate lengths for each track based on timestamp differences
 		let timeDiffs = []
 		for (let i = 1; i < trackTimestamps.length; i++) {
-			const lengthMs = trackTimestamps[i - 1] - trackTimestamps[i] // Subtract earlier from later
-			timeDiffs.push(lengthMs > 0 ? lengthMs : 0) // Ensure non-negative lengths
+			const lengthMs = trackTimestamps[i - 1] - trackTimestamps[i]
+			timeDiffs.push(lengthMs > 0 ? lengthMs : 0) // ensure non-negative lengths
 		}
-		timeDiffs.unshift(null) // First track is "Still playing"
+		timeDiffs.unshift(null) // first track in array is the song currently playing
 
 		const trackLog = tracksPlayed.map((trackId, index) => {
 			const timestamp = trackTimestamps[index]
-			const lengthMs = timeDiffs[index]
+			const lengthMs = timeDiffs[index]			
+
 			return {
 				trackNumber: tracksPlayed.length - index,
 				trackId,
 				timestamp: timestamp ? timestamp.toISOString() : 'N/A',
-				timePlayed: timestamps[index]?.children?.[0]?.data
-					?.trim()
-					?.replace(/^0+/, ''), // Remove leading zeros
+				timePlayed: transformTimePlayed(
+					timestamps[index]?.children?.[0]?.data?.trim()?.replace(/^0+/, '')
+				), 
 				length:
 					lengthMs !== null
 						? `${Math.floor(lengthMs / 60000)}:${(
@@ -114,30 +103,30 @@ const createLiveReport = async (url) => {
 						  )
 								.toString()
 								.padStart(2, '0')}`
-						: 'Still playing', // First track is currently playing
+						: 'Still playing', // first track is currently playing
 			}
 		})
 
-		// Calculate average track length
+		// calculate average track length
 		const validLengths = trackLog
 			.filter(
 				(track) => track.length !== '0:00' && track.length !== 'Still playing'
-			) // Exclude invalid lengths
+			) // exclude invalid lengths
 			.map((track) => {
 				const [minutes, seconds] = track.length.split(':').map(Number)
-				return minutes * 60 * 1000 + seconds * 1000 // Convert to milliseconds
+				return minutes * 60 * 1000 + seconds * 1000
 			})
 
 		const averageLengthMs =
 			validLengths.reduce((sum, length) => sum + length, 0) /
-			(validLengths.length || 1) // Avoid division by zero
+			(validLengths.length || 1) // avoid division by zero
 
 		const averageTrackLength = {
 			minutes: Math.floor(averageLengthMs / 60000),
 			seconds: Math.floor((averageLengthMs % 60000) / 1000),
 		}
 
-		// Identify doubles
+		// identify when doubles have occurred
 		const doublesPlayed = []
 		for (let i = 0; i < trackLog.length - 1; i++) {
 			if (trackLog[i].trackId === trackLog[i + 1].trackId) {
@@ -148,48 +137,18 @@ const createLiveReport = async (url) => {
 			}
 		}
 
-		// Format starttime to '9:57 AM'
+		// format start time
 		if (starttime) {
 			const [time, period] = starttime.split(/(am|pm)/i)
 			starttimeFormatted = `${time.trim()} ${period.toUpperCase()}`
 		} else {
 			throw new Error('Start time is missing or invalid.')
 		}
-
-		// Get the current date
+		
 		const currentDate = new Date()
+		const playlistDate = formatDateWithSuffix(currentDate)		
 
-		// Format the date to "Tuesday, November 26th, 2024"
-		const formatDateWithSuffix = (date) => {
-			const daySuffixes = ['th', 'st', 'nd', 'rd']
-			const day = date.getDate()
-			const dayOfWeek = new Intl.DateTimeFormat('en-US', {
-				weekday: 'long',
-			}).format(date)
-			const month = new Intl.DateTimeFormat('en-US', { month: 'long' }).format(
-				date
-			)
-			const year = date.getFullYear()
-
-			// Determine the suffix (st, nd, rd, th)
-			const suffix =
-				day % 10 <= 3 && Math.floor(day / 10) !== 1
-					? daySuffixes[day % 10]
-					: 'th'
-
-			return `${dayOfWeek}, ${month} ${day}${suffix}, ${year}`
-		}
-
-		const playlistDate = formatDateWithSuffix(currentDate)
-
-		// Helper function to convert length string to milliseconds
-		const lengthToMs = (length) => {
-			if (length === '0:00' || length === 'Still playing') return Infinity // Ignore invalid lengths for shortest song
-			const [minutes, seconds] = length.split(':').map(Number)
-			return minutes * 60000 + seconds * 1000
-		}
-
-		// Find the shortest song
+		// find the shortest track from the past hour
 		const validTracks = trackLog.filter(
 			(track) => track.length !== '0:00' && track.length !== 'Still playing'
 		)
@@ -197,13 +156,13 @@ const createLiveReport = async (url) => {
 		let shortestSong = validTracks.reduce((shortest, track) => {
 			const trackLengthMs = lengthToMs(track.length)
 			return trackLengthMs < lengthToMs(shortest.length) ? track : shortest
-		}, validTracks[0] || null) // Use the first valid track or null if no valid tracks
+		}, validTracks[0] || null) // use the first valid track or null if no valid tracks
 
-		// Find the longest track
+		// find the longest track from the past hour
 		let longestSong = validTracks.reduce((longest, track) => {
 			const trackLengthMs = lengthToMs(track.length)
 			return trackLengthMs > lengthToMs(longest.length) ? track : longest
-		}, validTracks[0] || null) // Use the first valid track or null if no valid tracks
+		}, validTracks[0] || null) // use the first valid track or null if no valid tracks
 
 		const seratoLiveReport = {
 			dj_name: playlistArtistName,
@@ -236,16 +195,16 @@ const createLiveReport = async (url) => {
 
 		console.log('----------------------')
 		console.log('Serato Report: ')
-		console.log("DJ Name: ", seratoLiveReport.dj_name)
-		console.log("Start Time:", seratoLiveReport.set_start_time)
-		console.log("Set Length: ", seratoLiveReport.set_length)
-		console.log("Tracks Played: ", seratoLiveReport.total_tracks_played)
-		console.log("Avg Track Length: ", seratoLiveReport.average_track_length)
-		console.log("Doubles Played: ", seratoLiveReport.doubles_played)
-		console.log("Playlist Date: ", seratoLiveReport.playlist_date)
-		console.log("Shortest Track: ", seratoLiveReport.shortest_track)
-		console.log("Longest Track: ", seratoLiveReport.longest_track)		
-		// console.log("Track Array: ", seratoLiveReport.track_array)
+		console.log('DJ Name: ', seratoLiveReport.dj_name)
+		console.log('Start Time:', seratoLiveReport.set_start_time)
+		console.log('Set Length: ', seratoLiveReport.set_length)
+		console.log('Tracks Played: ', seratoLiveReport.total_tracks_played)
+		console.log('Avg Track Length: ', seratoLiveReport.average_track_length)
+		console.log('Doubles Played: ', seratoLiveReport.doubles_played)
+		console.log('Playlist Date: ', seratoLiveReport.playlist_date)
+		console.log('Shortest Track: ', seratoLiveReport.shortest_track)
+		console.log('Longest Track: ', seratoLiveReport.longest_track)
+		console.log('Track Array Sample: ', seratoLiveReport.track_log[10])
 		console.log('----------------------')
 		return seratoLiveReport
 	} catch (err) {
@@ -258,7 +217,3 @@ module.exports = createLiveReport
 // FUTURE DEV NOTES
 //
 // check if shortest track is part of a doubles pair
-//
-// add logic to determine longest track played @ time
-//
-// add logic to determine shortest track played @ time

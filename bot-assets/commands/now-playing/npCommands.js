@@ -1,20 +1,12 @@
 const createLiveReport = require('../liveReport/createLiveReport')
 const clearOBSResponse = require('../../../obs/obsHelpers/obsHelpers')
-const { shortestTrackCommand } = require('../stats/shortestTrack')
-const { longestTrackCommand } = require('../stats/longestTrack')
-const { doublesCommand } = require('../stats/doublesPlayed')
 const { npSongsQueried } = require('../../command-use/commandUse')
+const {	vibeCheckSelector } = require('../now-playing/npCommandHelpers/npCommandHelpers')
 
 const {
 	NO_LIVE_DATA_MESSAGE,
 	ERROR_MESSAGE,
 } = require('../../constants/constants')
-
-const {
-	parseTimeString,
-	vibeCheckSelector,
-} = require('../now-playing/npCommandHelpers/npCommandHelpers')
-const { statsCommand } = require('../stats/stats')
 
 const NP_OPTIONS =
 	'npChatbot options: !np, !np previous, !np start, !np vibecheck, !dyp (query), !np stats, !np doubles, !np shortest, !np longest'
@@ -31,7 +23,10 @@ const updateOBSWithText = (obs, text, obsClearDisplayTime, config) => {
 
 // !np test response
 const handleTest = (channel, twitchClient, tags) => {
-	twitchClient.say(channel, 'npChatbot is properly linked to your Twitch channel.')
+	twitchClient.say(
+		channel,
+		'npChatbot is properly linked to your Twitch channel.'
+	)
 }
 
 // !np options response
@@ -50,14 +45,13 @@ const handleDefault = (
 	obsClearDisplayTime,
 	config
 ) => {
-	const currentTrackPlaying =
-		reportData.track_log[reportData.track_log.length - 1]
-	const message = `Now playing: ${currentTrackPlaying.trackId}`
-	npSongsQueried.push({ name: currentTrackPlaying.trackId })
+	const currentTrackPlaying = reportData.track_log[0].trackId
+	const message = `Now playing: ${currentTrackPlaying}`
+	npSongsQueried.push({ name: currentTrackPlaying })
 	twitchClient.say(channel, message)
 	updateOBSWithText(
 		obs,
-		`Now playing:\n${currentTrackPlaying.trackId}`,
+		`Now playing:\n${currentTrackPlaying}`,
 		obsClearDisplayTime,
 		config
 	)
@@ -72,14 +66,13 @@ const handlePrevious = (
 	obsClearDisplayTime,
 	config
 ) => {
-	const previousTrackPlayed =
-		reportData.track_log[reportData.track_log.length - 2]
-	const message = `Previous song: ${previousTrackPlayed.trackId}`
-	npSongsQueried.push({ name: previousTrackPlayed.trackId })
+	const previousTrackPlayed = reportData.track_log[1].trackId
+	const message = `Previous song: ${previousTrackPlayed}`
+	npSongsQueried.push({ name: previousTrackPlayed })
 	twitchClient.say(channel, message)
 	updateOBSWithText(
 		obs,
-		`Previous song:\n${previousTrackPlayed.trackId}`,
+		`Previous song:\n${previousTrackPlayed}`,
 		obsClearDisplayTime,
 		config
 	)
@@ -95,12 +88,13 @@ const handleStart = (
 	config,
 	tags
 ) => {
-	const firstTrackPlayed = reportData.track_log[0]
-	const message = `${config.twitchChannelName} kicked off this stream with ${firstTrackPlayed.trackId}`
+	const firstTrackPlayed =
+		reportData.track_log[reportData.track_log.length - 1].trackId
+	const message = `${config.twitchChannelName} kicked off this stream with ${firstTrackPlayed}`
 	twitchClient.say(channel, message)
 	updateOBSWithText(
 		obs,
-		`${config.twitchChannelName} kicked off this stream with :\n${firstTrackPlayed.trackId}`,
+		`${config.twitchChannelName} kicked off this stream with :\n${firstTrackPlayed}`,
 		obsClearDisplayTime,
 		config
 	)
@@ -117,39 +111,14 @@ const handleVibeCheck = (
 	tags
 ) => {
 	const vibeCheckSelection = vibeCheckSelector(reportData.track_log)
-	const { hours, minutes, seconds } = parseTimeString(
-		vibeCheckSelection.timeSincePlayed
+	const message = `${config.twitchChannelName} played "${vibeCheckSelection.trackId}" ${vibeCheckSelection.timePlayed} in this stream.`
+	twitchClient.say(channel, message)
+	updateOBSWithText(
+		obs,
+		`vibe check:\n\n${config.twitchChannelName} played\n"${vibeCheckSelection.trackId}"\n${vibeCheckSelection.timePlayed} in this stream.`,
+		obsClearDisplayTime,
+		config
 	)
-	if (hours > 0) {
-		if (hours > 1) {
-			const message = `${config.twitchChannelName} played "${vibeCheckSelection.trackId}" ${hours} hours & ${minutes} minutes ago in this stream.`
-			twitchClient.say(channel, message)
-			updateOBSWithText(
-				obs,
-				`vibecheck:\n\n${config.twitchChannelName} played\n"${vibeCheckSelection.trackId}"\n${hours} hours & ${minutes} minutes ago in this stream.`,
-				obsClearDisplayTime,
-				config
-			)
-		} else {
-			const message = `${config.twitchChannelName} played "${vibeCheckSelection.trackId}" ${hours} hour & ${minutes} minutes ago in this stream.`
-			twitchClient.say(channel, message)
-			updateOBSWithText(
-				obs,
-				`vibecheck:\n\n${config.twitchChannelName} played\n"${vibeCheckSelection.trackId}"\n${hours} hour & ${minutes} minutes ago in this stream.`,
-				obsClearDisplayTime,
-				config
-			)
-		}
-	} else {
-		const message = `${config.twitchChannelName} played "${vibeCheckSelection.trackId}" ${minutes} minutes ago in this stream.`
-		twitchClient.say(channel, message)
-		updateOBSWithText(
-			obs,
-			`vibe check:\n\n${config.twitchChannelName} played\n"${vibeCheckSelection.trackId}"\n${minutes} minutes ago in this stream.`,
-			obsClearDisplayTime,
-			config
-		)
-	}
 }
 
 // !np shortest response
@@ -162,7 +131,16 @@ const handleShortest = (
 	config,
 	tags
 ) => {
-	shortestTrackCommand(channel, twitchClient, reportData, obs, config, tags)
+	const shortestTrack = reportData.shortest_track.trackId
+	const shortestTrackLength = reportData.shortest_track['length']
+	const message = `The shortest song that ${config.twitchChannelName} has played in the last hour was ${shortestTrack} (${shortestTrackLength}).`
+	twitchClient.say(channel, message)
+	updateOBSWithText(
+		obs,
+		`Shortest song played in the last hour:\n${shortestTrack}`,
+		obsClearDisplayTime,
+		config
+	)
 }
 
 // !np longest response
@@ -175,7 +153,16 @@ const handleLongest = (
 	config,
 	tags
 ) => {
-	longestTrackCommand(channel, twitchClient, reportData, obs, config, tags)
+	const longestTrack = reportData.longest_track.trackId
+	const longestTrackLength = reportData.longest_track['length']
+	const message = `The longest song that ${config.twitchChannelName} has played in the last hour was ${longestTrack} (${longestTrackLength}).`
+	twitchClient.say(channel, message)
+	updateOBSWithText(
+		obs,
+		`Longest song played in the last hour:\n${longestTrack}`,
+		obsClearDisplayTime,
+		config
+	)
 }
 
 // !np doubles response
@@ -188,9 +175,24 @@ const handleDoubles = (
 	config,
 	tags
 ) => {
-	doublesCommand(channel, twitchClient, reportData, obs, config, tags)
+	if (reportData.doubles_played.length === 0) {
+		const message = `${config.twitchChannelName} has not played doubles once during this set (yet).`
+		twitchClient.say(channel, message)
+		updateOBSWithText(obs, message, obsClearDisplayTime, config)
+	} else {
+		const timesDoublesPlayed = reportData.doubles_played.length
+		const message = `${config.twitchChannelName} has played doubles ${timesDoublesPlayed} time(s) in this set.  The last song they played doubles with was "${reportData.doubles_played[0].trackId}", ${reportData.doubles_played[0].timePlayed}.`
+		twitchClient.say(channel, message)
+		updateOBSWithText(
+			obs,
+			`${config.twitchChannelName} has played doubles ${timesDoublesPlayed} times in this set.\nThe last song they played doubles with was:\n"${reportData.doubles_played[0].trackId}"\n${reportData.doubles_played[0].timePlayed}.`,
+			obsClearDisplayTime,
+			config
+		)
+	}
 }
 
+// !np stats response
 const handleStats = (
 	channel,
 	twitchClient,
@@ -200,8 +202,19 @@ const handleStats = (
 	config,
 	tags
 ) => {
-	console.log('--------------> ', config.twitchChannelName)
-	statsCommand(channel, twitchClient, reportData, obs, config, tags)
+	const averageTrackLength =
+		reportData.average_track_length.minutes +
+		':' +
+		reportData.average_track_length.seconds
+	const totalTracksPlayed = reportData.total_tracks_played
+	const message = `${config.twitchChannelName} has played ${totalTracksPlayed} songs so far in this set with an average track length of ${averageTrackLength}.`
+	twitchClient.say(channel, message)
+	updateOBSWithText(
+		obs,
+		`Stats for ${config.twitchChannelName}:\n\nTracks Played: ${totalTracksPlayed}\nAverage Track Length: ${averageTrackLength}`,
+		obsClearDisplayTime,
+		config
+	)
 }
 
 const COMMAND_MAP = {
@@ -217,7 +230,15 @@ const COMMAND_MAP = {
 	stats: handleStats,
 }
 
-const npCommands = async (channel, tags, args, twitchClient, obs, url, config) => {
+const npCommands = async (
+	channel,
+	tags,
+	args,
+	twitchClient,
+	obs,
+	url,
+	config
+) => {
 	const obsClearDisplayTime = config.obsClearDisplayTime
 	try {
 		const handler = COMMAND_MAP[args[0]]
@@ -233,6 +254,7 @@ const npCommands = async (channel, tags, args, twitchClient, obs, url, config) =
 		}
 
 		if (handler) {
+			console.log('np Command handler: ', handler)
 			handler(
 				channel,
 				twitchClient,

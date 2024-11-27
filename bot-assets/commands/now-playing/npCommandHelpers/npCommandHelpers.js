@@ -11,27 +11,16 @@ const parseTimeString = (timeString) => {
 	return { hours, minutes, seconds }
 }
 
-const vibeCheckSelector = (tracks) => {
-	if (tracks.length <= 1) {
-		return null
+const vibeCheckSelector = (trackArray) => {
+	if (!Array.isArray(trackArray) || trackArray.length === 0) {
+		throw new Error('Invalid track array. Ensure it is a non-empty array.')
 	}
-	const lastTrack = tracks[tracks.length - 1]
-	const lastTrackTime = convertToMilliseconds(lastTrack.timePlayed)
-	const randomIndex = Math.floor(Math.random() * (tracks.length - 1))
-	const randomTrack = tracks[randomIndex]
-	const randomTrackTime = convertToMilliseconds(randomTrack.timePlayed)
-	const timeDifferenceMS = lastTrackTime - randomTrackTime
-	const timeDifference = new Date(timeDifferenceMS)
-		.toISOString()
-		.substr(11, 8)
-	return {
-		trackId: randomTrack.trackId,
-		timeSincePlayed: timeDifference,
-	}
+	const randomIndex = Math.floor(Math.random() * trackArray.length)
+	return trackArray[randomIndex]
 }
 
 module.exports = {
-  convertToMilliseconds: convertToMilliseconds,
-  parseTimeString: parseTimeString,
-  vibeCheckSelector: vibeCheckSelector
+	convertToMilliseconds: convertToMilliseconds,
+	parseTimeString: parseTimeString,
+	vibeCheckSelector: vibeCheckSelector,
 }

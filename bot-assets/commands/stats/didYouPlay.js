@@ -6,26 +6,6 @@ const {
 } = require('../../constants/constants')
 const { dypSearchTerms } = require('../../command-use/commandUse')
 
-const timeDifference = (time1, time2) => {
-	const convertToTimeDate = (timeStr) => {
-		const [time, meridian] = timeStr.split(' ')
-		const [hoursStr, minutesStr] = time.split(':')
-		let hours = parseInt(hoursStr, 10)
-		// Convert 12-hour format to 24-hour format
-		if (meridian === 'PM' && hours !== 12) {
-			hours += 12
-		} else if (meridian === 'AM' && hours === 12) {
-			hours = 0
-		}
-		const minutes = parseInt(minutesStr, 10)
-		return hours * 60 + minutes
-	}
-	const timeInMinutes1 = convertToTimeDate(time1)
-	const timeInMinutes2 = convertToTimeDate(time2)
-	const diff = Math.abs(timeInMinutes1 - timeInMinutes2)
-	return `${diff} minutes`
-}
-
 const dypCommand = async (channel, tags, args, twitchClient, obs, url, config) => {
 	const obsClearDisplayTime = config.obsClearDisplayTime
 	let searchItem = args.join(' ')
@@ -33,7 +13,7 @@ const dypCommand = async (channel, tags, args, twitchClient, obs, url, config) =
 	if (args.length === 0) {
 		twitchClient.say(
 			channel,
-			`Add an artist's name after the command to see if ${config.twitchChannelName} has played them yet in this stream.`
+			`Add an artist's name after the command to see if ${config.twitchChannelName} has played them in this stream.`
 		)
 	} else {
 		try {
@@ -47,37 +27,20 @@ const dypCommand = async (channel, tags, args, twitchClient, obs, url, config) =
 					`${config.twitchChannelName} hasn't played enough music in this stream to search just yet.`
 				)
 				return
-			} else {
-				// add logic check for trackLog length here
+			} else {						
 				let searchResults = []
-				let searchTerm = `${args}`.replaceAll(',', ' ')
-				console.log('SEARCH TERM: ', searchTerm)
-				console.log("--------------------")
+				let searchTerm = `${args}`.replaceAll(',', ' ')				
 				dypSearchTerms.push({ name: searchTerm})
-				for (let i = 0; i < reportData.track_array.length; i++) {
-					if (
-						reportData.track_array[i]
-							.toLowerCase()
-							.includes(searchTerm.toLowerCase())
-					) {
-						searchResults.push(reportData.track_array[i])
-					}
-				}
-
-				let timeStampsArray = []
-
 				for (let i = 0; i < reportData.track_log.length; i++) {
 					if (
 						reportData.track_log[i].trackId
 							.toLowerCase()
 							.includes(searchTerm.toLowerCase())
 					) {
-						timeStampsArray.push({
-							trackId: reportData.track_log[i].trackId,
-							timestamp: reportData.track_log[i].timestamp,
-						})
+						searchResults.push(reportData.track_log[i])
 					}
 				}
+				console.log("SEARCH RESULTS: ", searchResults)				
 
 				if (searchResults.length === 0) {
 					twitchClient.say(
@@ -93,55 +56,21 @@ const dypCommand = async (channel, tags, args, twitchClient, obs, url, config) =
 						})
 						clearOBSResponse(obs, obsClearDisplayTime)
 					}
-				} else {
-					console.log(timeStampsArray)
-					const lastSongPlayed = searchResults[searchResults.length - 1]
-					const queriedTrackTime = timeStampsArray[0].timestamp
-					const currentTrackTime =
-						reportData.track_log[reportData.track_log.length - 1].timestamp
-					const timeSincePlayed = timeDifference(
-						queriedTrackTime,
-						currentTrackTime
-					)
-
-					// for !dyp queries with more than one result, the command currently
-					// returns the time since played for the first result but displays
-					// the text and title for the most recent result.
-
-					// the command should display the most recent result and its time
-					// since played for queries with more than one result
-
-					if (searchResults.length === 1) {
-						// add lastSongPlayed logic check here
-						twitchClient.say(
-							channel,
-							`${config.twitchChannelName} has played '${searchItem}' ${searchResults.length} time so far in this stream. Their last song was \n${lastSongPlayed}, played ${timeSincePlayed} ago.`
-						)
-						if (config.isObsResponseEnabled === true) {
-							obs.call('SetInputSettings', {
-								inputName: 'npchatbot-response',
-								inputSettings: {
-									text: `${config.twitchChannelName} has played\n'${searchItem}' ${searchResults.length} time so far in this stream.\n\nTheir last song was: \n${lastSongPlayed} \n* played ${timeSincePlayed} ago`,
-								},
-							})
-							clearOBSResponse(obs, obsClearDisplayTime)
-						}
-					} else {
-						twitchClient.say(
-							channel,
-							`${config.twitchChannelName} has played '${searchItem}' ${searchResults.length} times so far in this stream. Their last song played was \n${lastSongPlayed}, played ${timeSincePlayed} ago.`
-						)
-						if (config.isObsResponseEnabled === true) {
-							obs.call('SetInputSettings', {
-								inputName: 'npchatbot-response',
-								inputSettings: {
-									text: `${config.twitchChannelName} has played\n'${searchItem}' ${searchResults.length} times so far in this stream.\n\nTheir last song played was: \n${lastSongPlayed} \n* played ${timeSincePlayed} ago`,
-								},
-							})
-							clearOBSResponse(obs, obsClearDisplayTime)
-						}
+				} else {					
+					const lastSongPlayed = searchResults[0].trackId
+					const lastSongPlayedTime = searchResults[0].timePlayed
+					const message = `${config.twitchChannelName} has played '${searchItem}' ${searchResults.length} times so far in this stream. Their last song played was "${lastSongPlayed}", played ${lastSongPlayedTime}.`	
+					twitchClient.say(channel, message)
+					if (config.isObsResponseEnabled === true) {
+						obs.call('SetInputSettings', {
+							inputName: 'npchatbot-response',
+							inputSettings: {
+								text: `${config.twitchChannelName} has played\n'${searchItem}' ${searchResults.length} times so far in this stream.\n\nTheir last song played was: \n${lastSongPlayed} \n* played ${lastSongPlayedTime}`,
+							},
+						})
+						clearOBSResponse(obs, obsClearDisplayTime)
 					}
-				}
+				}				
 			}
 		} catch (error) {
 			console.log('DYP command error: ', error)
