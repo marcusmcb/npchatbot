@@ -27,8 +27,7 @@ const scrapeData = async (url) => {
   } catch (error) {
     console.log(error);
     return error;
-  }
-  console.log("Timestamps: ", timestamps);
+  }  
   playlistartist = playlistartist.split(" ")[3];  
   return [
     results,
