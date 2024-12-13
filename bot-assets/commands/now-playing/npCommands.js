@@ -137,7 +137,7 @@ const handleShortest = (
 	twitchClient.say(channel, message)
 	updateOBSWithText(
 		obs,
-		`Shortest song played in the last hour:\n${shortestTrack}`,
+		`The shortest song played in the last hour was:\n\n${shortestTrack}\n(${shortestTrackLength})`,
 		obsClearDisplayTime,
 		config
 	)
@@ -159,7 +159,7 @@ const handleLongest = (
 	twitchClient.say(channel, message)
 	updateOBSWithText(
 		obs,
-		`Longest song played in the last hour:\n${longestTrack}`,
+		`The longest song played in the last hour was:\n\n${longestTrack}\n(${longestTrackLength})`,
 		obsClearDisplayTime,
 		config
 	)
@@ -185,7 +185,7 @@ const handleDoubles = (
 		twitchClient.say(channel, message)
 		updateOBSWithText(
 			obs,
-			`${config.twitchChannelName} has played doubles ${timesDoublesPlayed} times in this set.\nThe last song they played doubles with was:\n"${reportData.doubles_played[0].trackId}"\n${reportData.doubles_played[0].timePlayed}.`,
+			`${config.twitchChannelName} has played doubles ${timesDoublesPlayed} times so far in this set.\n\nThe last song they played doubles with was:\n"${reportData.doubles_played[0].trackId}"\n${reportData.doubles_played[0].timePlayed}.`,
 			obsClearDisplayTime,
 			config
 		)
@@ -211,7 +211,7 @@ const handleStats = (
 	twitchClient.say(channel, message)
 	updateOBSWithText(
 		obs,
-		`Stats for ${config.twitchChannelName}:\n\nTracks Played: ${totalTracksPlayed}\nAverage Track Length: ${averageTrackLength}`,
+		`${config.twitchChannelName} has played ${totalTracksPlayed} tracks so far\nwith an average track length of ${averageTrackLength}`,
 		obsClearDisplayTime,
 		config
 	)

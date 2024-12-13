@@ -59,7 +59,7 @@ const dypCommand = async (channel, tags, args, twitchClient, obs, url, config) =
 				} else {					
 					const lastSongPlayed = searchResults[0].trackId
 					const lastSongPlayedTime = searchResults[0].timePlayed
-					const message = `${config.twitchChannelName} has played '${searchItem}' ${searchResults.length} times so far in this stream. Their last song played was "${lastSongPlayed}", played ${lastSongPlayedTime}.`	
+					const message = `${config.twitchChannelName} has played '${searchItem}' ${searchResults.length} time(s) so far in this stream. Their last song played was "${lastSongPlayed}", played ${lastSongPlayedTime}.`	
 					twitchClient.say(channel, message)
 					if (config.isObsResponseEnabled === true) {
 						obs.call('SetInputSettings', {
