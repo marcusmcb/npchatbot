@@ -24,7 +24,7 @@ module.exports = {
 				name: 'npchatbot',
 				exe: 'npchatbot.exe',
 				setupExe: 'npchatbot-setup.exe',
-				setupIcon: './client/public/favicon/favicon.ico',
+				setupIcon: './client/public/favicon/installer-icon.ico',
 				loadingGif: './client/public/spinner.gif',
 			},
 		},

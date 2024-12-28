@@ -1,10 +1,10 @@
 const scrapeData = require('../liveReport/LiveReportHelpers/scrapeData')
 
 const {
-	extractPlaylistName,	
+	extractPlaylistName,
 	formatDateWithSuffix,
 	lengthToMs,
-	transformTimePlayed
+	transformTimePlayed,
 } = require('../liveReport/LiveReportHelpers/liveReportHelpers')
 
 const createLiveReport = async (url) => {
@@ -14,7 +14,7 @@ const createLiveReport = async (url) => {
 		const results = response[0]
 		let timestamps = response[1]
 		const starttime = response[2]
-		
+
 		let tracksPlayed = []
 		let trackTimestamps = []
 		let startTimeParsed
@@ -43,7 +43,7 @@ const createLiveReport = async (url) => {
 		for (let i = 0; i < results.length; i++) {
 			let trackId = results[i].children[0].data.trim()
 			tracksPlayed.push(trackId)
-		}		
+		}
 
 		// convert timestamps to an array if necessary
 		if (!Array.isArray(timestamps)) {
@@ -87,7 +87,7 @@ const createLiveReport = async (url) => {
 
 		const trackLog = tracksPlayed.map((trackId, index) => {
 			const timestamp = trackTimestamps[index]
-			const lengthMs = timeDiffs[index]			
+			const lengthMs = timeDiffs[index]
 
 			return {
 				trackNumber: tracksPlayed.length - index,
@@ -95,7 +95,7 @@ const createLiveReport = async (url) => {
 				timestamp: timestamp ? timestamp.toISOString() : 'N/A',
 				timePlayed: transformTimePlayed(
 					timestamps[index]?.children?.[0]?.data?.trim()?.replace(/^0+/, '')
-				), 
+				),
 				length:
 					lengthMs !== null
 						? `${Math.floor(lengthMs / 60000)}:${(
@@ -123,7 +123,10 @@ const createLiveReport = async (url) => {
 
 		const averageTrackLength = {
 			minutes: Math.floor(averageLengthMs / 60000),
-			seconds: Math.floor((averageLengthMs % 60000) / 1000),
+			seconds:
+				Math.floor((averageLengthMs % 60000) / 1000).length === 1
+					? '0' + Math.floor((averageLengthMs % 60000) / 1000)
+					: Math.floor((averageLengthMs % 60000) / 1000),
 		}
 
 		// identify when doubles have occurred
@@ -144,9 +147,9 @@ const createLiveReport = async (url) => {
 		} else {
 			throw new Error('Start time is missing or invalid.')
 		}
-		
+
 		const currentDate = new Date()
-		const playlistDate = formatDateWithSuffix(currentDate)		
+		const playlistDate = formatDateWithSuffix(currentDate)
 
 		// find the shortest track from the past hour
 		const validTracks = trackLog.filter(
