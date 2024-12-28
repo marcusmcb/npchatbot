@@ -26,9 +26,15 @@ const {
 	seratoURLValidityCheck,
 	twitchURLValidityCheck,
 } = require('./helpers/validations/validations')
+
+const {
+	validateLivePlaylist,
+} = require('./helpers/validations/validateLivePlaylist')
+
 const {
 	updateUserData,
 } = require('./helpers/updateUserParams/updateUserParams')
+
 const errorHandler = require('./helpers/errorHandler/errorHandler')
 
 const {
@@ -122,6 +128,12 @@ ipcMain.on('open-auth-url', async (event, arg) => {
 			authWindow = null
 		}
 	})
+})
+
+// ipc method to validate Serato Playlist is live
+ipcMain.on('validateLivePlaylist', async (event, arg) => {
+	const isValid = await validateLivePlaylist(arg.url)
+	event.reply('validateLivePlaylistResponse', isValid)
 })
 
 // ipc method to fetch user data on app load
