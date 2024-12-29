@@ -19,4 +19,4 @@ const validateLivePlaylist = async (url) => {
   }
 };
 
-module.exports = validateLivePlaylist
+module.exports = { validateLivePlaylist: validateLivePlaylist }

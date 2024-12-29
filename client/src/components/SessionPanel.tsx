@@ -15,13 +15,14 @@ import '../App.css'
 interface SessionPanelProps {
 	handleConnect: (event: React.MouseEvent<HTMLButtonElement>) => void
 	handleDisconnect: (event: React.MouseEvent<HTMLButtonElement>) => void	
+	validateLivePlaylist: (event: React.MouseEvent<HTMLButtonElement>) => void
 	setReportView: (value: boolean) => void
 	reportView: boolean
 	isBotConnected: boolean
 	isAuthorized: boolean
 	isConnectionReady: boolean
 	isReportReady: boolean
-	reportData: ReportData | null
+	reportData: ReportData | null	
 }
 
 const SessionPanel: React.FC<SessionPanelProps> = (props) => {
@@ -98,6 +99,9 @@ const SessionPanel: React.FC<SessionPanelProps> = (props) => {
 					}}
 				>
 					Disconnect
+				</button>
+				<button className='bot-control-button default-button' onClick={props.validateLivePlaylist}>
+					Test Serato URL
 				</button>
 				{/* {props.isReportReady && (
 					<button
