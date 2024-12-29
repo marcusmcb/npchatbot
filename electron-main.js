@@ -132,6 +132,7 @@ ipcMain.on('open-auth-url', async (event, arg) => {
 
 // ipc method to validate Serato Playlist is live
 ipcMain.on('validateLivePlaylist', async (event, arg) => {
+	console.log("VALIDATE LIVE PLAYLIST CALLED: ", arg)
 	const isValid = await validateLivePlaylist(arg.url)
 	event.reply('validateLivePlaylistResponse', isValid)
 })

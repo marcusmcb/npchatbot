@@ -207,6 +207,12 @@ const App = (): JSX.Element => {
 		return pattern.test(email)
 	}
 
+	const validateLivePlaylist = async (event: React.MouseEvent<HTMLButtonElement>) => {
+		const seratoDisplayName = formData.seratoDisplayName.replaceAll(" ", "_")
+		const livePlaylistURL = 'https://www.serato.com/playlists/' + seratoDisplayName + '/live'
+		ipcRenderer.send('validateLivePlaylist', { url: livePlaylistURL })
+	}
+
 	// handle npChatbot script connection
 	const handleConnect = async (event: React.MouseEvent<HTMLButtonElement>) => {
 		addMessageToQueue('Connecting to Twitch...')
@@ -394,6 +400,7 @@ const App = (): JSX.Element => {
 							isReportReady={isReportReady}
 							setReportView={setReportView}
 							reportView={reportView}
+							validateLivePlaylist={validateLivePlaylist}							
 						/>
 					</div>
 				)}
