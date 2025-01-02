@@ -101,7 +101,7 @@ const SessionPanel: React.FC<SessionPanelProps> = (props) => {
 					Disconnect
 				</button>
 				<button className='bot-control-button default-button' onClick={props.validateLivePlaylist}>
-					Test Serato URL
+					Test Live Playlist
 				</button>
 				{/* {props.isReportReady && (
 					<button
