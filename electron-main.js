@@ -134,7 +134,7 @@ ipcMain.on('open-auth-url', async (event, arg) => {
 ipcMain.on('validateLivePlaylist', async (event, arg) => {
 	console.log("VALIDATE LIVE PLAYLIST CALLED: ", arg)
 	const isValid = await validateLivePlaylist(arg.url)
-	event.reply('validateLivePlaylistResponse', isValid)
+	event.reply('validateLivePlaylistResponse', { isValid: isValid })
 })
 
 // ipc method to fetch user data on app load

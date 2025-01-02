@@ -7,6 +7,7 @@ import MessagePanel from './components/MessagePanel'
 import { ReportData } from './types'
 import ReportViewer from './components/ReportViewer'
 import './App.css'
+import { add } from 'cheerio/lib/api/traversing'
 
 const App = (): JSX.Element => {
 	/* INTERFACE VALUES */
@@ -54,7 +55,7 @@ const App = (): JSX.Element => {
 	const [isReportReady, setIsReportReady] = useState(false)
 	const [reportView, setReportView] = useState(false)
 	const messageTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-	const ipcRenderer = window.electron.ipcRenderer	
+	const ipcRenderer = window.electron.ipcRenderer
 
 	/* EFFECT HOOKS */
 
@@ -207,10 +208,31 @@ const App = (): JSX.Element => {
 		return pattern.test(email)
 	}
 
-	const validateLivePlaylist = async (event: React.MouseEvent<HTMLButtonElement>) => {
-		const seratoDisplayName = formData.seratoDisplayName.replaceAll(" ", "_")
-		const livePlaylistURL = 'https://www.serato.com/playlists/' + seratoDisplayName + '/live'
+	const validateLivePlaylist = async (
+		event: React.MouseEvent<HTMLButtonElement>
+	) => {
+		const seratoDisplayName = formData.seratoDisplayName.replaceAll(' ', '_')
+		const livePlaylistURL =
+			'https://www.serato.com/playlists/' + seratoDisplayName + '/live'
 		ipcRenderer.send('validateLivePlaylist', { url: livePlaylistURL })
+		ipcRenderer.once('validateLivePlaylistResponse', (response) => {
+			if (response && response.isValid) {
+				addMessageToQueue(
+					'Your Serato Live Playlist is public and ready for use with npChatbot.'
+				)
+			} else if (response && !response.isValid) {
+				addMessageToQueue(
+					'Your current Serato Live Playlist cannot be reached. Please ensure your playlist is both live and public and try again.'
+				)
+			} else if (response && response.error) {
+				console.error(response.error)
+				addMessageToQueue(response.error)
+			} else {
+				console.error(
+					'Unexpected response format from validateLivePlaylistResponse'
+				)
+			}
+		})
 	}
 
 	// handle npChatbot script connection
@@ -400,7 +422,7 @@ const App = (): JSX.Element => {
 							isReportReady={isReportReady}
 							setReportView={setReportView}
 							reportView={reportView}
-							validateLivePlaylist={validateLivePlaylist}							
+							validateLivePlaylist={validateLivePlaylist}
 						/>
 					</div>
 				)}
