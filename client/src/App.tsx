@@ -7,7 +7,6 @@ import MessagePanel from './components/MessagePanel'
 import { ReportData } from './types'
 import ReportViewer from './components/ReportViewer'
 import './App.css'
-import { add } from 'cheerio/lib/api/traversing'
 
 const App = (): JSX.Element => {
 	/* INTERFACE VALUES */
