@@ -223,7 +223,7 @@ const App = (): JSX.Element => {
 				)
 			} else if (response && !response.isValid) {
 				setError(
-					'Your current Serato Live Playlist cannot be reached. Please ensure your playlist is both live and public and try again.'
+					'Your current Serato Live Playlist cannot be reached. Please ensure your playlist is live and public and try again.'
 				)
 				setTimeout(() => {
 					setError('')

@@ -28,7 +28,7 @@ const TitleBar = ({
 				onClick={handleAuthClick}
 				disabled={isBotConnected}
 				className={
-					isAuthorized ? 'auth-button-authorized default-button' : 'auth-button-default default-button'
+					isAuthorized ? 'auth-button-authorized' : 'auth-button-default'
 				}
 			>
 				{isAuthorized ? 'Authorized' : 'Authorize'}
