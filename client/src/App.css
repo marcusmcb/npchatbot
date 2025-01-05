@@ -11,13 +11,14 @@
 	--dm-sans: 'DM Sans', sans-serif;
 }
 
-html, body {
+html,
+body {
 	margin: 0px;
 	padding: 0px;
 	height: 100%;
 }
 
-.App {	
+.App {
 	padding: 15px;
 	display: flex;
 	flex-direction: column;
@@ -26,10 +27,9 @@ html, body {
 }
 
 .app-container {
-
 	display: flex;
 	flex-direction: row;
-	color: var(--main-text-color);	
+	color: var(--main-text-color);
 }
 
 .creds-prefs-panel {
@@ -77,13 +77,16 @@ html, body {
 }
 
 .main-report-panel {
-	width: 100%;	
+	width: 100%;
 	/* height: 100vh; */
 	/* margin-top: 20px; */
 }
 
 .bot-control-button-panel {
-	margin-top: 15px;
+	display: flex;
+	flex-wrap: wrap; /* Allow buttons to wrap to the next row */
+	justify-content: center; /* Center buttons horizontally */
+	gap: 15px; /* Add spacing between buttons */
 }
 
 .button-row {
@@ -93,13 +96,14 @@ html, body {
 
 .default-button {
 	font-family: var(--fira-sans);
-	font-weight: 400;	
+	font-weight: 400;
+	width: 100%; /* Ensure buttons take the full width of their flex container */
 }
 
 .button-row button {
 	flex: 1;
 	margin: 0 5px;
-	margin-top: 20px;	
+	margin-top: 20px;
 }
 
 label {
@@ -231,7 +235,10 @@ button:disabled:hover {
 }
 
 .bot-control-button {
-	margin-right: 30px;
+	flex: 1 1 45%; /* Buttons take up 45% of the container width */
+	margin: 0; /* Remove margins to align buttons */
+	padding: 15px;
+	text-align: center; /* Center text within buttons */
 }
 
 .session-info {
@@ -288,7 +295,7 @@ button:disabled:hover {
 .error-message {
 	color: var(--error-color);
 	font-family: var(--dm-sans);
-	font-size: 20px;	
+	font-size: 20px;
 }
 
 .app-info-panel {
