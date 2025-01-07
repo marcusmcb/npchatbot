@@ -192,7 +192,7 @@ button:disabled:hover {
 }
 
 .obs-prefs-element {
-	margin-top: 15px;
+	margin-top: 15px;	
 }
 
 .report-prefs-element {
@@ -268,7 +268,7 @@ button:disabled:hover {
 	display: flex;
 	align-items: center;
 	margin-bottom: 10px;
-	cursor: pointer;
+	cursor: pointer;	
 }
 
 .toggle-field label {

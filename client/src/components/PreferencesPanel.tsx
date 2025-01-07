@@ -11,7 +11,6 @@ type PreferencesPanelProps = {
 		intervalMessageDuration: string
 		userEmailAddress: string
 	}
-
 	isObsResponseEnabled: boolean
 	setIsObsResponseEnabled: (value: boolean) => void
 	isIntervalEnabled: boolean
@@ -41,7 +40,7 @@ const PreferencesPanel: React.FC<PreferencesPanelProps> = (props) => {
 					}
 					onChange={() => {
 						props.setIsObsResponseEnabled(!props.isObsResponseEnabled)
-					}}
+					}}					
 				/>
 				<label
 					htmlFor='obsResponseToggle'
