@@ -187,12 +187,25 @@ button:disabled:hover {
 	cursor: pointer;
 }
 
+.disabled-toggle {
+	background-color: var(--disabled-color);
+	cursor: not-allowed;
+}
+
+.disabled-toggle:before {
+	background-color: #666 !important; /* A greyed-out knob for disabled toggles */
+}
+
+.greyed-out-label {
+	color: var(--disabled-color);
+}
+
 .disabled-label {
 	color: var(--disabled-color);
 }
 
 .obs-prefs-element {
-	margin-top: 15px;	
+	margin-top: 15px;
 }
 
 .report-prefs-element {
@@ -268,7 +281,7 @@ button:disabled:hover {
 	display: flex;
 	align-items: center;
 	margin-bottom: 10px;
-	cursor: pointer;	
+	cursor: pointer;
 }
 
 .toggle-field label {

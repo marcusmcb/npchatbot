@@ -3,7 +3,7 @@ import '../App.css'
 type PreferencesPanelProps = {
 	formData: {
 		twitchChannelName: string
-		twitchChatbotName: string		
+		twitchChatbotName: string
 		seratoDisplayName: string
 		obsWebsocketAddress?: string
 		obsWebsocketPassword?: string
@@ -40,11 +40,16 @@ const PreferencesPanel: React.FC<PreferencesPanelProps> = (props) => {
 					}
 					onChange={() => {
 						props.setIsObsResponseEnabled(!props.isObsResponseEnabled)
-					}}					
+					}}
+					className={props.isBotConnected ? 'disabled-toggle' : ''}
 				/>
 				<label
 					htmlFor='obsResponseToggle'
-					className={!props.isObsResponseEnabled || props.isBotConnected ? 'disabled-label' : ''}
+					className={
+						(!props.isObsResponseEnabled || props.isBotConnected
+							? 'disabled-label'
+							: '') + (props.isBotConnected ? ' greyed-out-label' : '')
+					}
 				>
 					Enable On-Screen OBS Responses
 				</label>
@@ -53,20 +58,28 @@ const PreferencesPanel: React.FC<PreferencesPanelProps> = (props) => {
 			<div className='form-field'>
 				<label
 					htmlFor='obs-clear-display-time'
-					className={!props.isObsResponseEnabled || props.isBotConnected ? 'disabled-label' : ''}
+					className={
+						!props.isObsResponseEnabled || props.isBotConnected
+							? 'disabled-label'
+							: ''
+					}
 				>
 					Display time (in seconds):
 				</label>
 
 				<input
-					className={!props.isObsResponseEnabled || props.isBotConnected ? 'pref-input disabled-label' : 'pref-input'}
+					className={
+						!props.isObsResponseEnabled || props.isBotConnected
+							? 'pref-input disabled-label'
+							: 'pref-input'
+					}
 					type='text'
 					id='obs-clear-display-time'
 					name='obsClearDisplayTime'
 					value={props.formData.obsClearDisplayTime}
 					onChange={props.handleInputChange}
 					// placeholder='enter time in seconds'
-					disabled={!props.isObsResponseEnabled }
+					disabled={!props.isObsResponseEnabled}
 				/>
 				<span
 					className={`question-icon ${
@@ -91,11 +104,16 @@ const PreferencesPanel: React.FC<PreferencesPanelProps> = (props) => {
 					id='intervalMessageToggle'
 					checked={props.isIntervalEnabled}
 					onChange={() => props.setIsIntervalEnabled(!props.isIntervalEnabled)}
+					className={props.isBotConnected ? 'disabled-toggle' : ''}
 				/>
 
 				<label
 					htmlFor='intervalMessageToggle'
-					className={!props.isIntervalEnabled || props.isBotConnected ? 'disabled-label' : ''}
+					className={
+						(!props.isIntervalEnabled || props.isBotConnected
+							? 'disabled-label'
+							: '') + (props.isBotConnected ? ' greyed-out-label' : '')
+					}
 				>
 					Enable Interval Messages
 				</label>
@@ -103,13 +121,21 @@ const PreferencesPanel: React.FC<PreferencesPanelProps> = (props) => {
 			<div className='form-field'>
 				<label
 					htmlFor='obs-interval-duration'
-					className={!props.isIntervalEnabled || props.isBotConnected ? 'disabled-label' : ''}
+					className={
+						!props.isIntervalEnabled || props.isBotConnected
+							? 'disabled-label'
+							: ''
+					}
 				>
 					Interval duration:
 				</label>
 
 				<input
-					className={!props.isIntervalEnabled || props.isBotConnected ? 'disabled-label pref-input' : 'pref-input'}
+					className={
+						!props.isIntervalEnabled || props.isBotConnected
+							? 'disabled-label pref-input'
+							: 'pref-input'
+					}
 					type='text'
 					id='obs-interval-duration'
 					name='intervalMessageDuration'
