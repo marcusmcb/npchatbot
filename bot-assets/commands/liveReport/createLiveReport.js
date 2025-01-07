@@ -124,10 +124,10 @@ const createLiveReport = async (url) => {
 		const averageTrackLength = {
 			minutes: Math.floor(averageLengthMs / 60000),
 			seconds:
-				Math.floor((averageLengthMs % 60000) / 1000).length === 1
+				Math.floor((averageLengthMs % 60000) / 1000) === 0
 					? '0' + Math.floor((averageLengthMs % 60000) / 1000)
 					: Math.floor((averageLengthMs % 60000) / 1000),
-		}
+		}		
 
 		// identify when doubles have occurred
 		const doublesPlayed = []
