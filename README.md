@@ -73,6 +73,14 @@ Save the changes and begin playing tracks in your Serato DJ software. You should
 
 NOTE: To ensure the accuracy of the analysis in several commands' responses, the Live Playlist should be started roughly the same time that your live stream does.
 
+### Testing your Serato Live Playlist's status
+
+As mentioned above, your Serato Live Playlist's status will need to be set as "public" in order for npChatbot to work properly.
+
+In the Session Controls section of the UI, you'll see a control marked "Playlist Status".  
+
+You can tap or click this button at any time to test the current status and visibility of your Serato Live Playlist.  If configured properly, you'll see a message in the UI indicating this and, if not, a message will provide guidance on how to properly configure your live playlist.  
+
 <hr>
 
 ### Chatbot Controls
@@ -81,30 +89,30 @@ Once your user credentials and preferences have been set, click "Connect" to sta
 
 With a Serato Live Playlist successfully running, you'll now be able to use all of the commands within the npChatbot app in your Twitch chat while live-streaming.
 
-When you've completed your live stream, simply click "End Session" to disconnect the npChatbot script.
+When you've completed your live stream, simply click "Disconnect" to disconnect the npChatbot script.
 
 <hr>
 
 ### Development Stack:
 
 - React/TypeScript (client UI)
-- Electron (back-end logic, API, and handlers)
+- Electron (back end logic, data API, and handlers)
 - Electron-Forge (destkop build and packaging)
-- NodeJS (chatbot scripting and playlist analysis)
+- NodeJS (chatbot scripting, web scraping, and playlist analysis)
 - Twitch API / TMI.js (app authorization & chat event listeners)
-- OBS-Websocket-JS (OBS data integration)
+- OBS-Websocket-JS (OBS text integration)
 
 <hr>
 
 ### A note on file tags:
 
-The tidier your audio file tags are, the better. However that text appears in your Serato is how it'll appear in the chat. Just a heads up.
+The cleaner your audio file tags are, the better. However the text appears in your Serato is how it'll appear in the chat. Just a heads up.
 
 <hr>
 
 ### Testing:
 
-Tested and verified working using Serato DJ Pro 3.0.2 and OBS Studio 29.0.2 (64-bit) on Windows 10/11.
+Tested and verified working using Serato DJ Pro (versions 3.0.1 -> 3.2.4) and OBS Studio (versions 29.0.2 -> 31.0.0) (64-bit) on Windows 10/11.
 
 <hr>
 
@@ -114,8 +122,16 @@ Feel free to message me with any questions regrading the app, configuration/setu
 
 <hr>
 
-#### The idea here...
+#### The big idea...
 
-To build out a set of commands for your Twitch channel that allow your viewers to directly interact with your Serato play history in real time during your live streams.
+To create and integrate a set of chat commands for your Twitch channel that allow your viewers to directly interact with your Serato play history in real time during your live streams.
 
-Marcus McBride, 2024.
+Music discovery is a key and often under-rated aspect of Twitch.  npChatbot aims to facilitate this by giving viewers a direct means to interact with a streamer's live play history.  
+
+Doing so allows viewers to directly look up any song currently playing, any song or artist previously played, along with real-time stats that are unique to each DJ stream.  
+
+The real time command use by viewers also gives DJs streaming on Twitch some insight as to what artists, songs, or genres of music their live audiences are signalling an interest in.
+
+Overall, npChatbot's purpose is to add a simple and unique layer of music discovery via chat commands within a DJ streamer's channel.
+
+Marcus McBride, 2025.
