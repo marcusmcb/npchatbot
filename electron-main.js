@@ -66,7 +66,7 @@ const PORT = process.env.PORT || 5000
 server.use(bodyParser.json())
 server.use(cors())
 
-const isDev = false
+const isDev = true
 
 process.env.NODE_ENV = isDev ? 'development' : 'production'
 
@@ -255,6 +255,8 @@ ipcMain.on('startBotScript', async (event, arg) => {
 
 	// optionally, move the entire loadConfigurations sequence into 
 	// the try/catch block above
+
+	// *** UPDATE: test the above scenario ***
 	
 	// load configurations and initialize chatbot script
 	setTimeout(() => {
