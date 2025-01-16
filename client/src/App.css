@@ -84,9 +84,9 @@ body {
 
 .bot-control-button-panel {
 	display: flex;
-	flex-wrap: wrap; /* Allow buttons to wrap to the next row */
-	justify-content: center; /* Center buttons horizontally */
-	gap: 15px; /* Add spacing between buttons */
+	flex-wrap: wrap; 
+	justify-content: center; 
+	gap: 15px; 
 }
 
 .button-row {
@@ -97,7 +97,7 @@ body {
 .default-button {
 	font-family: var(--fira-sans);
 	font-weight: 400;
-	width: 100%; /* Ensure buttons take the full width of their flex container */
+	width: 100%; 
 }
 
 .button-row button {
@@ -248,10 +248,10 @@ button:disabled:hover {
 }
 
 .bot-control-button {
-	flex: 1 1 45%; /* Buttons take up 45% of the container width */
-	margin: 0; /* Remove margins to align buttons */
+	flex: 1 1 45%; 
+	margin: 0; 
 	padding: 15px;
-	text-align: center; /* Center text within buttons */
+	text-align: center; 
 }
 
 .session-info {
