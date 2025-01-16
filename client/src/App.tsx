@@ -9,7 +9,7 @@ import ReportViewer from './components/ReportViewer'
 import './App.css'
 
 const App = (): JSX.Element => {
-	/* INTERFACE VALUES */
+	/* TYPES */
 
 	interface BotProcessResponse {
 		success: boolean
@@ -82,7 +82,7 @@ const App = (): JSX.Element => {
 		}
 	}, [])
 
-	// effect hook to initially set user id in state
+	// hook to initially set user id in state
 	// once the app has been authorized via Twitch
 	useEffect(() => {
 		const handleAuthSuccess = (response: AuthSuccess) => {
@@ -133,7 +133,7 @@ const App = (): JSX.Element => {
 		}
 	}, [])
 
-	// hook to handle user response messages in the UI
+	// hook to handle user response messages in the UI via message queue
 	useEffect(() => {
 		if (messageTimeoutRef.current) {
 			clearTimeout(messageTimeoutRef.current)

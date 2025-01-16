@@ -133,7 +133,6 @@ ipcMain.on('open-auth-url', async (event, arg) => {
 
 // ipc method to validate Serato Playlist is live
 ipcMain.on('validateLivePlaylist', async (event, arg) => {
-	console.log("VALIDATE LIVE PLAYLIST CALLED: ", arg)
 	const isValid = await validateLivePlaylist(arg.url)
 	event.reply('validateLivePlaylistResponse', { isValid: isValid })
 })
@@ -222,6 +221,7 @@ ipcMain.on('startBotScript', async (event, arg) => {
 	}
 
 	try {
+		// get a fresh access token and update the user.db file
 		const currentAccessToken = await getRefreshToken(arg.twitchRefreshToken)
 		if (currentAccessToken.status === 400) {
 			const errorResponse = {
@@ -252,6 +252,9 @@ ipcMain.on('startBotScript', async (event, arg) => {
 	// setTimeout as a stop-gap solution solves the problem but the
 	// configuration should not be called until the users.db file
 	// update with the new token returned has completed
+
+	// helper method or refactor existing code to properly await
+	// the user.db file update 
 
 	// optionally, move the entire loadConfigurations sequence into 
 	// the try/catch block above
@@ -288,7 +291,7 @@ ipcMain.on('startBotScript', async (event, arg) => {
 // ipc method to disconnect npChatbot script from Twitch
 ipcMain.on('stopBotScript', async (event, arg) => {
 	const seratoDisplayName = arg.seratoDisplayName.replaceAll(' ', '_')
-	const url = `https://serato.com/playlists/${seratoDisplayName}/10-30-2024`	
+	const url = `https://serato.com/playlists/${seratoDisplayName}/live`	
 	const reportData = await createLiveReport(url)	
 
 	const finalReportData = {
@@ -383,17 +386,18 @@ ipcMain.on('submitUserData', async (event, arg) => {
 	}
 
 	const seratoDisplayName = arg.seratoDisplayName.replaceAll(' ', '_')
-	const isValidSeratoURL = await seratoURLValidityCheck(seratoDisplayName)
-	console.log('SERATO URL VALIDITY: ', isValidSeratoURL)
+	const isValidSeratoURL = await seratoURLValidityCheck(seratoDisplayName)	
 	const isValidTwitchURL = await twitchURLValidityCheck(
 		arg.twitchChannelName,
 		token
-	)
-	console.log('TWITCH URL VALIDITY: ', isValidTwitchURL)
+	)	
 	const isValidTwitchChatbotURL = await twitchURLValidityCheck(
 		arg.twitchChatbotName,
 		token
 	)
+
+	console.log('SERATO URL VALIDITY: ', isValidSeratoURL)	
+	console.log('TWITCH URL VALIDITY: ', isValidTwitchURL)
 	console.log('TWITCH CHATBOT URL VALIDITY: ', isValidTwitchChatbotURL)
 
 	if (isValidTwitchURL && isValidTwitchChatbotURL && isValidSeratoURL) {
