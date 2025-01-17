@@ -84,9 +84,9 @@ body {
 
 .bot-control-button-panel {
 	display: flex;
-	flex-wrap: wrap; 
-	justify-content: center; 
-	gap: 15px; 
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 15px;
 }
 
 .button-row {
@@ -97,7 +97,7 @@ body {
 .default-button {
 	font-family: var(--fira-sans);
 	font-weight: 400;
-	width: 100%; 
+	width: 100%;
 }
 
 .button-row button {
@@ -196,6 +196,11 @@ button:disabled:hover {
 	background-color: #666 !important; /* A greyed-out knob for disabled toggles */
 }
 
+.greyed-out-on-connect {
+	background-color: #666 !important;
+	/* border: 2px solid var(--session-info-label-color); */
+}
+
 .greyed-out-label {
 	color: var(--disabled-color);
 }
@@ -248,10 +253,10 @@ button:disabled:hover {
 }
 
 .bot-control-button {
-	flex: 1 1 45%; 
-	margin: 0; 
+	flex: 1 1 45%;
+	margin: 0;
 	padding: 15px;
-	text-align: center; 
+	text-align: center;
 }
 
 .session-info {
