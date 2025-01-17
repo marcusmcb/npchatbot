@@ -139,7 +139,7 @@ const CredentialsPanel: React.FC<CredentialsPanelProps> = (props) => {
 
 				<div className='button-row'>
 					<button
-						className='default-button'
+						className={props.isBotConnected ? 'default-button greyed-out-on-connect' : 'default-button'}
 						disabled={props.isBotConnected || !props.isAuthorized}
 						type='submit'					
 					>

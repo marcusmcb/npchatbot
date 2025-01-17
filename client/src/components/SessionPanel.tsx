@@ -21,7 +21,7 @@ const SessionPanel: React.FC<SessionPanelProps> = (props) => {
 		setHours(0)
 		setMinutes(0)
 		setSeconds(0)
-	}	
+	}
 
 	// useEffect(() => {
 	// 	if (props.isReportReady && props.reportData) {
@@ -63,7 +63,11 @@ const SessionPanel: React.FC<SessionPanelProps> = (props) => {
 			<div className='app-form-title start-chatbot'>Chatbot Controls:</div>
 			<div className='bot-control-button-panel'>
 				<button
-					className='bot-control-button default-button'
+					className={
+						props.isBotConnected
+							? 'bot-control-button default-button greyed-out-on-connect'
+							: 'bot-control-button default-button'
+					}
 					type='submit'
 					onClick={props.handleConnect}
 					disabled={
@@ -87,7 +91,10 @@ const SessionPanel: React.FC<SessionPanelProps> = (props) => {
 				>
 					Disconnect
 				</button>
-				<button className='bot-control-button default-button' onClick={props.validateLivePlaylist}>
+				<button
+					className='bot-control-button default-button'
+					onClick={props.validateLivePlaylist}
+				>
 					Playlist Status
 				</button>
 				{/* {props.isReportReady && (
