@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
-import ReactDOM from 'react-dom'
-import { ReportData } from '../types'
-import ReportViewer from './ReportViewer'
+// import ReactDOM from 'react-dom'
+import { ReportData, SessionPanelProps } from '../types'
+// import ReportViewer from './ReportViewer'
 import '../App.css'
 
 // add logic to handle any errors returned
@@ -11,19 +11,6 @@ import '../App.css'
 // add logic to handle any disconnection
 // events after initial connection
 // in the client UI
-
-interface SessionPanelProps {
-	handleConnect: (event: React.MouseEvent<HTMLButtonElement>) => void
-	handleDisconnect: (event: React.MouseEvent<HTMLButtonElement>) => void	
-	validateLivePlaylist: (event: React.MouseEvent<HTMLButtonElement>) => void
-	setReportView: (value: boolean) => void
-	reportView: boolean
-	isBotConnected: boolean
-	isAuthorized: boolean
-	isConnectionReady: boolean
-	isReportReady: boolean
-	reportData: ReportData | null	
-}
 
 const SessionPanel: React.FC<SessionPanelProps> = (props) => {
 	const [hours, setHours] = useState(0)

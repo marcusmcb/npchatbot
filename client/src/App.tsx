@@ -4,23 +4,18 @@ import CredentialsPanel from './components/CredentialsPanel'
 import PreferencesPanel from './components/PreferencesPanel'
 import SessionPanel from './components/SessionPanel'
 import MessagePanel from './components/MessagePanel'
+import { BotProcessResponse, AuthSuccess } from './types'
 import { ReportData } from './types'
 import ReportViewer from './components/ReportViewer'
 import './App.css'
 
 const App = (): JSX.Element => {
 	/* TYPES */
-
-	interface BotProcessResponse {
-		success: boolean
-		message?: any
-		error?: string
-	}
-
-	interface AuthSuccess {
-		_id: string
-		twitchRefreshToken: string
-	}
+	
+	// interface AuthSuccess {
+	// 	_id: string
+	// 	twitchRefreshToken: string
+	// }
 
 	/* STATE VALUES */
 

@@ -1,11 +1,7 @@
 import '../App.css'
+import { TitleBarProps } from '../types'
 
 const ipcRenderer = window.electron.ipcRenderer
-
-interface TitleBarProps {
-	isAuthorized: boolean
-	isBotConnected: boolean
-}
 
 const TitleBar = ({
 	isAuthorized,
