@@ -24,14 +24,8 @@ const seratoURLValidityCheck = async (seratoDisplayName) => {
 }
 
 // helper method to validate Twitch URL
-const twitchURLValidityCheck = async (twitchDisplayName, token) => {
-	console.log('-----------------')
-	console.log('twitchDisplayName: ', twitchDisplayName)
-	console.log('token: ', token)
-	console.log('-----------------')
-
+const twitchURLValidityCheck = async (twitchDisplayName, token) => {	
 	const url = `https://api.twitch.tv/helix/users?login=${twitchDisplayName}`
-
 	try {
 		const response = await axios.get(url, {
 			headers: {

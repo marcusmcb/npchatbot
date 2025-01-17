@@ -13,7 +13,6 @@ const logToFile = require('./scripts/logger')
 const loadConfigurations = require('./config')
 const initializeBot = require('./index')
 const { npSongsQueried, dypSearchTerms } = require('./bot-assets/command-use/commandUse')
-
 const createLiveReport = require('./bot-assets/commands/liveReport/createLiveReport')
 
 const {
@@ -129,12 +128,6 @@ ipcMain.on('open-auth-url', async (event, arg) => {
 			authWindow = null
 		}
 	})
-})
-
-// ipc method to validate Serato Playlist is live
-ipcMain.on('validateLivePlaylist', async (event, arg) => {
-	const isValid = await validateLivePlaylist(arg.url)
-	event.reply('validateLivePlaylistResponse', { isValid: isValid })
 })
 
 // ipc method to fetch user data on app load
@@ -348,6 +341,12 @@ ipcMain.on('stopBotScript', async (event, arg) => {
 			error: 'ipcMain: no bot client running to disconnect',
 		})
 	}
+})
+
+// ipc method to validate Serato Playlist is live
+ipcMain.on('validateLivePlaylist', async (event, arg) => {
+	const isValid = await validateLivePlaylist(arg.url)
+	event.reply('validateLivePlaylistResponse', { isValid: isValid })
 })
 
 // ipc method to notify client when user data is udpated
