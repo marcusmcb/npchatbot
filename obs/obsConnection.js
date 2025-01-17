@@ -6,11 +6,7 @@ const connectToOBS = async (config) => {
 		const obsWebsocketAddress = 'ws://' + config.obsWebsocketAddress
 		console.log('OBS ADDY: ', obsWebsocketAddress)
 		try {
-			await obs.connect(obsWebsocketAddress, config.obsWebsocketPassword)
-			console.log('Connected to OBS')
-			// obs
-			// 	.call('GetInputList')
-			// 	.then((data) => console.log('Available Sources: ', data.inputs))
+			await obs.connect(obsWebsocketAddress, config.obsWebsocketPassword)			
 		} catch (error) {
 			console.error('Failed to connect to OBS:', error)
 			return
