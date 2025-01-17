@@ -290,34 +290,34 @@ ipcMain.on('startBotScript', async (event, arg) => {
 
 // ipc method to disconnect npChatbot script from Twitch
 ipcMain.on('stopBotScript', async (event, arg) => {
-	const seratoDisplayName = arg.seratoDisplayName.replaceAll(' ', '_')
-	const url = `https://serato.com/playlists/${seratoDisplayName}/live`	
-	const reportData = await createLiveReport(url)	
+	// const seratoDisplayName = arg.seratoDisplayName.replaceAll(' ', '_')
+	// const url = `https://serato.com/playlists/${seratoDisplayName}/live`	
+	// const reportData = await createLiveReport(url)	
 
-	const finalReportData = {
-		dj_name: reportData.dj_name,
-		set_start_time: reportData.set_start_time,
-		playlist_date: reportData.playlist_date,
-		average_track_length: reportData.average_track_length,
-		total_tracks_played: reportData.total_tracks_played,
-		set_length: reportData.set_length.length_value,
-		set_length_hours: reportData.set_length.hours,
-		set_length_minutes: reportData.set_length.minutes,
-		set_length_seconds: reportData.set_length.seconds,
-		shortest_track_name: reportData.shortest_track.name,
-		shortest_track_length: reportData.shortest_track.length_value,
-		shortest_track_minutes: reportData.shortest_track.minutes,
-		shortest_track_seconds: reportData.shortest_track.seconds,
-		longest_track_name: reportData.longest_track.name,
-		longest_track_length: reportData.longest_track.length_value,
-		longest_track_minutes: reportData.longest_track.minutes,
-		longest_track_seconds: reportData.longest_track.seconds,
-		doubles_played: reportData.doubles_played,
-		top_three_longest: reportData.top_three_longest,
-		top_three_shortest: reportData.top_three_shortest,
-		np_songs_queried: npSongsQueried,
-		dyp_search_terms: dypSearchTerms,
-	}
+	// const finalReportData = {
+	// 	dj_name: reportData.dj_name,
+	// 	set_start_time: reportData.set_start_time,
+	// 	playlist_date: reportData.playlist_date,
+	// 	average_track_length: reportData.average_track_length,
+	// 	total_tracks_played: reportData.total_tracks_played,
+	// 	set_length: reportData.set_length.length_value,
+	// 	set_length_hours: reportData.set_length.hours,
+	// 	set_length_minutes: reportData.set_length.minutes,
+	// 	set_length_seconds: reportData.set_length.seconds,
+	// 	shortest_track_name: reportData.shortest_track.name,
+	// 	shortest_track_length: reportData.shortest_track.length_value,
+	// 	shortest_track_minutes: reportData.shortest_track.minutes,
+	// 	shortest_track_seconds: reportData.shortest_track.seconds,
+	// 	longest_track_name: reportData.longest_track.name,
+	// 	longest_track_length: reportData.longest_track.length_value,
+	// 	longest_track_minutes: reportData.longest_track.minutes,
+	// 	longest_track_seconds: reportData.longest_track.seconds,
+	// 	doubles_played: reportData.doubles_played,
+	// 	top_three_longest: reportData.top_three_longest,
+	// 	top_three_shortest: reportData.top_three_shortest,
+	// 	np_songs_queried: npSongsQueried,
+	// 	dyp_search_terms: dypSearchTerms,
+	// }
 
 	if (tmiInstance) {
 		await tmiInstance.disconnect().then((data) => {			
@@ -340,7 +340,7 @@ ipcMain.on('stopBotScript', async (event, arg) => {
 		event.reply('stopBotResponse', {
 			success: true,
 			message: 'ipcMain: bot client successfully disconnected',
-			data: finalReportData,			
+			// data: finalReportData,			
 		})
 	} else {
 		event.reply('stopBotResponse', {

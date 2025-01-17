@@ -1,11 +1,6 @@
 import React, { Fragment } from 'react'
-import { ReportData } from '../types'
+import { ReportData, ReportDataProps } from '../types'
 import './styles/reportviewer.css'
-
-interface ReportDataProps {
-	reportData: ReportData | null
-	setReportView: (value: boolean) => void
-}
 
 // helper method to format the set length string
 const formatSetLength = (

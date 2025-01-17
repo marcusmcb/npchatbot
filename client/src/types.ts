@@ -1,4 +1,38 @@
-// src/types.ts
+export interface BotProcessResponse {
+  success: boolean
+  message?: any
+  error?: string
+}
+
+export interface AuthSuccess {
+  _id: string
+  twitchRefreshToken: string
+}
+
+export interface MessagePanelProps {
+	message: string
+	error: string
+	showTooltip: string | null
+}
+
+export interface TitleBarProps {
+	isAuthorized: boolean
+	isBotConnected: boolean
+}
+
+export interface SessionPanelProps {
+  handleConnect: (event: React.MouseEvent<HTMLButtonElement>) => void
+  handleDisconnect: (event: React.MouseEvent<HTMLButtonElement>) => void	
+  validateLivePlaylist: (event: React.MouseEvent<HTMLButtonElement>) => void
+  setReportView: (value: boolean) => void
+  reportView: boolean
+  isBotConnected: boolean
+  isAuthorized: boolean
+  isConnectionReady: boolean
+  isReportReady: boolean
+  reportData: ReportData | null	
+}
+
 export interface DoublePlayed {
   name: string;  
 }
@@ -44,4 +78,9 @@ export interface ReportData {
   top_three_shortest: ShortSongPlayed[]; 
   np_songs_queried: npSongQueried[];
   dyp_search_terms: dypSearchTerm[];
+}
+
+export interface ReportDataProps {
+	reportData: ReportData | null
+	setReportView: (value: boolean) => void
 }
