@@ -5,6 +5,7 @@
 	--success-color: rgb(87, 255, 104);
 	--error-color: rgb(226, 115, 115);
 	--session-info-label-color: rgb(240, 253, 155);
+	--update-color: rgb(36, 102, 97);
 	--session-info-status-color: rgb(253, 157, 155);
 	--disabled-color: #aaa;
 	--fira-sans: 'Fira Sans', sans-serif;
@@ -100,6 +101,11 @@ body {
 	width: 100%;
 }
 
+.button-modified {
+	background-color: var(--update-color);
+	color: white;
+}
+
 .button-row button {
 	flex: 1;
 	margin: 0 5px;
@@ -193,7 +199,7 @@ button:disabled:hover {
 }
 
 .disabled-toggle:before {
-	background-color: #666 !important; /* A greyed-out knob for disabled toggles */
+	background-color: #666 !important; 
 }
 
 .greyed-out-on-connect {

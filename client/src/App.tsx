@@ -11,7 +11,7 @@ import './App.css'
 
 const App = (): JSX.Element => {
 	/* TYPES */
-	
+
 	// interface AuthSuccess {
 	// 	_id: string
 	// 	twitchRefreshToken: string
@@ -50,6 +50,33 @@ const App = (): JSX.Element => {
 	const [reportView, setReportView] = useState(false)
 	const messageTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 	const ipcRenderer = window.electron.ipcRenderer
+
+	const [initialFormData, setInitialFormData] = useState(formData)
+	const [isFormModified, setIsFormModified] = useState(false)
+
+	useEffect(() => {
+		const ipcRendererInstance = window.electron?.ipcRenderer
+		if (ipcRendererInstance) {
+			ipcRendererInstance.send('getUserData', {})
+			const handleGetUserDataResponse = (response: any) => {
+				if (response && Object.keys(response.data).length > 0) {
+					setFormData(response.data)
+					setInitialFormData(response.data) // Save the initial data
+				}
+			}
+			ipcRendererInstance.once('getUserDataResponse', handleGetUserDataResponse)
+			return () => {
+				ipcRendererInstance.removeAllListeners('getUserDataResponse')
+			}
+		}
+	}, [])
+
+	useEffect(() => {
+		// Compare current formData to initialFormData
+		const isModified =
+			JSON.stringify(formData) !== JSON.stringify(initialFormData)
+		setIsFormModified(isModified)
+	}, [formData, initialFormData])
 
 	/* EFFECT HOOKS */
 
@@ -396,7 +423,9 @@ const App = (): JSX.Element => {
 								isBotConnected={isBotConnected}
 								isObsResponseEnabled={isObsResponseEnabled}
 								isAuthorized={isAuthorized}
+								isFormModified={isFormModified}
 							/>
+
 							<PreferencesPanel
 								formData={formData}
 								isObsResponseEnabled={isObsResponseEnabled}
