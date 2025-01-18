@@ -15,7 +15,8 @@ type CredentialsPanelProps = {
 	handleSubmit: (event: React.FormEvent<HTMLFormElement>) => void
 	isBotConnected: boolean
 	isObsResponseEnabled: boolean
-	isAuthorized: boolean	
+	isAuthorized: boolean
+	isFormModified: boolean
 }
 
 type FieldConfig = {
@@ -75,7 +76,7 @@ const InputField: React.FC<{
 	setShowTooltip,
 	hideSensitiveFields,
 	isObsResponseEnabled,
-	isBotConnected
+	isBotConnected,
 }) => (
 	<div className='form-field'>
 		<label htmlFor={fieldConfig.id}>{fieldConfig.label}</label>
@@ -93,9 +94,10 @@ const InputField: React.FC<{
 			onChange={handleInputChange}
 			placeholder={fieldConfig.placeholder}
 			className={
-				!isObsResponseEnabled &&
-				(fieldConfig.name === 'obsWebsocketAddress' ||
-					fieldConfig.name === 'obsWebsocketPassword') || isBotConnected
+				(!isObsResponseEnabled &&
+					(fieldConfig.name === 'obsWebsocketAddress' ||
+						fieldConfig.name === 'obsWebsocketPassword')) ||
+				isBotConnected
 					? 'muted-input'
 					: ''
 			}
@@ -139,9 +141,11 @@ const CredentialsPanel: React.FC<CredentialsPanelProps> = (props) => {
 
 				<div className='button-row'>
 					<button
-						className={props.isBotConnected ? 'default-button greyed-out-on-connect' : 'default-button'}
+						className={`default-button ${
+							props.isFormModified ? 'button-modified' : ''
+						}`}
 						disabled={props.isBotConnected || !props.isAuthorized}
-						type='submit'					
+						type='submit'
 					>
 						Update
 					</button>
