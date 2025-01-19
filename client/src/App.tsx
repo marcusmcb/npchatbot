@@ -54,14 +54,30 @@ const App = (): JSX.Element => {
 	const [initialFormData, setInitialFormData] = useState(formData)
 	const [isFormModified, setIsFormModified] = useState(false)
 
+	const [initialPreferences, setInitialPreferences] = useState({
+		isObsResponseEnabled,
+		isIntervalEnabled,
+		isReportEnabled,
+		obsClearDisplayTime: formData.obsClearDisplayTime,
+		intervalMessageDuration: formData.intervalMessageDuration,
+	})
+
 	useEffect(() => {
+		// Load initial preferences state along with formData
 		const ipcRendererInstance = window.electron?.ipcRenderer
 		if (ipcRendererInstance) {
 			ipcRendererInstance.send('getUserData', {})
 			const handleGetUserDataResponse = (response: any) => {
 				if (response && Object.keys(response.data).length > 0) {
 					setFormData(response.data)
-					setInitialFormData(response.data) // Save the initial data
+					setInitialFormData(response.data) // Save the initial form data
+					setInitialPreferences({
+						isObsResponseEnabled: response.data.isObsResponseEnabled,
+						isIntervalEnabled: response.data.isIntervalEnabled,
+						isReportEnabled: response.data.isReportEnabled,
+						obsClearDisplayTime: response.data.obsClearDisplayTime,
+						intervalMessageDuration: response.data.intervalMessageDuration,
+					})
 				}
 			}
 			ipcRendererInstance.once('getUserDataResponse', handleGetUserDataResponse)
@@ -72,11 +88,27 @@ const App = (): JSX.Element => {
 	}, [])
 
 	useEffect(() => {
-		// Compare current formData to initialFormData
-		const isModified =
+		// Compare current preferences and formData to their initial states
+		const preferencesModified =
+			isObsResponseEnabled !== initialPreferences.isObsResponseEnabled ||
+			isIntervalEnabled !== initialPreferences.isIntervalEnabled ||
+			isReportEnabled !== initialPreferences.isReportEnabled ||
+			formData.obsClearDisplayTime !== initialPreferences.obsClearDisplayTime ||
+			formData.intervalMessageDuration !==
+				initialPreferences.intervalMessageDuration
+
+		const formModified =
 			JSON.stringify(formData) !== JSON.stringify(initialFormData)
-		setIsFormModified(isModified)
-	}, [formData, initialFormData])
+
+		setIsFormModified(preferencesModified || formModified)
+	}, [
+		formData,
+		initialFormData,
+		isObsResponseEnabled,
+		isIntervalEnabled,
+		isReportEnabled,
+		initialPreferences,
+	])
 
 	/* EFFECT HOOKS */
 
@@ -425,7 +457,6 @@ const App = (): JSX.Element => {
 								isAuthorized={isAuthorized}
 								isFormModified={isFormModified}
 							/>
-
 							<PreferencesPanel
 								formData={formData}
 								isObsResponseEnabled={isObsResponseEnabled}
