@@ -400,6 +400,15 @@ const App = (): JSX.Element => {
 			if (response && response.success) {
 				addMessageToQueue(response.message)
 				setFormData(response.data)
+				setInitialFormData(response.data)
+				setInitialPreferences({
+					isObsResponseEnabled: response.data.isObsResponseEnabled,
+					isIntervalEnabled: response.data.isIntervalEnabled,
+					isReportEnabled: response.data.isReportEnabled,
+					obsClearDisplayTime: response.data.obsClearDisplayTime,
+					intervalMessageDuration: response.data.intervalMessageDuration,
+				})
+				setIsFormModified(false)
 				setIsConnectionReady(true)
 			} else if (response && response.error) {
 				console.log('Update error: ', response.error)
