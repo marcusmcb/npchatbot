@@ -20,6 +20,31 @@ export interface TitleBarProps {
 	isBotConnected: boolean
 }
 
+export type CredentialsFieldConfig = {
+	id: string
+	label: string
+	name: keyof CredentialsPanelProps['formData']
+	placeholder?: string
+}
+
+export type CredentialsPanelProps = {
+	formData: {
+		twitchChannelName: string
+		twitchChatbotName: string
+		seratoDisplayName: string
+		obsWebsocketAddress?: string
+		obsWebsocketPassword?: string
+	}
+	handleInputChange: (event: React.ChangeEvent<HTMLInputElement>) => void
+	showTooltip: string | null
+	setShowTooltip: (value: string | null) => void
+	handleSubmit: (event: React.FormEvent<HTMLFormElement>) => void
+	isBotConnected: boolean
+	isObsResponseEnabled: boolean
+	isAuthorized: boolean
+	isFormModified: boolean
+}
+
 export interface SessionPanelProps {
   handleConnect: (event: React.MouseEvent<HTMLButtonElement>) => void
   handleDisconnect: (event: React.MouseEvent<HTMLButtonElement>) => void	

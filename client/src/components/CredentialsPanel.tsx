@@ -1,32 +1,8 @@
 import '../App.css'
 import React from 'react'
+import { CredentialsPanelProps, CredentialsFieldConfig } from '../types'
 
-type CredentialsPanelProps = {
-	formData: {
-		twitchChannelName: string
-		twitchChatbotName: string
-		seratoDisplayName: string
-		obsWebsocketAddress?: string
-		obsWebsocketPassword?: string
-	}
-	handleInputChange: (event: React.ChangeEvent<HTMLInputElement>) => void
-	showTooltip: string | null
-	setShowTooltip: (value: string | null) => void
-	handleSubmit: (event: React.FormEvent<HTMLFormElement>) => void
-	isBotConnected: boolean
-	isObsResponseEnabled: boolean
-	isAuthorized: boolean
-	isFormModified: boolean
-}
-
-type FieldConfig = {
-	id: string
-	label: string
-	name: keyof CredentialsPanelProps['formData']
-	placeholder?: string
-}
-
-const fieldsConfig: FieldConfig[] = [
+const fieldsConfig: CredentialsFieldConfig[] = [
 	{
 		id: 'twitch-channel-name',
 		label: 'Twitch© Channel Name:',
@@ -60,7 +36,7 @@ const fieldsConfig: FieldConfig[] = [
 ]
 
 const InputField: React.FC<{
-	fieldConfig: FieldConfig
+	fieldConfig: CredentialsFieldConfig
 	value: string | undefined
 	handleInputChange: (event: React.ChangeEvent<HTMLInputElement>) => void
 	showTooltip: string | null
