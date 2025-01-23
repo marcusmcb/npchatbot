@@ -3,11 +3,7 @@ import { ReportData, ReportDataProps } from '../types'
 import './styles/reportviewer.css'
 
 // helper method to format the set length string
-const formatSetLength = (
-	hours: number,
-	minutes: number,
-	seconds: number
-): string => {
+const formatSetLength = (hours: number, minutes: number): string => {
 	const parts: string[] = []
 	if (hours > 0) {
 		parts.push(`${hours} hour${hours > 1 ? 's' : ''}`)
@@ -15,9 +11,7 @@ const formatSetLength = (
 	if (minutes > 0) {
 		parts.push(`${minutes} minute${minutes > 1 ? 's' : ''}`)
 	}
-	if (seconds > 0) {
-		parts.push(`${seconds} second${seconds > 1 ? 's' : ''}`)
-	}
+
 	return parts.length > 0 ? parts.join(', ') : '0 seconds'
 }
 
@@ -28,8 +22,7 @@ const ReportViewer: React.FC<ReportDataProps> = ({
 	const formattedSetLength = reportData
 		? formatSetLength(
 				reportData.set_length_hours,
-				reportData.set_length_minutes,
-				reportData.set_length_seconds
+				reportData.set_length_minutes
 		  )
 		: ''
 
@@ -44,32 +37,30 @@ const ReportViewer: React.FC<ReportDataProps> = ({
 					</div>
 					<div className='report-subtitle'>{reportData?.playlist_date}</div>
 					<div className='report-panel-item-row'>
+						<div className='report-panel-item'>Set Start Time:</div>
 						<div className='report-panel-item'>
-							You began this DJ set at{' '}
-							<span className='foo'>{reportData?.set_start_time}</span>.
+							<span className='foo'>{reportData?.set_start_time}</span>
 						</div>
 					</div>
 					<div className='report-panel-item-row'>
+						<div className='report-panel-item'>Set Length:</div>
 						<div className='report-panel-item'>
-							Your DJ set was <span className='foo'>{formattedSetLength}</span>{' '}
-							in length.
+							<span className='foo'>{formattedSetLength}</span>
 						</div>
 					</div>
 					<div className='report-panel-item-row'>
+						<div className='report-panel-item'>Total Tracks Played:</div>
 						<div className='report-panel-item'>
-							You played a total of{' '}
-							<span className='foo'>{reportData?.total_tracks_played}</span>{' '}
-							tracks in this set.
+							<span className='foo'>{reportData?.total_tracks_played}</span>
 						</div>
 					</div>
 					<div className='report-panel-item-row'>
+						<div className='report-panel-item'>Average Track Length:</div>
 						<div className='report-panel-item'>
-							The average track length was{' '}
 							<span className='foo'>
-								{reportData?.average_track_length_minutes} minutes,{' '} 
-								{reportData?.average_track_length_seconds} seconds 
-							</span>{' '}
-							during this set.
+								{reportData?.average_track_length_minutes} minutes,{' '}
+								{reportData?.average_track_length_seconds} seconds
+							</span>
 						</div>
 					</div>
 					<hr
