@@ -26,9 +26,11 @@
 	margin-bottom: 20px;
 }
 
-/* .report-close-button {
+.report-close-button {
 	margin-top: 5px;
-} */
+	width: 15%;
+	margin-left: 10px;
+}
 
 .report-panel {
 	display: flex;
@@ -45,6 +47,7 @@
 .report-panel-right {
 	flex: 1; /* Take up equal available width */
 	text-align: left; /* Ensure left alignment */
+	padding: 0px 10px;
 }
 
 .report-panel-right {

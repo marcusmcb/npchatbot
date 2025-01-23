@@ -65,8 +65,11 @@ const ReportViewer: React.FC<ReportDataProps> = ({
 					<div className='report-panel-item-row'>
 						<div className='report-panel-item'>
 							The average track length was{' '}
-							<span className='foo'>{reportData?.average_track_length}</span>{' '}
-							for this set.
+							<span className='foo'>
+								{reportData?.average_track_length_minutes} minutes,{' '} 
+								{reportData?.average_track_length_seconds} seconds 
+							</span>{' '}
+							during this set.
 						</div>
 					</div>
 					<hr
@@ -78,7 +81,7 @@ const ReportViewer: React.FC<ReportDataProps> = ({
 					/>
 					<div className='report-panel-group-left'>
 						<div className='report-panel-group'>
-							<div className='report-panel-item-header'>
+							{/* <div className='reportpanel-item-header'>
 								Longest Song Played:{' '}
 							</div>
 							<div className='report-panel-item-detail'>
@@ -86,7 +89,7 @@ const ReportViewer: React.FC<ReportDataProps> = ({
 								<span className='report-panel-item-detail-caption'>
 									({reportData?.longest_track_length})
 								</span>
-							</div>
+							</div> */}
 							{/* <div>
 							{reportData?.top_three_longest.map((longest, index) => (
 								<div key={index}>
@@ -99,7 +102,7 @@ const ReportViewer: React.FC<ReportDataProps> = ({
 								</div>
 							))}
 						</div> */}
-						</div>
+							{/* </div>
 						<div className='report-panel-group'>
 							<div className='report-panel-item-header'>
 								Shortest Song Played:{' '}
@@ -109,7 +112,7 @@ const ReportViewer: React.FC<ReportDataProps> = ({
 								<span className='report-panel-item-detail-caption'>
 									({reportData?.shortest_track_length})
 								</span>
-							</div>
+							</div> */}
 							{/* <div>
 							{reportData?.top_three_shortest.map((shortest, index) => (
 								<div key={index}>
@@ -189,7 +192,7 @@ const ReportViewer: React.FC<ReportDataProps> = ({
 						) : (
 							<>
 								<div className='report-panel-item-header'>
-								Terms searched:{' '}
+									Terms searched:{' '}
 									<span className='doubles-length'>
 										{reportData?.dyp_search_terms.length}
 									</span>
