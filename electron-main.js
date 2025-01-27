@@ -14,6 +14,7 @@ const loadConfigurations = require('./config')
 const initializeBot = require('./index')
 const { npSongsQueried, dypSearchTerms } = require('./bot-assets/command-use/commandUse')
 const createLiveReport = require('./bot-assets/commands/liveReport/createLiveReport')
+const generateSpotifyPlaylistLink = require('./bot-assets/post-stream-report/generateSpotifyPlaylistLink')
 
 const {
 	getRefreshToken,
@@ -65,7 +66,7 @@ const PORT = process.env.PORT || 5000
 server.use(bodyParser.json())
 server.use(cors())
 
-const isDev = true
+const isDev = false
 
 process.env.NODE_ENV = isDev ? 'development' : 'production'
 
@@ -283,9 +284,13 @@ ipcMain.on('startBotScript', async (event, arg) => {
 
 // ipc method to disconnect npChatbot script from Twitch
 ipcMain.on('stopBotScript', async (event, arg) => {
-	// const seratoDisplayName = arg.seratoDisplayName.replaceAll(' ', '_')
-	// const url = `https://serato.com/playlists/${seratoDisplayName}/live`	
-	// const reportData = await createLiveReport(url)	
+	const seratoDisplayName = arg.seratoDisplayName.replaceAll(' ', '_')
+	const url = `https://serato.com/playlists/${seratoDisplayName}/live`	
+	const reportData = await createLiveReport(url)
+	const spotifyPlaylistLink = generateSpotifyPlaylistLink(reportData)
+	// console.log('REPORT DATA: ')
+	// console.log(reportData)
+	// console.log('--------------------------------------')
 
 	// const finalReportData = {
 	// 	dj_name: reportData.dj_name,
