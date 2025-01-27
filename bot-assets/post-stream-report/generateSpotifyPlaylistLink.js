@@ -1,10 +1,35 @@
 const dotenv = require('dotenv')
 const axios = require('axios')
+
 dotenv.config()
 
 const refreshToken = process.env.SPOTIFY_REFRESH_TOKEN
 const clientId = process.env.SPOTIFY_CLIENT_ID
 const clientSecret = process.env.SPOTIFY_CLIENT_SECRET
+const spotifyUserId = process.env.SPOTIFY_USER_ID
+
+const getCurrentDate = () => {
+	const date = new Date()
+	const options = { weekday: 'long', month: 'long', day: 'numeric' }
+
+	// format the date using Intl.DateTimeFormat
+	let formattedDate = new Intl.DateTimeFormat('en-US', options).format(date)
+
+	// add the appropriate suffix to the day (e.g., "st", "nd", "rd", "th")
+	const day = date.getDate()
+	const suffix =
+		day % 10 === 1 && day !== 11
+			? 'st'
+			: day % 10 === 2 && day !== 12
+			? 'nd'
+			: day % 10 === 3 && day !== 13
+			? 'rd'
+			: 'th'
+
+	// replace the numeric day in the formatted string with the day + suffix
+	formattedDate = formattedDate.replace(/\d+/, `${day}${suffix}`)
+	return formattedDate
+}
 
 const cleanSongTitle = (title) => {
 	return title.replace(/\s*[\(\[].*?[\)\]]/g, '').trim()
@@ -35,10 +60,13 @@ const getAccessToken = async () => {
 }
 
 const getSpotifySongData = async (accessToken, songsPlayed) => {
-	const cleanedSongs = songsPlayed.map(cleanSongTitle)
+	const cleanedSongs = songsPlayed.map(song => cleanSongTitle(song))
+  console.log("SONGS PLAYED: ")
+  console.log(songsPlayed)
+	console.log('-------------------')
 	console.log('SONG QUERIED: ')
 	console.log(cleanedSongs[0])
-	console.log('-------------------')
+  console.log('-------------------')
 	try {
 		const response = await axios.get(
 			`https://api.spotify.com/v1/search?q=${encodeURIComponent(
@@ -55,6 +83,40 @@ const getSpotifySongData = async (accessToken, songsPlayed) => {
 	} catch (error) {
 		console.error('Error getting song data:', error.response.data)
 	}
+}
+
+const createNewPlaylist = async (accessToken, spotifyUserId) => {
+	const playlistName = `Twitch Stream Playlist - ${getCurrentDate()} `
+	try {
+		const response = await axios.post(
+			`https://api.spotify.com/v1/users/${spotifyUserId}/playlists`,
+			{
+				name: playlistName,
+				description: 'A playlist free of restricted artists',
+				public: true,
+			},
+			{
+				headers: {
+					Authorization: `Bearer ${accessToken}`,
+					'Content-Type': 'application/json',
+				},
+			}
+		)
+		if (response.data.id) {
+			console.log('New playlist created successfully!')
+		}
+		return response.data.id
+	} catch (error) {
+		console.error('Error creating new playlist:', error)
+	}
+}
+
+const addTracksToSpotifyPlaylist = async (
+	accessToken,
+	playlistId,
+	trackUris
+) => {
+
 }
 
 const generateSpotifyPlaylistLink = async (reportData) => {
