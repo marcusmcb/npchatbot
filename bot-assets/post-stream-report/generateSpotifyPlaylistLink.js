@@ -61,46 +61,64 @@ const getAccessToken = async () => {
 
 const getSpotifySongData = async (accessToken, songsPlayed) => {
 	const cleanedSongs = songsPlayed.map((song) => cleanSongTitle(song))
-	console.log('SONGS PLAYED: ')
-	console.log(songsPlayed)
+	console.log('SONGS PLAYED: ', songsPlayed)
 	console.log('-------------------')
-	console.log('SONG QUERIED: ')
-	console.log(cleanedSongs[0])
+	console.log('CLEANED SONGS: ', cleanedSongs)
 	console.log('-------------------')
-	try {
-		const response = await axios.get(
-			`https://api.spotify.com/v1/search?q=${encodeURIComponent(
-				cleanedSongs[0]
-			)}&type=track&limit=10`,
-			{
-				headers: {
-					Authorization: `Bearer ${accessToken}`,
-					'Content-Type': 'application/json',
-				},
+
+	// Array to store the most popular track from each API call
+	const playlistTracks = []
+
+	// Function to introduce a delay
+	const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+
+	for (let song of cleanedSongs) {
+		try {
+			// Make the API call for the current song
+			const response = await axios.get(
+				`https://api.spotify.com/v1/search?q=${encodeURIComponent(
+					song
+				)}&type=track&limit=10`,
+				{
+					headers: {
+						Authorization: `Bearer ${accessToken}`,
+						'Content-Type': 'application/json',
+					},
+				}
+			)
+
+			console.log(`SONG DATA for "${song}": `, response.data.tracks.items)
+
+			// Find the track with the highest popularity
+			let mostPopularTrack = null
+			let highestPopularity = -1
+
+			for (let track of response.data.tracks.items) {
+				if (track.popularity > highestPopularity) {
+					mostPopularTrack = track
+					highestPopularity = track.popularity
+				}
 			}
-		)
-		console.log('SONG DATA: ', response.data.tracks.items)
 
-		// Find the track with the highest popularity
-		let mostPopularTrack = null
-		let highestPopularity = -1
-
-		for (let i = 0; i < response.data.tracks.items.length; i++) {
-			const track = response.data.tracks.items[i]
-			if (track.popularity > highestPopularity) {
-				mostPopularTrack = track
-				highestPopularity = track.popularity
+			if (mostPopularTrack) {
+				console.log(`MOST POPULAR TRACK for "${song}": `, mostPopularTrack)
+				playlistTracks.push(mostPopularTrack)
+			} else {
+				console.log(`No tracks found for "${song}".`)
 			}
-		}
 
-		if (mostPopularTrack) {
-			console.log('MOST POPULAR TRACK: ', mostPopularTrack)
-		} else {
-			console.log('No tracks found.')
+			// Delay for 100 ms before the next API call
+			await delay(100)
+		} catch (error) {
+			console.error(
+				`Error getting song data for "${song}":`,
+				error.response?.data || error.message
+			)
 		}
-	} catch (error) {
-		console.error('Error getting song data:', error.response.data)
 	}
+
+	console.log('FINAL PLAYLIST TRACKS: ', playlistTracks)
+	return playlistTracks
 }
 
 const createNewPlaylist = async (accessToken, spotifyUserId) => {
