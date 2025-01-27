@@ -60,13 +60,13 @@ const getAccessToken = async () => {
 }
 
 const getSpotifySongData = async (accessToken, songsPlayed) => {
-	const cleanedSongs = songsPlayed.map(song => cleanSongTitle(song))
-  console.log("SONGS PLAYED: ")
-  console.log(songsPlayed)
+	const cleanedSongs = songsPlayed.map((song) => cleanSongTitle(song))
+	console.log('SONGS PLAYED: ')
+	console.log(songsPlayed)
 	console.log('-------------------')
 	console.log('SONG QUERIED: ')
 	console.log(cleanedSongs[0])
-  console.log('-------------------')
+	console.log('-------------------')
 	try {
 		const response = await axios.get(
 			`https://api.spotify.com/v1/search?q=${encodeURIComponent(
@@ -79,7 +79,25 @@ const getSpotifySongData = async (accessToken, songsPlayed) => {
 				},
 			}
 		)
-		console.log('SONG DATA: ', response.data.tracks.items[0])
+		console.log('SONG DATA: ', response.data.tracks.items)
+
+		// Find the track with the highest popularity
+		let mostPopularTrack = null
+		let highestPopularity = -1
+
+		for (let i = 0; i < response.data.tracks.items.length; i++) {
+			const track = response.data.tracks.items[i]
+			if (track.popularity > highestPopularity) {
+				mostPopularTrack = track
+				highestPopularity = track.popularity
+			}
+		}
+
+		if (mostPopularTrack) {
+			console.log('MOST POPULAR TRACK: ', mostPopularTrack)
+		} else {
+			console.log('No tracks found.')
+		}
 	} catch (error) {
 		console.error('Error getting song data:', error.response.data)
 	}
@@ -115,9 +133,7 @@ const addTracksToSpotifyPlaylist = async (
 	accessToken,
 	playlistId,
 	trackUris
-) => {
-
-}
+) => {}
 
 const generateSpotifyPlaylistLink = async (reportData) => {
 	const accessToken = await getAccessToken()
