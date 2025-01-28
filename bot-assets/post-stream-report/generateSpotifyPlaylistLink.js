@@ -64,17 +64,14 @@ const getSpotifySongData = async (accessToken, songsPlayed) => {
 	console.log('SONGS PLAYED: ', songsPlayed)
 	console.log('-------------------')
 	console.log('CLEANED SONGS: ')
-	console.log('-------------------')
-
-	// Array to store the most popular track from each API call
+	console.log('-------------------')	
 	const playlistTracks = []
+	const trackUris = []
 
-	// Function to introduce a delay
 	const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
 	for (let song of cleanedSongs) {
-		try {
-			// Make the API call for the current song
+		try {			
 			const response = await axios.get(
 				`https://api.spotify.com/v1/search?q=${encodeURIComponent(
 					song
@@ -86,30 +83,38 @@ const getSpotifySongData = async (accessToken, songsPlayed) => {
 					},
 				}
 			)
-
 			// find the track with the highest Spotify popularity value
 			let mostPopularTrack = null
 			let highestPopularity = -1
 
 			for (let track of response.data.tracks.items) {
 				if (track.popularity > highestPopularity) {
-					mostPopularTrack = track					
+					mostPopularTrack = track
 					highestPopularity = track.popularity
 				}
 			}
 
-			if (mostPopularTrack) {
+			if (mostPopularTrack) {		
+				// console.log(`Spotify Result for "${song}": `)
+				// console.log('')
+				// console.log(mostPopularTrack.name)
+				// console.log("***************************")		
 				const mostPopularSpotifyResult = {
 					song: song,
+					spotifyArtist: mostPopularTrack.artists[0].name,
+					spotifyTitle: mostPopularTrack.name,
 					spotifyUri: mostPopularTrack.external_urls.spotify,
 					spotifyTrackId: mostPopularTrack.id,
 					uri: mostPopularTrack.uri,
+					type: mostPopularTrack.type,
 				}
 				playlistTracks.push(mostPopularSpotifyResult)
+				trackUris.push(mostPopularTrack.uri)
 				console.log(
 					`MOST POPULAR TRACK for "${song}": `,
 					mostPopularSpotifyResult
 				)
+				// console.log(`Song Added: ${song}`)
 				console.log('-------------------')
 			} else {
 				console.log(`No tracks found for "${song}".`)
@@ -125,8 +130,9 @@ const getSpotifySongData = async (accessToken, songsPlayed) => {
 		}
 	}
 
-	console.log('FINAL PLAYLIST TRACKS: ', playlistTracks.length)
-	return playlistTracks
+	console.log('FINAL PLAYLIST TRACKS: ', playlistTracks)
+	// return playlistTracks
+	return trackUris
 }
 
 /* 
@@ -164,7 +170,38 @@ const addTracksToSpotifyPlaylist = async (
 	accessToken,
 	playlistId,
 	trackUris
-) => {}
+) => {
+	console.log('-------------------')
+	console.log('PLAYLIST ID: ', playlistId)
+	console.log('TRACK URIS: ', trackUris)
+	console.log('-------------------')	
+	const batchSize = 100
+	for (let i = 0; i < trackUris.length; i += batchSize) {
+		const batch = trackUris.slice(i, i + batchSize) 
+		try {
+			await axios.post(
+				`https://api.spotify.com/v1/playlists/${playlistId}/tracks`,
+				{
+					uris: batch, 
+				},
+				{
+					headers: {
+						Authorization: `Bearer ${accessToken}`,
+						'Content-Type': 'application/json',
+					},
+				}
+			)
+			console.log(`Batch added to playlist successfully: ${batch}`)
+		} catch (error) {
+			console.error(
+				`Error adding batch to playlist:`,
+				error.response?.data || error.message
+			)
+			return
+		}		
+		await new Promise((resolve) => setTimeout(resolve, 1000))
+	}
+}
 
 const generateSpotifyPlaylistLink = async (reportData) => {
 	const accessToken = await getAccessToken()
@@ -172,8 +209,9 @@ const generateSpotifyPlaylistLink = async (reportData) => {
 	reportData.track_log.forEach((track) => {
 		songsPlayed.push(track.trackId)
 	})
-	const spotifySongs = await getSpotifySongData(accessToken, songsPlayed)	
-	const newSpotifyPlaylist = await createNewPlaylist(accessToken, spotifyUserId)
+	const spotifySongUris = await getSpotifySongData(accessToken, songsPlayed)
+	const playlistId = await createNewPlaylist(accessToken, spotifyUserId)
+	await addTracksToSpotifyPlaylist(accessToken, playlistId, spotifySongUris)
 }
 
 module.exports = generateSpotifyPlaylistLink
