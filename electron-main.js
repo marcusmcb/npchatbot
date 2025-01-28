@@ -12,7 +12,10 @@ const { URL } = require('url')
 const logToFile = require('./scripts/logger')
 const loadConfigurations = require('./config')
 const initializeBot = require('./index')
-const { npSongsQueried, dypSearchTerms } = require('./bot-assets/command-use/commandUse')
+const {
+	npSongsQueried,
+	dypSearchTerms,
+} = require('./bot-assets/command-use/commandUse')
 const createLiveReport = require('./bot-assets/commands/liveReport/createLiveReport')
 const generateSpotifyPlaylistLink = require('./bot-assets/post-stream-report/generateSpotifyPlaylistLink')
 
@@ -57,6 +60,7 @@ let mainWindow
 let tmiInstance
 let serverInstance
 let authWindow
+let spotifyAuthWindow
 let authCode
 let authError
 let botProcess = false
@@ -76,6 +80,60 @@ const wss = new WebSocket.Server({ port: 8080 })
 
 server.get('/', (req, res) => {
 	res.send('NPChatbot is up and running')
+})
+
+
+// future workflow and handlers for Spotify app authorization process
+ipcMain.on('open-spotify-url', async (event, arg) => {
+	const spotifyClientId = process.env.SPOTIFY_CLIENT_ID
+	const spotifyRedirectUri = process.env.SPOTIFY_REDIRECT_URL
+	const spotifyAuthUrl = `https://www.spotify.com`
+
+	spotifyAuthWindow = new BrowserWindow({
+		width: 800,
+		height: 600,
+		webPreferences: {
+			nodeIntegration: false,
+			contextIsolation: true,
+		},
+	})
+
+	spotifyAuthWindow.loadURL(spotifyAuthUrl)
+
+	spotifyAuthWindow.webContents.on('will-navigate', async (event, url) => {
+		authError = false
+		console.log('URL:', url)
+		const urlObj = new URL(url)
+		const code = urlObj.searchParams.get('code')
+		const error = urlObj.searchParams.get('error')
+		if (code) {
+			console.log('CODE: ', code)
+			authCode = code
+			spotifyAuthWindow.close()
+		} else if (error) {
+			console.log('ERROR: ', error)
+			authError = true
+			spotifyAuthWindow.close()
+		}
+	})
+
+	spotifyAuthWindow.on('closed', () => {
+		mainWindow.webContents.send('auth-code', { auth_code_on_close: authCode })
+		console.log('AUTHCODE ON CLOSE: ', authCode)
+		if (authError) {
+			console.log('NO AUTH CODE RETURNED: ', authError)
+			wss.clients.forEach(function each(client) {
+				if (client.readyState === WebSocket.OPEN) {
+					client.send('npChatbot authorization with Spotify was cancelled.')
+				}
+			})
+			spotifyAuthWindow = null
+		} else if (authCode !== undefined) {
+			console.log('AUTH CODE: ', authCode)
+			initAuthToken(authCode, wss, mainWindow)
+			spotifyAuthWindow = null
+		}
+	})
 })
 
 // ipc handler for opening the Twitch auth window and response
@@ -248,13 +306,13 @@ ipcMain.on('startBotScript', async (event, arg) => {
 	// update with the new token returned has completed
 
 	// helper method or refactor existing code to properly await
-	// the user.db file update 
+	// the user.db file update
 
-	// optionally, move the entire loadConfigurations sequence into 
+	// optionally, move the entire loadConfigurations sequence into
 	// the try/catch block above
 
 	// *** UPDATE: test the above scenario ***
-	
+
 	// load configurations and initialize chatbot script
 	setTimeout(() => {
 		loadConfigurations()
@@ -285,7 +343,7 @@ ipcMain.on('startBotScript', async (event, arg) => {
 // ipc method to disconnect npChatbot script from Twitch
 ipcMain.on('stopBotScript', async (event, arg) => {
 	const seratoDisplayName = arg.seratoDisplayName.replaceAll(' ', '_')
-	const url = `https://serato.com/playlists/${seratoDisplayName}/live`	
+	const url = `https://serato.com/playlists/${seratoDisplayName}/live`
 	const reportData = await createLiveReport(url)
 	const spotifyPlaylistLink = generateSpotifyPlaylistLink(reportData)
 
@@ -338,9 +396,9 @@ ipcMain.on('stopBotScript', async (event, arg) => {
 	// console.log("--------------------------------------")
 
 	if (tmiInstance) {
-		await tmiInstance.disconnect().then((data) => {			
-			console.log("TWITCH CHAT HAS BEEN DISCONNECTED")
-			console.log("- - - - - - - - - - - - - - - - - -")
+		await tmiInstance.disconnect().then((data) => {
+			console.log('TWITCH CHAT HAS BEEN DISCONNECTED')
+			console.log('- - - - - - - - - - - - - - - - - -')
 		})
 		tmiInstance = null
 		botProcess = false
@@ -355,11 +413,11 @@ ipcMain.on('stopBotScript', async (event, arg) => {
 		// console.log("Search Terms: ")
 		// console.log(dypSearchTerms)
 		// console.log('--------------------------------------')
-		
+
 		event.reply('stopBotResponse', {
 			success: true,
 			message: 'ipcMain: bot client successfully disconnected',
-			// data: finalReportData,			
+			// data: finalReportData,
 		})
 	} else {
 		event.reply('stopBotResponse', {
@@ -411,17 +469,17 @@ ipcMain.on('submitUserData', async (event, arg) => {
 	}
 
 	const seratoDisplayName = arg.seratoDisplayName.replaceAll(' ', '_')
-	const isValidSeratoURL = await seratoURLValidityCheck(seratoDisplayName)	
+	const isValidSeratoURL = await seratoURLValidityCheck(seratoDisplayName)
 	const isValidTwitchURL = await twitchURLValidityCheck(
 		arg.twitchChannelName,
 		token
-	)	
+	)
 	const isValidTwitchChatbotURL = await twitchURLValidityCheck(
 		arg.twitchChatbotName,
 		token
 	)
 
-	console.log('SERATO URL VALIDITY: ', isValidSeratoURL)	
+	console.log('SERATO URL VALIDITY: ', isValidSeratoURL)
 	console.log('TWITCH URL VALIDITY: ', isValidTwitchURL)
 	console.log('TWITCH CHATBOT URL VALIDITY: ', isValidTwitchChatbotURL)
 
@@ -459,7 +517,7 @@ const createWindow = () => {
 			color: 'rgb(49, 49, 49)',
 			symbolColor: 'white',
 		},
-		resizable: false,		
+		resizable: false,
 		webPreferences: {
 			preload: path.join(__dirname, './scripts/preload.js'),
 			nodeIntegration: false,

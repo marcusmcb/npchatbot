@@ -75,7 +75,7 @@ const getSpotifySongData = async (accessToken, songsPlayed) => {
 			const response = await axios.get(
 				`https://api.spotify.com/v1/search?q=${encodeURIComponent(
 					song
-				)}&type=track&limit=10`,
+				)}&type=track&limit=10&market=USA`,
 				{
 					headers: {
 						Authorization: `Bearer ${accessToken}`,
@@ -83,6 +83,14 @@ const getSpotifySongData = async (accessToken, songsPlayed) => {
 					},
 				}
 			)
+
+			// current logic selects the track for the Spotify playlist
+			// with the highest popularity value
+
+			// reset logic to use the first track returned in the
+			// API response and compare results versus using
+			// the current popularity logic
+
 			// find the track with the highest Spotify popularity value
 			let mostPopularTrack = null
 			let highestPopularity = -1
