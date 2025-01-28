@@ -63,7 +63,7 @@ const getSpotifySongData = async (accessToken, songsPlayed) => {
 	const cleanedSongs = songsPlayed.map((song) => cleanSongTitle(song))
 	console.log('SONGS PLAYED: ', songsPlayed)
 	console.log('-------------------')
-	console.log('CLEANED SONGS: ', cleanedSongs)
+	console.log('CLEANED SONGS: ')
 	console.log('-------------------')
 
 	// Array to store the most popular track from each API call
@@ -87,22 +87,30 @@ const getSpotifySongData = async (accessToken, songsPlayed) => {
 				}
 			)
 
-			console.log(`SONG DATA for "${song}": `, response.data.tracks.items)
-
-			// Find the track with the highest popularity
+			// find the track with the highest Spotify popularity value
 			let mostPopularTrack = null
 			let highestPopularity = -1
 
 			for (let track of response.data.tracks.items) {
 				if (track.popularity > highestPopularity) {
-					mostPopularTrack = track
+					mostPopularTrack = track					
 					highestPopularity = track.popularity
 				}
 			}
 
 			if (mostPopularTrack) {
-				console.log(`MOST POPULAR TRACK for "${song}": `, mostPopularTrack)
-				playlistTracks.push(mostPopularTrack)
+				const mostPopularSpotifyResult = {
+					song: song,
+					spotifyUri: mostPopularTrack.external_urls.spotify,
+					spotifyTrackId: mostPopularTrack.id,
+					uri: mostPopularTrack.uri,
+				}
+				playlistTracks.push(mostPopularSpotifyResult)
+				console.log(
+					`MOST POPULAR TRACK for "${song}": `,
+					mostPopularSpotifyResult
+				)
+				console.log('-------------------')
 			} else {
 				console.log(`No tracks found for "${song}".`)
 			}
@@ -117,7 +125,7 @@ const getSpotifySongData = async (accessToken, songsPlayed) => {
 		}
 	}
 
-	console.log('FINAL PLAYLIST TRACKS: ', playlistTracks)
+	console.log('FINAL PLAYLIST TRACKS: ', playlistTracks.length)
 	return playlistTracks
 }
 
@@ -128,7 +136,7 @@ const createNewPlaylist = async (accessToken, spotifyUserId) => {
 			`https://api.spotify.com/v1/users/${spotifyUserId}/playlists`,
 			{
 				name: playlistName,
-				description: 'A playlist free of restricted artists',
+				description: 'Selections from my Twitch stream',
 				public: true,
 			},
 			{
@@ -159,9 +167,8 @@ const generateSpotifyPlaylistLink = async (reportData) => {
 	reportData.track_log.forEach((track) => {
 		songsPlayed.push(track.trackId)
 	})
-	await getSpotifySongData(accessToken, songsPlayed).then((data) =>
-		console.log(data)
-	)
+	const spotifySongs = await getSpotifySongData(accessToken, songsPlayed)	
+	const newSpotifyPlaylist = await createNewPlaylist(accessToken, spotifyUserId)
 }
 
 module.exports = generateSpotifyPlaylistLink
