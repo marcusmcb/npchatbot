@@ -288,6 +288,20 @@ ipcMain.on('stopBotScript', async (event, arg) => {
 	const url = `https://serato.com/playlists/${seratoDisplayName}/live`	
 	const reportData = await createLiveReport(url)
 	const spotifyPlaylistLink = generateSpotifyPlaylistLink(reportData)
+
+	/*
+	--------------------------------------
+	add logic to return generated Spotify playlist link to the user's chat
+	--------------------------------------
+	add logic to scrape data from "live" playlist page with backup logic to
+	scrape the data from the first playlist in the user's Serato playlists page
+	if the live playlist session has ended
+	--------------------------------------
+	add logic to trigger playlist creation and return the link to the chat 
+	when an end-of-stream raid event is detected?
+	--------------------------------------
+	*/
+
 	// console.log('REPORT DATA: ')
 	// console.log(reportData)
 	// console.log('--------------------------------------')

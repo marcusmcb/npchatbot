@@ -129,6 +129,11 @@ const getSpotifySongData = async (accessToken, songsPlayed) => {
 	return playlistTracks
 }
 
+/* 
+dynamically add link to user's main streaming channel in the
+Spotify playlist description value below
+*/
+
 const createNewPlaylist = async (accessToken, spotifyUserId) => {
 	const playlistName = `Twitch Stream Playlist - ${getCurrentDate()} `
 	try {
