@@ -80,7 +80,7 @@ const getSpotifySongData = async (accessToken, songsPlayed) => {
 
 	for (let song of uniqueCleanedSongs) {
 		// Format song title for Spotify API query: replace spaces with "+"
-		const formattedQuery = song.replace(/\s+/g, '+') // Replace spaces with "+"
+		const formattedQuery = song.replace(/\s+/g, '+')
 
 		const url = `https://api.spotify.com/v1/search?q=${formattedQuery}&type=track&limit=3`
 		console.log('Formatted API URL: ', url)
@@ -94,44 +94,30 @@ const getSpotifySongData = async (accessToken, songsPlayed) => {
 				},
 			})
 
-			let mostPopularTrack = null
-			let highestPopularity = -1
+			// Select the first track from the response
+			const firstTrack = response.data.tracks.items[0] // Get first track directly
 
-			for (let track of response.data.tracks.items) {
-				console.log('Song Found For: ', song)
-				console.log('Artist: ', track.artists[0].name)
-				console.log('Title: ', track.name)
-				console.log('Popularity: ', track.popularity)
-				console.log('Type: ', track.type)
-				console.log('-------------------------')
-				if (track.popularity > highestPopularity) {
-					mostPopularTrack = track
-					highestPopularity = track.popularity
-				}
-			}
-
-			if (mostPopularTrack) {
+			if (firstTrack) {
 				console.log(`Spotify Result for "${song}": `)
 				console.log('')
-				console.log(mostPopularTrack.name)
-				console.log(mostPopularTrack.artists[0].name)
-				console.log(mostPopularTrack.popularity)
+				console.log(firstTrack.name)
+				console.log(firstTrack.artists[0].name)
 				console.log('***************************')
-				const mostPopularSpotifyResult = {
+
+				const spotifyTrackData = {
 					song: song,
-					spotifyArtist: mostPopularTrack.artists[0].name,
-					spotifyTitle: mostPopularTrack.name,
-					spotifyUri: mostPopularTrack.external_urls.spotify,
-					spotifyTrackId: mostPopularTrack.id,
-					uri: mostPopularTrack.uri,
-					type: mostPopularTrack.type,
+					spotifyArtist: firstTrack.artists[0].name,
+					spotifyTitle: firstTrack.name,
+					spotifyUri: firstTrack.external_urls.spotify,
+					spotifyTrackId: firstTrack.id,
+					uri: firstTrack.uri,
+					type: firstTrack.type,
 				}
-				playlistTracks.push(mostPopularSpotifyResult)
-				trackUrisSet.add(mostPopularTrack.uri) // Add URI to the Set
-				console.log(
-					`MOST POPULAR TRACK for "${song}": `,
-					mostPopularSpotifyResult
-				)
+
+				playlistTracks.push(spotifyTrackData)
+				trackUrisSet.add(firstTrack.uri) // Add URI to the Set
+
+				console.log(`SELECTED TRACK for "${song}": `, spotifyTrackData)
 				console.log('-------------------')
 			} else {
 				console.log(`No tracks found for "${song}".`)
