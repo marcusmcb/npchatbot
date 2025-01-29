@@ -82,7 +82,6 @@ server.get('/', (req, res) => {
 	res.send('NPChatbot is up and running')
 })
 
-
 // future workflow and handlers for Spotify app authorization process
 ipcMain.on('open-spotify-url', async (event, arg) => {
 	const spotifyClientId = process.env.SPOTIFY_CLIENT_ID
