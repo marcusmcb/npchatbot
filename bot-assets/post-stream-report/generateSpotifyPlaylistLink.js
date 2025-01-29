@@ -1,64 +1,33 @@
 const dotenv = require('dotenv')
 const axios = require('axios')
 const { getSpotifyAccessToken } = require('../../auth/getSpotifyAccessToken')
+const { cleanSongTitle, getCurrentDate } = require('./helpers/spotifyHelpers')
 
 dotenv.config()
 
 const spotifyUserId = process.env.SPOTIFY_USER_ID
 
-const getCurrentDate = () => {
-	const date = new Date()
-	const options = { weekday: 'long', month: 'long', day: 'numeric' }
-
-	// format the date using Intl.DateTimeFormat
-	let formattedDate = new Intl.DateTimeFormat('en-US', options).format(date)
-
-	// add the appropriate suffix to the day (e.g., "st", "nd", "rd", "th")
-	const day = date.getDate()
-	const suffix =
-		day % 10 === 1 && day !== 11
-			? 'st'
-			: day % 10 === 2 && day !== 12
-			? 'nd'
-			: day % 10 === 3 && day !== 13
-			? 'rd'
-			: 'th'
-
-	// replace the numeric day in the formatted string with the day + suffix
-	formattedDate = formattedDate.replace(/\d+/, `${day}${suffix}`)
-	return formattedDate
-}
-
-const cleanSongTitle = (title) => {
-	return title
-		.replace(/\s*[\(\[].*?[\)\]]/g, '') // Remove anything inside parentheses or brackets
-		.replace(/[&.,-]/g, '') // Remove ampersand, period, comma, and hyphen
-		.replace(/\s+/g, ' ') // Normalize spaces
-		.trim() // Trim spaces at start/end
-		.toLowerCase() // Convert to lowercase
-}
-
 const getSpotifySongData = async (accessToken, songsPlayed) => {
-	// Clean song titles
+	// clean song title strings
 	const cleanedSongs = songsPlayed.map((song) => cleanSongTitle(song))
 	console.log('SONGS PLAYED: ', songsPlayed)
 	console.log('-------------------')
 	console.log('CLEANED SONGS (Before Deduplication): ', cleanedSongs)
 	console.log('-------------------')
 
-	// Remove duplicate song titles by converting to a Set and back to an array
+	// remove duplicate song titles by converting to a Set and back to an array
 	const uniqueCleanedSongs = [...new Set(cleanedSongs)]
 
 	console.log('CLEANED SONGS (After Deduplication): ', uniqueCleanedSongs)
 	console.log('-------------------')
 
 	const playlistTracks = []
-	const trackUrisSet = new Set() // Use a Set to store unique track URIs
+	const trackUrisSet = new Set() // use a Set to store unique track URIs
 
 	const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
 	for (let song of uniqueCleanedSongs) {
-		// Format song title for Spotify API query: replace spaces with "+"
+		// format song title for Spotify API query: replace spaces with "+"
 		const formattedQuery = song.replace(/\s+/g, '+')
 
 		const url = `https://api.spotify.com/v1/search?q=${formattedQuery}&type=track&limit=3`
@@ -73,11 +42,35 @@ const getSpotifySongData = async (accessToken, songsPlayed) => {
 				},
 			})
 
-			// Select the first track from the response
-			const firstTrack = response.data.tracks.items[0] // Get first track directly
+			console.log('Spotify Response for: ', song)
+			// for (item in response.data.tracks.items) {
+			// 	console.log("")
+			// 	console.log(response.data.tracks.items[item].name)
+			// 	console.log(response.data.tracks.items[item].artists[0].name)
+			// 	console.log("")
+			// }
+			// console.log('-------------------')
+			if (song.includes('megan thee stallion')) {
+				for (let i = 0; i < response.data.tracks.items.length; i++) {
+					console.log('-------------------')
+					console.log(Object.keys(response.data.tracks.items[i]))					
+					console.log("* * * * * * * * * * *")
+					console.log(response.data.tracks.items[i])
+					console.log('-------------------')
+				}
+			}
+
+			const firstTrack = response.data.tracks.items[0]
+
+			// add logic check to see if the spotifyArtist and 
+			// spotifyTitle values returned are both present
+			// in the text string submitted to the API
+
+			// if matched, add the song's Spotify URI to the returned array
+			// else, omit it if the results can not be considered a match
 
 			if (firstTrack) {
-				console.log(`Spotify Result for "${song}": `)
+				console.log(`Selection for "${song}": `)
 				console.log('')
 				console.log(firstTrack.name)
 				console.log(firstTrack.artists[0].name)
