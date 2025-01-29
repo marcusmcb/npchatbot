@@ -60,53 +60,63 @@ const getAccessToken = async () => {
 }
 
 const getSpotifySongData = async (accessToken, songsPlayed) => {
+	// Clean song titles
 	const cleanedSongs = songsPlayed.map((song) => cleanSongTitle(song))
 	console.log('SONGS PLAYED: ', songsPlayed)
 	console.log('-------------------')
-	console.log('CLEANED SONGS: ')
-	console.log('-------------------')	
+	console.log('CLEANED SONGS (Before Deduplication): ', cleanedSongs)
+	console.log('-------------------')
+
+	// Remove duplicate song titles by converting to a Set and back to an array
+	const uniqueCleanedSongs = [...new Set(cleanedSongs)]
+
+	console.log('CLEANED SONGS (After Deduplication): ', uniqueCleanedSongs)
+	console.log('-------------------')
+
 	const playlistTracks = []
-	const trackUris = []
+	const trackUrisSet = new Set() // Use a Set to store unique track URIs
 
 	const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
-	for (let song of cleanedSongs) {
-		try {			
-			const response = await axios.get(
-				`https://api.spotify.com/v1/search?q=${encodeURIComponent(
-					song
-				)}&type=track&limit=10&market=USA`,
-				{
-					headers: {
-						Authorization: `Bearer ${accessToken}`,
-						'Content-Type': 'application/json',
-					},
-				}
-			)
+	for (let song of uniqueCleanedSongs) {
+		// Format song title for Spotify API query: replace spaces with "+"
+		const formattedQuery = song.replace(/\s+/g, '+') // Replace spaces with "+"
 
-			// current logic selects the track for the Spotify playlist
-			// with the highest popularity value
+		const url = `https://api.spotify.com/v1/search?q=${formattedQuery}&type=track&limit=3`
+		console.log('Formatted API URL: ', url)
+		console.log('-------------------')
 
-			// reset logic to use the first track returned in the
-			// API response and compare results versus using
-			// the current popularity logic
+		try {
+			const response = await axios.get(url, {
+				headers: {
+					Authorization: `Bearer ${accessToken}`,
+					'Content-Type': 'application/json',
+				},
+			})
 
-			// find the track with the highest Spotify popularity value
 			let mostPopularTrack = null
 			let highestPopularity = -1
 
 			for (let track of response.data.tracks.items) {
+				console.log('Song Found For: ', song)
+				console.log('Artist: ', track.artists[0].name)
+				console.log('Title: ', track.name)
+				console.log('Popularity: ', track.popularity)
+				console.log('Type: ', track.type)
+				console.log('-------------------------')
 				if (track.popularity > highestPopularity) {
 					mostPopularTrack = track
 					highestPopularity = track.popularity
 				}
 			}
 
-			if (mostPopularTrack) {		
-				// console.log(`Spotify Result for "${song}": `)
-				// console.log('')
-				// console.log(mostPopularTrack.name)
-				// console.log("***************************")		
+			if (mostPopularTrack) {
+				console.log(`Spotify Result for "${song}": `)
+				console.log('')
+				console.log(mostPopularTrack.name)
+				console.log(mostPopularTrack.artists[0].name)
+				console.log(mostPopularTrack.popularity)
+				console.log('***************************')
 				const mostPopularSpotifyResult = {
 					song: song,
 					spotifyArtist: mostPopularTrack.artists[0].name,
@@ -117,12 +127,11 @@ const getSpotifySongData = async (accessToken, songsPlayed) => {
 					type: mostPopularTrack.type,
 				}
 				playlistTracks.push(mostPopularSpotifyResult)
-				trackUris.push(mostPopularTrack.uri)
+				trackUrisSet.add(mostPopularTrack.uri) // Add URI to the Set
 				console.log(
 					`MOST POPULAR TRACK for "${song}": `,
 					mostPopularSpotifyResult
 				)
-				// console.log(`Song Added: ${song}`)
 				console.log('-------------------')
 			} else {
 				console.log(`No tracks found for "${song}".`)
@@ -138,8 +147,12 @@ const getSpotifySongData = async (accessToken, songsPlayed) => {
 		}
 	}
 
-	console.log('FINAL PLAYLIST TRACKS: ', playlistTracks)
-	// return playlistTracks
+	// Convert Set back to an array to ensure only unique URIs are returned
+	const trackUris = [...trackUrisSet]
+
+	console.log('FINAL PLAYLIST TRACKS: ', playlistTracks.length)
+	console.log('TRACK URIS (Unique): ', trackUris.length)
+
 	return trackUris
 }
 
@@ -168,6 +181,7 @@ const createNewPlaylist = async (accessToken, spotifyUserId) => {
 		if (response.data.id) {
 			console.log('New playlist created successfully!')
 		}
+		// return the playlist's public URL as well
 		return response.data.id
 	} catch (error) {
 		console.error('Error creating new playlist:', error)
@@ -182,15 +196,16 @@ const addTracksToSpotifyPlaylist = async (
 	console.log('-------------------')
 	console.log('PLAYLIST ID: ', playlistId)
 	console.log('TRACK URIS: ', trackUris)
-	console.log('-------------------')	
+	console.log('-------------------')
+	console.log('Track URIs Length: ', trackUris.length)
 	const batchSize = 100
 	for (let i = 0; i < trackUris.length; i += batchSize) {
-		const batch = trackUris.slice(i, i + batchSize) 
+		const batch = trackUris.slice(i, i + batchSize)
 		try {
 			await axios.post(
 				`https://api.spotify.com/v1/playlists/${playlistId}/tracks`,
 				{
-					uris: batch, 
+					uris: batch,
 				},
 				{
 					headers: {
@@ -206,7 +221,7 @@ const addTracksToSpotifyPlaylist = async (
 				error.response?.data || error.message
 			)
 			return
-		}		
+		}
 		await new Promise((resolve) => setTimeout(resolve, 1000))
 	}
 }
