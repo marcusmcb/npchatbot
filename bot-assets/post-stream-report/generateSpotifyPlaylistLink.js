@@ -1,11 +1,9 @@
 const dotenv = require('dotenv')
 const axios = require('axios')
+const { getSpotifyAccessToken } = require('../../auth/getSpotifyAccessToken')
 
 dotenv.config()
 
-const refreshToken = process.env.SPOTIFY_REFRESH_TOKEN
-const clientId = process.env.SPOTIFY_CLIENT_ID
-const clientSecret = process.env.SPOTIFY_CLIENT_SECRET
 const spotifyUserId = process.env.SPOTIFY_USER_ID
 
 const getCurrentDate = () => {
@@ -32,31 +30,12 @@ const getCurrentDate = () => {
 }
 
 const cleanSongTitle = (title) => {
-	return title.replace(/\s*[\(\[].*?[\)\]]/g, '').trim()
-}
-
-const getAccessToken = async () => {
-	try {
-		const response = await axios.post(
-			'https://accounts.spotify.com/api/token',
-			null,
-			{
-				params: {
-					grant_type: 'refresh_token',
-					refresh_token: refreshToken,
-					client_id: clientId,
-					client_secret: clientSecret,
-				},
-				headers: {
-					'Content-Type': 'application/x-www-form-urlencoded',
-				},
-			}
-		)
-		console.log('TOKEN RESPONSE: ', response.data.access_token)
-		return response.data.access_token
-	} catch (error) {
-		console.error('Error refreshing access token:', error.response.data)
-	}
+	return title
+		.replace(/\s*[\(\[].*?[\)\]]/g, '') // Remove anything inside parentheses or brackets
+		.replace(/[&.,-]/g, '') // Remove ampersand, period, comma, and hyphen
+		.replace(/\s+/g, ' ') // Normalize spaces
+		.trim() // Trim spaces at start/end
+		.toLowerCase() // Convert to lowercase
 }
 
 const getSpotifySongData = async (accessToken, songsPlayed) => {
@@ -213,7 +192,7 @@ const addTracksToSpotifyPlaylist = async (
 }
 
 const generateSpotifyPlaylistLink = async (reportData) => {
-	const accessToken = await getAccessToken()
+	const accessToken = await getSpotifyAccessToken()
 	let songsPlayed = []
 	reportData.track_log.forEach((track) => {
 		songsPlayed.push(track.trackId)
