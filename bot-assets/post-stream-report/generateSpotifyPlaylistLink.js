@@ -8,31 +8,32 @@ dotenv.config()
 const spotifyUserId = process.env.SPOTIFY_USER_ID
 
 const getSpotifySongData = async (accessToken, songsPlayed) => {
-	// clean song title strings
+	// Clean song title strings
 	const cleanedSongs = songsPlayed.map((song) => cleanSongTitle(song))
 	console.log('SONGS PLAYED: ', songsPlayed)
 	console.log('-------------------')
 	console.log('CLEANED SONGS (Before Deduplication): ', cleanedSongs)
 	console.log('-------------------')
 
-	// remove duplicate song titles by converting to a Set and back to an array
+	// Remove duplicate song titles by converting to a Set and back to an array
 	const uniqueCleanedSongs = [...new Set(cleanedSongs)]
 
 	console.log('CLEANED SONGS (After Deduplication): ', uniqueCleanedSongs)
 	console.log('-------------------')
 
 	const playlistTracks = []
-	const trackUrisSet = new Set() // use a Set to store unique track URIs
+	const skippedTracks = []
+	const trackUrisSet = new Set() // Use a Set to store unique track URIs
 
 	const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
 	for (let song of uniqueCleanedSongs) {
-		// format song title for Spotify API query: replace spaces with "+"
+		// Format song title for Spotify API query: replace spaces with "+"
 		const formattedQuery = song.replace(/\s+/g, '+')
 
 		const url = `https://api.spotify.com/v1/search?q=${formattedQuery}&type=track&limit=3`
-		console.log('Formatted API URL: ', url)
-		console.log('-------------------')
+		// console.log('Formatted API URL: ', url)
+		// console.log('-------------------')
 
 		try {
 			const response = await axios.get(url, {
@@ -43,56 +44,57 @@ const getSpotifySongData = async (accessToken, songsPlayed) => {
 			})
 
 			console.log('Spotify Response for: ', song)
-			// for (item in response.data.tracks.items) {
-			// 	console.log("")
-			// 	console.log(response.data.tracks.items[item].name)
-			// 	console.log(response.data.tracks.items[item].artists[0].name)
-			// 	console.log("")
-			// }
-			// console.log('-------------------')
-			if (song.includes('megan thee stallion')) {
-				for (let i = 0; i < response.data.tracks.items.length; i++) {
-					console.log('-------------------')
-					console.log(Object.keys(response.data.tracks.items[i]))					
-					console.log("* * * * * * * * * * *")
-					console.log(response.data.tracks.items[i])
-					console.log('-------------------')
-				}
-			}
 
-			const firstTrack = response.data.tracks.items[0]
-
-			// add logic check to see if the spotifyArtist and 
-			// spotifyTitle values returned are both present
-			// in the text string submitted to the API
-
-			// if matched, add the song's Spotify URI to the returned array
-			// else, omit it if the results can not be considered a match
+			const firstTrack = response.data.tracks.items[0] // Get first track directly
 
 			if (firstTrack) {
-				console.log(`Selection for "${song}": `)
-				console.log('')
-				console.log(firstTrack.name)
-				console.log(firstTrack.artists[0].name)
+				
+
+				// Normalize text to lowercase for better comparison
+				const originalSearch = song.toLowerCase()
+				const spotifyArtist = firstTrack.artists[0].name.toLowerCase()
+				const spotifyTitle = firstTrack.name.toLowerCase()
+
+				console.log("First Track Found: ")
+				console.log(spotifyArtist)
+				console.log(spotifyTitle)
 				console.log('***************************')
 
-				const spotifyTrackData = {
-					song: song,
-					spotifyArtist: firstTrack.artists[0].name,
-					spotifyTitle: firstTrack.name,
-					spotifyUri: firstTrack.external_urls.spotify,
-					spotifyTrackId: firstTrack.id,
-					uri: firstTrack.uri,
-					type: firstTrack.type,
+				// Check if both the artist and title exist in the original search query
+				const artistMatch = originalSearch.includes(spotifyArtist)
+				const titleMatch = originalSearch.includes(spotifyTitle)
+
+				if (artistMatch && titleMatch) {
+					console.log(`Selection for "${song}": `)
+					console.log('')
+					console.log(firstTrack.name)
+					console.log(firstTrack.artists[0].name)
+					console.log('***************************')
+
+					const spotifyTrackData = {
+						song: song,
+						spotifyArtist: firstTrack.artists[0].name,
+						spotifyTitle: firstTrack.name,
+						spotifyUri: firstTrack.external_urls.spotify,
+						spotifyTrackId: firstTrack.id,
+						uri: firstTrack.uri,
+						type: firstTrack.type,
+					}
+
+					playlistTracks.push(spotifyTrackData)
+					trackUrisSet.add(firstTrack.uri) // Add URI to the Set
+
+					console.log(`SELECTED TRACK for "${song}": `, spotifyTrackData)
+					console.log('-------------------')
+				} else {
+					skippedTracks.push(song)
+					console.log(`No direct match found for "${song}". Skipping.`)
+					console.log('-------------------')
 				}
-
-				playlistTracks.push(spotifyTrackData)
-				trackUrisSet.add(firstTrack.uri) // Add URI to the Set
-
-				console.log(`SELECTED TRACK for "${song}": `, spotifyTrackData)
-				console.log('-------------------')
 			} else {
+				skippedTracks.push(song)
 				console.log(`No tracks found for "${song}".`)
+				console.log('-------------------')
 			}
 
 			// Delay for 100 ms before the next API call
@@ -108,8 +110,12 @@ const getSpotifySongData = async (accessToken, songsPlayed) => {
 	// Convert Set back to an array to ensure only unique URIs are returned
 	const trackUris = [...trackUrisSet]
 
-	console.log('FINAL PLAYLIST TRACKS: ', playlistTracks.length)
-	console.log('TRACK URIS (Unique): ', trackUris.length)
+	console.log('TOTAL TRACKS PLAYED: ', uniqueCleanedSongs.length)
+	console.log('TRACK URIS ADDED: ', trackUris.length)
+	console.log('-------------------')
+	console.log('SKIPPED TRACKS: ', skippedTracks.length)
+	console.log(skippedTracks)
+	console.log('-------------------')
 
 	return trackUris
 }
