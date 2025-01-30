@@ -31,9 +31,9 @@ const getSpotifySongData = async (accessToken, songsPlayed) => {
 		// Format song title for Spotify API query: replace spaces with "+"
 		const formattedQuery = song.replace(/\s+/g, '+')
 
-		const url = `https://api.spotify.com/v1/search?q=${formattedQuery}&type=track&limit=3`
-		// console.log('Formatted API URL: ', url)
-		// console.log('-------------------')
+		const url = `https://api.spotify.com/v1/search?q=${formattedQuery}&type=track&limit=3&market=USA`
+		console.log('Formatted API URL: ', url)
+		console.log('-------------------')
 
 		try {
 			const response = await axios.get(url, {
@@ -48,21 +48,23 @@ const getSpotifySongData = async (accessToken, songsPlayed) => {
 			const firstTrack = response.data.tracks.items[0] // Get first track directly
 
 			if (firstTrack) {
-				
-
 				// Normalize text to lowercase for better comparison
 				const originalSearch = song.toLowerCase()
 				const spotifyArtist = firstTrack.artists[0].name.toLowerCase()
-				const spotifyTitle = firstTrack.name.toLowerCase()
+				const spotifyTitleRaw = firstTrack.name.toLowerCase()
 
-				console.log("First Track Found: ")
-				console.log(spotifyArtist)
-				console.log(spotifyTitle)
-				console.log('***************************')
+				// Remove anything inside parentheses or brackets from the title
+				const spotifyTitle = spotifyTitleRaw
+					.replace(/\s*[\(\[].*?[\)\]]/g, '')
+					.trim()
 
 				// Check if both the artist and title exist in the original search query
-				const artistMatch = originalSearch.includes(spotifyArtist)
-				const titleMatch = originalSearch.includes(spotifyTitle)
+				const artistMatch = new RegExp(`\\b${spotifyArtist}\\b`, 'i').test(
+					originalSearch
+				)
+				const titleMatch = new RegExp(`\\b${spotifyTitle}\\b`, 'i').test(
+					originalSearch
+				)
 
 				if (artistMatch && titleMatch) {
 					console.log(`Selection for "${song}": `)
@@ -87,14 +89,14 @@ const getSpotifySongData = async (accessToken, songsPlayed) => {
 					console.log(`SELECTED TRACK for "${song}": `, spotifyTrackData)
 					console.log('-------------------')
 				} else {
-					skippedTracks.push(song)
 					console.log(`No direct match found for "${song}". Skipping.`)
 					console.log('-------------------')
+					skippedTracks.push(song)
 				}
 			} else {
-				skippedTracks.push(song)
 				console.log(`No tracks found for "${song}".`)
 				console.log('-------------------')
+				skippedTracks.push(song)
 			}
 
 			// Delay for 100 ms before the next API call
@@ -110,12 +112,11 @@ const getSpotifySongData = async (accessToken, songsPlayed) => {
 	// Convert Set back to an array to ensure only unique URIs are returned
 	const trackUris = [...trackUrisSet]
 
-	console.log('TOTAL TRACKS PLAYED: ', uniqueCleanedSongs.length)
+	console.log('FINAL PLAYLIST TRACKS: ', playlistTracks.length)
 	console.log('TRACK URIS ADDED: ', trackUris.length)
-	console.log('-------------------')
 	console.log('SKIPPED TRACKS: ', skippedTracks.length)
-	console.log(skippedTracks)
 	console.log('-------------------')
+	console.log(skippedTracks)
 
 	return trackUris
 }
