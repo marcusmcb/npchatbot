@@ -127,7 +127,7 @@ const createLiveReport = async (url) => {
 				Math.floor((averageLengthMs % 60000) / 1000) === 0
 					? '0' + Math.floor((averageLengthMs % 60000) / 1000)
 					: Math.floor((averageLengthMs % 60000) / 1000),
-		}		
+		}
 
 		// identify when doubles have occurred
 		const doublesPlayed = []
@@ -216,7 +216,3 @@ const createLiveReport = async (url) => {
 }
 
 module.exports = createLiveReport
-
-// FUTURE DEV NOTES
-//
-// check if shortest track is part of a doubles pair

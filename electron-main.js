@@ -407,12 +407,6 @@ ipcMain.on('stopBotScript', async (event, arg) => {
 		// add logic to save playlist stats and search/query data
 		// to NEDB instance when bot script is disconnected from Twitch
 
-		// console.log("Songs Queried: ")
-		// console.log(npSongsQueried)
-		// console.log("Search Terms: ")
-		// console.log(dypSearchTerms)
-		// console.log('--------------------------------------')
-
 		event.reply('stopBotResponse', {
 			success: true,
 			message: 'ipcMain: bot client successfully disconnected',
@@ -439,8 +433,7 @@ ipcMain.on('userDataUpdated', () => {
 
 // ipc method to handler user data/preference updates
 ipcMain.on('submitUserData', async (event, arg) => {
-	let token
-	console.log('ARG: ', arg)
+	let token	
 	try {
 		const currentAccessToken = await getRefreshToken(arg.twitchRefreshToken)
 		if (currentAccessToken.status === 400) {
@@ -476,11 +469,7 @@ ipcMain.on('submitUserData', async (event, arg) => {
 	const isValidTwitchChatbotURL = await twitchURLValidityCheck(
 		arg.twitchChatbotName,
 		token
-	)
-
-	console.log('SERATO URL VALIDITY: ', isValidSeratoURL)
-	console.log('TWITCH URL VALIDITY: ', isValidTwitchURL)
-	console.log('TWITCH CHATBOT URL VALIDITY: ', isValidTwitchChatbotURL)
+	)	
 
 	if (isValidTwitchURL && isValidTwitchChatbotURL && isValidSeratoURL) {
 		try {
