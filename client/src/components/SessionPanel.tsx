@@ -104,7 +104,7 @@ const SessionPanel: React.FC<SessionPanelProps> = (props) => {
 							props.setReportView(true)
 						}}
 					>
-						Report
+						Summary
 					</button>
 				)}
 			</div>
