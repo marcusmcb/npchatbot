@@ -8,7 +8,7 @@ const loadConfigurations = () => {
 				reject(err)
 			} else if (user) {
 				console.log('User credentials & preferences loaded')
-				console.log(user)
+				// console.log(user)
 				console.log('--------------------------------------')
 				resolve(user)
 			} else {

@@ -9,14 +9,12 @@ dotenv.config()
 const spotifyUserId = process.env.SPOTIFY_USER_ID
 
 const getSpotifySongData = async (accessToken, songsPlayed) => {
-	// Clean song title strings
+	// clean song title strings
 	const cleanedSongs = songsPlayed.map((song) => cleanSongTitle(song))
 	console.log('SONGS PLAYED: ', songsPlayed)
-	console.log('-------------------')
-	console.log('CLEANED SONGS (Before Deduplication): ', cleanedSongs)
-	console.log('-------------------')
+	console.log('-------------------')	
 
-	// Remove duplicate song titles by converting to a Set and back to an array
+	// remove duplicate song titles by converting to a Set and back to an array
 	const uniqueCleanedSongs = [...new Set(cleanedSongs)]
 
 	console.log('CLEANED SONGS (After Deduplication): ', uniqueCleanedSongs)
@@ -29,10 +27,11 @@ const getSpotifySongData = async (accessToken, songsPlayed) => {
 	const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
 	for (let song of uniqueCleanedSongs) {
-		// Format song title for Spotify API query: replace spaces with "+"
+		// format song title for Spotify API query: replace spaces with "+"
 		const formattedQuery = song.replace(/\s+/g, '+')
 
 		const url = `https://api.spotify.com/v1/search?q=${formattedQuery}&type=track&limit=3&market=USA`
+
 		console.log('Formatted API URL: ', url)
 		console.log('-------------------')
 
@@ -45,8 +44,16 @@ const getSpotifySongData = async (accessToken, songsPlayed) => {
 			})
 
 			console.log('Spotify Response for: ', song)
+			console.log('-------------------')
 
 			const firstTrack = response.data.tracks.items[0] // Get first track directly
+
+			for (let i = 0; i < response.data.tracks.items.length; i++) {
+				console.log('Track ', i + 1)
+				console.log(response.data.tracks.items[i].name)
+				console.log(response.data.tracks.items[i].artists[0].name)
+				console.log('-------------------')
+			}
 
 			if (firstTrack) {
 				// Normalize text to lowercase for better comparison
@@ -87,8 +94,8 @@ const getSpotifySongData = async (accessToken, songsPlayed) => {
 					playlistTracks.push(spotifyTrackData)
 					trackUrisSet.add(firstTrack.uri) // Add URI to the Set
 
-					console.log(`SELECTED TRACK for "${song}": `, spotifyTrackData)
-					console.log('-------------------')
+					// console.log(`SELECTED TRACK for "${song}": `, spotifyTrackData)
+					// console.log('-------------------')
 				} else {
 					console.log(`No direct match found for "${song}". Skipping.`)
 					console.log('-------------------')

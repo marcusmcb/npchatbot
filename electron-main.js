@@ -410,7 +410,7 @@ ipcMain.on('stopBotScript', async (event, arg) => {
 		event.reply('stopBotResponse', {
 			success: true,
 			message: 'ipcMain: bot client successfully disconnected',
-			// data: finalReportData,
+			data: finalReportData,
 		})
 	} else {
 		event.reply('stopBotResponse', {
