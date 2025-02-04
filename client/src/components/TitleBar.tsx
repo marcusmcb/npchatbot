@@ -6,12 +6,11 @@ import { TitleBarProps } from '../types'
 const ipcRenderer = window.electron.ipcRenderer
 
 const TitleBar = ({
-	isAuthorized,
+	isTwitchAuthorized,
 	isBotConnected,
 }: TitleBarProps): JSX.Element => {
-
 	const handleAuthClick = () => {
-		if (!isAuthorized) {
+		if (!isTwitchAuthorized) {
 			ipcRenderer.send('open-auth-url')
 		} else {
 			console.log('Already authorized')
@@ -21,12 +20,12 @@ const TitleBar = ({
 	}
 
 	const handleSpotifyAuthClick = () => {
-		if (!isAuthorized) {
-			ipcRenderer.send('open-auth-url', 'spotify')
+		if (!isTwitchAuthorized) {
+			ipcRenderer.send('open-spotify-auth-url')
 		} else {
 			console.log('Already authorized')
 			// ipcRenderer.send('open-auth-settings', 'https://www.twitch.tv/settings/connections')
-			ipcRenderer.send('open-auth-url', 'spotify')
+			ipcRenderer.send('open-spotify-auth-url')
 		}
 	}
 
@@ -38,24 +37,24 @@ const TitleBar = ({
 					onClick={handleAuthClick}
 					disabled={isBotConnected}
 					className={
-						isAuthorized ? 'auth-button-authorized' : 'auth-button-default'
+						isTwitchAuthorized ? 'auth-button-authorized' : 'auth-button-default'
 					}
 				>
 					<span className='button-content'>
 						<TwitchIcon size={20} />
-						{/* {isAuthorized ? 'Authorized' : 'Authorize'} */}
+						{/* {isTwitchAuthorized ? 'Authorized' : 'Authorize'} */}
 					</span>
 				</button>
 				<button
-					onClick={() => console.log('Spotify button clicked')}
+					onClick={handleSpotifyAuthClick}
 					disabled={isBotConnected}
 					className={
-						isAuthorized ? 'auth-button-authorized' : 'auth-button-default'
+						isTwitchAuthorized ? 'auth-button-authorized' : 'auth-button-default'
 					}
 				>
 					<span className='button-content'>
 						<SpotifyIcon size={20} />
-						{/* {isAuthorized ? 'Authorized' : 'Authorize'} */}
+						{/* {isTwitchAuthorized ? 'Authorized' : 'Authorize'} */}
 					</span>
 				</button>
 			</div>

@@ -120,7 +120,7 @@ const CredentialsPanel: React.FC<CredentialsPanelProps> = (props) => {
 						className={`default-button ${
 							props.isFormModified ? 'button-modified' : ''
 						}`}
-						disabled={props.isBotConnected || !props.isAuthorized}
+						disabled={props.isBotConnected || !props.isTwitchAuthorized}
 						type='submit'
 					>
 						Update

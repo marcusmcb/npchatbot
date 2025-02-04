@@ -72,7 +72,7 @@ const SessionPanel: React.FC<SessionPanelProps> = (props) => {
 					onClick={props.handleConnect}
 					disabled={
 						props.isBotConnected ||
-						!props.isAuthorized ||
+						!props.isTwitchAuthorized ||
 						!props.isConnectionReady
 					}
 				>
