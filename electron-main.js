@@ -83,7 +83,7 @@ server.get('/', (req, res) => {
 })
 
 // future workflow and handlers for Spotify app authorization process
-ipcMain.on('open-spotify-url', async (event, arg) => {
+ipcMain.on('open-spotify-auth-url', async (event, arg) => {
 	const spotifyClientId = process.env.SPOTIFY_CLIENT_ID
 	const spotifyRedirectUri = process.env.SPOTIFY_REDIRECT_URL
 	const spotifyAuthUrl = `https://www.spotify.com`

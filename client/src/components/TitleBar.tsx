@@ -11,11 +11,11 @@ const TitleBar = ({
 }: TitleBarProps): JSX.Element => {
 	const handleAuthClick = () => {
 		if (!isTwitchAuthorized) {
-			ipcRenderer.send('open-auth-url')
+			ipcRenderer.send('open-twitch-auth-url')
 		} else {
 			console.log('Already authorized')
 			// ipcRenderer.send('open-auth-settings', 'https://www.twitch.tv/settings/connections')
-			ipcRenderer.send('open-auth-url')
+			ipcRenderer.send('open-twitch-auth-url')
 		}
 	}
 
