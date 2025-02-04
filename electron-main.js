@@ -25,6 +25,8 @@ const {
 	initAuthToken,
 } = require('./auth/createAccessToken')
 
+const { initSpotifyAuthToken } = require('./auth/createSpotifyAccessToken')
+
 const {
 	seratoURLValidityCheck,
 	twitchURLValidityCheck,
@@ -63,6 +65,8 @@ let authWindow
 let spotifyAuthWindow
 let authCode
 let authError
+let spotifyAuthCode
+let spotifyAuthError
 let botProcess = false
 
 const server = express()
@@ -105,37 +109,37 @@ ipcMain.on('open-spotify-auth-url', async (event, arg) => {
 	spotifyAuthWindow.loadURL(spotifyAuthUrl)
 
 	spotifyAuthWindow.webContents.on('will-navigate', async (event, url) => {
-		authError = false
+		spotifyAuthError = false
 		console.log('URL:', url)
 		const urlObj = new URL(url)
 		const code = urlObj.searchParams.get('code')
 		const error = urlObj.searchParams.get('error')
 		if (code) {
 			console.log('CODE: ', code)
-			authCode = code
+			spotifyAuthCode = code
 			spotifyAuthWindow.close()
 		} else if (error) {
 			console.log('ERROR: ', error)
-			authError = true
+			spotifyAuthError = true
 			spotifyAuthWindow.close()
 		}
 	})
 
 	spotifyAuthWindow.on('closed', () => {
-		mainWindow.webContents.send('auth-code', { auth_code_on_close: authCode })
-		console.log('AUTHCODE ON CLOSE: ', authCode)
+		mainWindow.webContents.send('auth-code', { auth_code_on_close: spotifyAuthCode })
+		console.log('AUTHCODE ON CLOSE: ', spotifyAuthCode)
 		if (authError) {
-			console.log('NO AUTH CODE RETURNED: ', authError)
+			console.log('NO AUTH CODE RETURNED: ', spotifyAuthError)
 			wss.clients.forEach(function each(client) {
 				if (client.readyState === WebSocket.OPEN) {
 					client.send('npChatbot authorization with Spotify was cancelled.')
 				}
 			})
 			spotifyAuthWindow = null
-		} else if (authCode !== undefined) {
-			console.log('AUTH CODE: ', authCode)
+		} else if (spotifyAuthCode !== undefined) {
+			console.log('AUTH CODE: ', spotifyAuthCode)
 			// initAuthToken(authCode, wss, mainWindow)
-			// spotifyAuthWindow = null
+			spotifyAuthWindow = null
 		}
 	})
 })
@@ -346,10 +350,10 @@ ipcMain.on('startBotScript', async (event, arg) => {
 
 // ipc method to disconnect npChatbot script from Twitch
 ipcMain.on('stopBotScript', async (event, arg) => {
-	const seratoDisplayName = arg.seratoDisplayName.replaceAll(' ', '_')
-	const url = `https://serato.com/playlists/${seratoDisplayName}/live`
-	const reportData = await createLiveReport(url)
-	const spotifyPlaylistLink = generateSpotifyPlaylistLink(reportData)
+	// const seratoDisplayName = arg.seratoDisplayName.replaceAll(' ', '_')
+	// const url = `https://serato.com/playlists/${seratoDisplayName}/live`
+	// const reportData = await createLiveReport(url)
+	// const spotifyPlaylistLink = generateSpotifyPlaylistLink(reportData)
 
 	/*
 	--------------------------------------
