@@ -85,8 +85,13 @@ server.get('/', (req, res) => {
 // future workflow and handlers for Spotify app authorization process
 ipcMain.on('open-spotify-auth-url', async (event, arg) => {
 	const spotifyClientId = process.env.SPOTIFY_CLIENT_ID
-	const spotifyRedirectUri = process.env.SPOTIFY_REDIRECT_URL
-	const spotifyAuthUrl = `https://www.spotify.com`
+	const spotifyRedirectUri = process.env.SPOTIFY_REDIRECT_URI
+	const scope = 'playlist-modify-public playlist-modify-private'
+	const spotifyAuthUrl = `https://accounts.spotify.com/authorize?response_type=code&client_id=${spotifyClientId}&scope=${scope}&redirect_uri=${spotifyRedirectUri}`
+
+	console.log('SPOTIFY AUTH URL: ')
+	console.log(spotifyAuthUrl)
+	console.log('--------------------------------------')
 
 	spotifyAuthWindow = new BrowserWindow({
 		width: 800,
@@ -129,14 +134,14 @@ ipcMain.on('open-spotify-auth-url', async (event, arg) => {
 			spotifyAuthWindow = null
 		} else if (authCode !== undefined) {
 			console.log('AUTH CODE: ', authCode)
-			initAuthToken(authCode, wss, mainWindow)
-			spotifyAuthWindow = null
+			// initAuthToken(authCode, wss, mainWindow)
+			// spotifyAuthWindow = null
 		}
 	})
 })
 
 // ipc handler for opening the Twitch auth window and response
-ipcMain.on('open-auth-url', async (event, arg) => {
+ipcMain.on('open-twitch-auth-url', async (event, arg) => {
 	const clientId = process.env.TWITCH_CLIENT_ID
 	const redirectUri = process.env.TWITCH_AUTH_REDIRECT_URL
 	const authUrl = `https://id.twitch.tv/oauth2/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&scope=chat:read+chat:edit&state=c3ab8aa609ea11e793ae92361f002671`
@@ -433,7 +438,7 @@ ipcMain.on('userDataUpdated', () => {
 
 // ipc method to handler user data/preference updates
 ipcMain.on('submitUserData', async (event, arg) => {
-	let token	
+	let token
 	try {
 		const currentAccessToken = await getRefreshToken(arg.twitchRefreshToken)
 		if (currentAccessToken.status === 400) {
@@ -469,7 +474,7 @@ ipcMain.on('submitUserData', async (event, arg) => {
 	const isValidTwitchChatbotURL = await twitchURLValidityCheck(
 		arg.twitchChatbotName,
 		token
-	)	
+	)
 
 	if (isValidTwitchURL && isValidTwitchChatbotURL && isValidSeratoURL) {
 		try {
