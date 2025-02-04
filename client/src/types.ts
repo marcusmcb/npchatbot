@@ -16,7 +16,7 @@ export interface MessagePanelProps {
 }
 
 export interface TitleBarProps {
-	isAuthorized: boolean
+	isTwitchAuthorized: boolean
 	isBotConnected: boolean
 }
 
@@ -41,7 +41,7 @@ export type CredentialsPanelProps = {
 	handleSubmit: (event: React.FormEvent<HTMLFormElement>) => void
 	isBotConnected: boolean
 	isObsResponseEnabled: boolean
-	isAuthorized: boolean
+	isTwitchAuthorized: boolean
 	isFormModified: boolean
 }
 
@@ -52,7 +52,7 @@ export interface SessionPanelProps {
   setReportView: (value: boolean) => void
   reportView: boolean
   isBotConnected: boolean
-  isAuthorized: boolean
+  isTwitchAuthorized: boolean
   isConnectionReady: boolean
   isReportReady: boolean
   reportData: ReportData | null	

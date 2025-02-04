@@ -41,7 +41,7 @@ const App = (): JSX.Element => {
 	const [isReportEnabled, setIsReportEnabled] = useState(false)
 	const [showTooltip, setShowTooltip] = useState<string | null>(null)
 	const [isBotConnected, setIsBotConnected] = useState(false)
-	const [isAuthorized, setIsAuthorized] = useState(false)
+	const [isTwitchAuthorized, setIsTwitchAuthorized] = useState(false)
 	const [isConnectionReady, setIsConnectionReady] = useState(false)
 	const [messageQueue, setMessageQueue] = useState<string[]>([])
 	const [currentMessage, setCurrentMessage] = useState<string | null>(null)
@@ -123,7 +123,7 @@ const App = (): JSX.Element => {
 			console.log('Message from server: ', event.data)
 			addMessageToQueue(event.data)
 			if (event.data !== 'npChatbot authorization with Twitch was cancelled.') {
-				setIsAuthorized(true)
+				setIsTwitchAuthorized(true)
 			}
 		})
 
@@ -167,7 +167,7 @@ const App = (): JSX.Element => {
 					setIsObsResponseEnabled(response.data.isObsResponseEnabled)
 					setIsIntervalEnabled(response.data.isIntervalEnabled)
 					setIsReportEnabled(response.data.isReportEnabled)
-					setIsAuthorized(!!response.data.appAuthorizationCode)
+					setIsTwitchAuthorized(!!response.data.appAuthorizationCode)
 					setIsConnectionReady(
 						// Check if all necessary fields are filled for connection
 						!!response.data.twitchChannelName &&
@@ -431,7 +431,7 @@ const App = (): JSX.Element => {
 				) : (
 					<>
 						<TitleBar
-							isAuthorized={isAuthorized}
+							isTwitchAuthorized={isTwitchAuthorized}
 							isBotConnected={isBotConnected}
 						/>
 						<MessagePanel
@@ -463,7 +463,7 @@ const App = (): JSX.Element => {
 								handleSubmit={handleSubmit}
 								isBotConnected={isBotConnected}
 								isObsResponseEnabled={isObsResponseEnabled}
-								isAuthorized={isAuthorized}
+								isTwitchAuthorized={isTwitchAuthorized}
 								isFormModified={isFormModified}
 							/>
 							<PreferencesPanel
@@ -484,7 +484,7 @@ const App = (): JSX.Element => {
 							handleConnect={handleConnect}
 							handleDisconnect={handleDisconnect}
 							isBotConnected={isBotConnected}
-							isAuthorized={isAuthorized}
+							isTwitchAuthorized={isTwitchAuthorized}
 							isConnectionReady={isConnectionReady}
 							reportData={reportData || ({} as ReportData)}
 							isReportReady={isReportReady}
