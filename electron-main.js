@@ -40,6 +40,8 @@ const {
 	updateUserData,
 } = require('./helpers/updateUserParams/updateUserParams')
 
+const { generateRandomState } = require('./bot-assets/post-stream-report/helpers/spotifyHelpers')
+
 const errorHandler = require('./helpers/errorHandler/errorHandler')
 
 const {
@@ -91,7 +93,8 @@ ipcMain.on('open-spotify-auth-url', async (event, arg) => {
 	const spotifyClientId = process.env.SPOTIFY_CLIENT_ID
 	const spotifyRedirectUri = process.env.SPOTIFY_REDIRECT_URI
 	const scope = 'playlist-modify-public playlist-modify-private'
-	const spotifyAuthUrl = `https://accounts.spotify.com/authorize?response_type=code&client_id=${spotifyClientId}&scope=${scope}&redirect_uri=${spotifyRedirectUri}`
+	const state = generateRandomState()
+	const spotifyAuthUrl = `https://accounts.spotify.com/authorize?response_type=code&client_id=${spotifyClientId}&scope=${scope}&state=${state}&redirect_uri=${spotifyRedirectUri}`
 
 	console.log('SPOTIFY AUTH URL: ')
 	console.log(spotifyAuthUrl)
@@ -114,8 +117,14 @@ ipcMain.on('open-spotify-auth-url', async (event, arg) => {
 		const urlObj = new URL(url)
 		const code = urlObj.searchParams.get('code')
 		const error = urlObj.searchParams.get('error')
+		const state = urlObj.searchParams.get('state')
 		if (code) {
 			console.log('CODE: ', code)
+			if (state) {
+				console.log('STATE: ', state)
+			} else {
+				console.log('NO STATE PARAMETER RETURNED')
+			}
 			spotifyAuthCode = code
 			spotifyAuthWindow.close()
 		} else if (error) {
@@ -128,7 +137,7 @@ ipcMain.on('open-spotify-auth-url', async (event, arg) => {
 	spotifyAuthWindow.on('closed', () => {
 		mainWindow.webContents.send('auth-code', { auth_code_on_close: spotifyAuthCode })
 		console.log('AUTHCODE ON CLOSE: ', spotifyAuthCode)
-		if (authError) {
+		if (spotifyAuthError) {
 			console.log('NO AUTH CODE RETURNED: ', spotifyAuthError)
 			wss.clients.forEach(function each(client) {
 				if (client.readyState === WebSocket.OPEN) {
@@ -138,7 +147,7 @@ ipcMain.on('open-spotify-auth-url', async (event, arg) => {
 			spotifyAuthWindow = null
 		} else if (spotifyAuthCode !== undefined) {
 			console.log('AUTH CODE: ', spotifyAuthCode)
-			// initAuthToken(authCode, wss, mainWindow)
+			initSpotifyAuthToken(spotifyAuthCode, wss, mainWindow)
 			spotifyAuthWindow = null
 		}
 	})
