@@ -33,6 +33,7 @@ const App = (): JSX.Element => {
 		isObsResponseEnabled: false,
 		isIntervalEnabled: false,
 		isReportEnabled: false,
+		isSpotifyEnabled: false,
 	})
 
 	const [error, setError] = useState('')
@@ -65,8 +66,10 @@ const App = (): JSX.Element => {
 		intervalMessageDuration: formData.intervalMessageDuration,
 	})
 
-	useEffect(() => {
-		// Load initial preferences state along with formData
+	/* EFFECT HOOKS */
+
+	// hook to load initial user data and preferences
+	useEffect(() => {		
 		const ipcRendererInstance = window.electron?.ipcRenderer
 		if (ipcRendererInstance) {
 			ipcRendererInstance.send('getUserData', {})
@@ -91,8 +94,8 @@ const App = (): JSX.Element => {
 		}
 	}, [])
 
-	useEffect(() => {
-		// Compare current preferences and formData to their initial states
+	// hook to check current form data against initial form data
+	useEffect(() => {		
 		const preferencesModified =
 			isObsResponseEnabled !== initialPreferences.isObsResponseEnabled ||
 			isIntervalEnabled !== initialPreferences.isIntervalEnabled ||
@@ -114,9 +117,7 @@ const App = (): JSX.Element => {
 		isReportEnabled,
 		isSpotifyEnabled,
 		initialPreferences,
-	])
-
-	/* EFFECT HOOKS */
+	])	
 
 	// hook for successful twitch auth callback
 	useEffect(() => {
@@ -150,6 +151,10 @@ const App = (): JSX.Element => {
 
 	// hook to initially set user id in state
 	// once the app has been authorized via Twitch
+
+	// update hook and back end Electron handler
+	// to handle successful auth response from
+	// either Twitch or Spotify
 	useEffect(() => {
 		const handleAuthSuccess = (response: AuthSuccess) => {
 			console.log('Auth success:', response)
@@ -179,6 +184,7 @@ const App = (): JSX.Element => {
 					setIsObsResponseEnabled(response.data.isObsResponseEnabled)
 					setIsIntervalEnabled(response.data.isIntervalEnabled)
 					setIsReportEnabled(response.data.isReportEnabled)
+					setIsSpotifyEnabled(response.data.isSpotifyEnabled)
 					setIsSpotifyAuthorized(!!response.data.spotifyAuthorizationCode)
 					setIsTwitchAuthorized(!!response.data.appAuthorizationCode)
 					setIsConnectionReady(
