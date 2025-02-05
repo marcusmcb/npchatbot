@@ -58,6 +58,9 @@ const initAuthToken = async (code, wss, mainWindow) => {
 		} else {
 			logToFile(`exchangeCodeForToken result error: ${JSON.stringify(token)}`)
 			logToFile(`* * * * * * * * * * * * * * * * * * *`)
+			// add return statement here and logic to notify user
+			// in the client UI that the token exchange failed
+			// and to try again or contact support
 		}
 
 		db.users.findOne({}, (err, user) => {
