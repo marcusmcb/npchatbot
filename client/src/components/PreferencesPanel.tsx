@@ -17,6 +17,8 @@ type PreferencesPanelProps = {
 	setIsIntervalEnabled: (value: boolean) => void
 	isReportEnabled: boolean
 	setIsReportEnabled: (value: boolean) => void
+	isSpotifyEnabled: boolean
+	setIsSpotifyEnabled: (value: boolean) => void
 	handleInputChange: (event: React.ChangeEvent<HTMLInputElement>) => void
 	showTooltip: string | null
 	setShowTooltip: (value: string | null) => void

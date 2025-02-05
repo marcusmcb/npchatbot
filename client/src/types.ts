@@ -42,6 +42,7 @@ export type CredentialsPanelProps = {
 	isBotConnected: boolean
 	isObsResponseEnabled: boolean
 	isTwitchAuthorized: boolean
+  isSpotifyAuthorized: boolean
 	isFormModified: boolean
 }
 

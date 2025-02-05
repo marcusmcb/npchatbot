@@ -37,14 +37,16 @@ const App = (): JSX.Element => {
 
 	const [error, setError] = useState('')
 	const [isObsResponseEnabled, setIsObsResponseEnabled] = useState(false)
-	const [isIntervalEnabled, setIsIntervalEnabled] = useState(false)
-	const [isReportEnabled, setIsReportEnabled] = useState(false)
+	const [isIntervalEnabled, setIsIntervalEnabled] = useState(false)	
 	const [showTooltip, setShowTooltip] = useState<string | null>(null)
 	const [isBotConnected, setIsBotConnected] = useState(false)
 	const [isTwitchAuthorized, setIsTwitchAuthorized] = useState(false)
+	const [isSpotifyAuthorized, setIsSpotifyAuthorized] = useState(false)
+	const [isSpotifyEnabled, setIsSpotifyEnabled] = useState(false)
 	const [isConnectionReady, setIsConnectionReady] = useState(false)
 	const [messageQueue, setMessageQueue] = useState<string[]>([])
 	const [currentMessage, setCurrentMessage] = useState<string | null>(null)
+	const [isReportEnabled, setIsReportEnabled] = useState(false)	
 	const [reportData, setReportData] = useState<ReportData | null>(null)
 	const [isReportReady, setIsReportReady] = useState(false)
 	const [reportView, setReportView] = useState(false)
@@ -58,6 +60,7 @@ const App = (): JSX.Element => {
 		isObsResponseEnabled,
 		isIntervalEnabled,
 		isReportEnabled,
+		isSpotifyEnabled,
 		obsClearDisplayTime: formData.obsClearDisplayTime,
 		intervalMessageDuration: formData.intervalMessageDuration,
 	})
@@ -77,6 +80,7 @@ const App = (): JSX.Element => {
 						isReportEnabled: response.data.isReportEnabled,
 						obsClearDisplayTime: response.data.obsClearDisplayTime,
 						intervalMessageDuration: response.data.intervalMessageDuration,
+						isSpotifyEnabled: response.data.isSpotifyEnabled,
 					})
 				}
 			}
@@ -93,6 +97,7 @@ const App = (): JSX.Element => {
 			isObsResponseEnabled !== initialPreferences.isObsResponseEnabled ||
 			isIntervalEnabled !== initialPreferences.isIntervalEnabled ||
 			isReportEnabled !== initialPreferences.isReportEnabled ||
+			isSpotifyEnabled !== initialPreferences.isSpotifyEnabled ||
 			formData.obsClearDisplayTime !== initialPreferences.obsClearDisplayTime ||
 			formData.intervalMessageDuration !==
 				initialPreferences.intervalMessageDuration
@@ -107,6 +112,7 @@ const App = (): JSX.Element => {
 		isObsResponseEnabled,
 		isIntervalEnabled,
 		isReportEnabled,
+		isSpotifyEnabled,
 		initialPreferences,
 	])
 
@@ -122,8 +128,14 @@ const App = (): JSX.Element => {
 		socket.addEventListener('message', (event) => {
 			console.log('Message from server: ', event.data)
 			addMessageToQueue(event.data)
-			if (event.data !== 'npChatbot authorization with Twitch was cancelled.') {
+			// if (event.data !== 'npChatbot authorization with Twitch was cancelled.') {
+			// 	setIsTwitchAuthorized(true)
+			// }
+			if (event.data === 'npChatbot authorization with Twitch was successful.') {
 				setIsTwitchAuthorized(true)
+			} 
+			if (event.data === 'npChatbot authorization with Spotify was successful.') {
+				setIsSpotifyAuthorized(true)
 			}
 		})
 
@@ -167,6 +179,7 @@ const App = (): JSX.Element => {
 					setIsObsResponseEnabled(response.data.isObsResponseEnabled)
 					setIsIntervalEnabled(response.data.isIntervalEnabled)
 					setIsReportEnabled(response.data.isReportEnabled)
+					setIsSpotifyAuthorized(!!response.data.spotifyAuthorizationCode)
 					setIsTwitchAuthorized(!!response.data.appAuthorizationCode)
 					setIsConnectionReady(
 						// Check if all necessary fields are filled for connection
@@ -405,6 +418,7 @@ const App = (): JSX.Element => {
 					isObsResponseEnabled: response.data.isObsResponseEnabled,
 					isIntervalEnabled: response.data.isIntervalEnabled,
 					isReportEnabled: response.data.isReportEnabled,
+					isSpotifyEnabled: response.data.isSpotifyEnabled,
 					obsClearDisplayTime: response.data.obsClearDisplayTime,
 					intervalMessageDuration: response.data.intervalMessageDuration,
 				})
@@ -464,11 +478,14 @@ const App = (): JSX.Element => {
 								isBotConnected={isBotConnected}
 								isObsResponseEnabled={isObsResponseEnabled}
 								isTwitchAuthorized={isTwitchAuthorized}
+								isSpotifyAuthorized={isSpotifyAuthorized}
 								isFormModified={isFormModified}
 							/>
 							<PreferencesPanel
 								formData={formData}
 								isObsResponseEnabled={isObsResponseEnabled}
+								isSpotifyEnabled={isSpotifyEnabled}
+								setIsSpotifyEnabled={setIsSpotifyEnabled}
 								setIsObsResponseEnabled={setIsObsResponseEnabled}
 								isIntervalEnabled={isIntervalEnabled}
 								setIsIntervalEnabled={setIsIntervalEnabled}
