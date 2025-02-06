@@ -248,6 +248,10 @@ button:disabled:hover {
 	margin-top: 20px;
 }
 
+.spotify-prefs-element {
+	margin-top: 20px;
+}
+
 .question-icon,
 .active-icon {
 	display: inline-block;

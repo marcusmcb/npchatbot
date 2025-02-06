@@ -29,6 +29,45 @@ const PreferencesPanel: React.FC<PreferencesPanelProps> = (props) => {
 	return (
 		<div className='app-container-column'>
 			<div className='app-form-title'>Preferences:</div>
+
+			{/* Spotify Preferences */}
+			<div className='toggle-field spotify-prefs-element'>
+				<input
+					type='checkbox'
+					disabled={props.isBotConnected}
+					id='spotifyPlaylistEnabled'
+					checked={props.isSpotifyEnabled}
+					onChange={() => props.setIsSpotifyEnabled(!props.isSpotifyEnabled)}
+					className={props.isBotConnected ? 'disabled-toggle' : ''}
+				/>
+
+				<label
+					htmlFor='spotifyPlaylistEnabled'
+					className={
+						(!props.isSpotifyEnabled || props.isBotConnected
+							? 'disabled-label'
+							: '') + (props.isBotConnected ? ' greyed-out-label' : '')
+					}
+				>
+					Enable Spotify Playlist
+				</label>
+				<span
+					className={`question-icon ${
+						props.showTooltip === 'spotifyPlaylistEnabled' ? 'active-icon' : ''
+					}`}
+					onClick={() =>
+						props.setShowTooltip(
+							props.showTooltip === 'spotifyPlaylistEnabled'
+								? null
+								: 'spotifyPlaylistEnabled'
+						)
+					}
+				>
+					?
+				</span>
+			</div>
+
+			{/* OBS preferences */}
 			<div className='toggle-field obs-prefs-element'>
 				<input
 					type='checkbox'
@@ -99,6 +138,7 @@ const PreferencesPanel: React.FC<PreferencesPanelProps> = (props) => {
 				</span>
 			</div>
 
+			{/* Interval Message preferences */}
 			<div className='toggle-field interval-prefs-element'>
 				<input
 					type='checkbox'
@@ -161,54 +201,6 @@ const PreferencesPanel: React.FC<PreferencesPanelProps> = (props) => {
 					?
 				</span>
 			</div>
-			{/* <div className='toggle-field report-prefs-element'>
-				<input
-					type='checkbox'
-					id='sendReportToggle'
-					checked={props.isReportEnabled}
-					onChange={() => props.setIsReportEnabled(!props.isReportEnabled)}
-				/>
-
-				<label
-					htmlFor='sendReportToggle'
-					className={!props.isReportEnabled ? 'disabled-label' : ''}
-				>
-					Send Post-Stream Report
-				</label>
-			</div>
-			<div className='form-field'>
-				<label
-					htmlFor='is-report-enabled'
-					className={!props.isReportEnabled ? 'disabled-label' : ''}
-				>
-					Email Address:
-				</label>
-
-				<input
-					className={!props.isReportEnabled ? 'disabled-label' : ''}
-					type='text'
-					id='is-report-enabled'
-					name='userEmailAddress'
-					value={props.formData.userEmailAddress}
-					onChange={props.handleInputChange}
-					placeholder=''
-					disabled={!props.isReportEnabled}
-				/>
-				<span
-					className={`question-icon ${
-						props.showTooltip === 'userEmailAddress' ? 'active-icon' : ''
-					}`}
-					onClick={() =>
-						props.setShowTooltip(
-							props.showTooltip === 'userEmailAddress'
-								? null
-								: 'userEmailAddress'
-						)
-					}
-				>
-					?
-				</span>
-			</div> */}
 		</div>
 	)
 }
