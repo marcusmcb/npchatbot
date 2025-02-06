@@ -7,6 +7,7 @@ const ipcRenderer = window.electron.ipcRenderer
 
 const TitleBar = ({
 	isTwitchAuthorized,
+	isSpotifyAuthorized,
 	isBotConnected,
 }: TitleBarProps): JSX.Element => {
 	const handleAuthClick = () => {
@@ -49,7 +50,7 @@ const TitleBar = ({
 					onClick={handleSpotifyAuthClick}
 					disabled={isBotConnected}
 					className={
-						isTwitchAuthorized ? 'auth-button-authorized' : 'auth-button-default'
+						isSpotifyAuthorized ? 'auth-button-authorized' : 'auth-button-default'
 					}
 				>
 					<span className='button-content'>

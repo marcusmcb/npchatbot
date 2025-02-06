@@ -24,6 +24,7 @@ const App = (): JSX.Element => {
 		twitchChannelName: '',
 		twitchChatbotName: '',
 		twitchRefreshToken: '',
+		spotifyRefreshToken: '',
 		seratoDisplayName: '',
 		obsWebsocketAddress: '',
 		obsWebsocketPassword: '',
@@ -132,10 +133,12 @@ const App = (): JSX.Element => {
 			// if (event.data !== 'npChatbot authorization with Twitch was cancelled.') {
 			// 	setIsTwitchAuthorized(true)
 			// }
-			if (event.data === 'npChatbot authorization with Twitch was successful.') {
+			if (event.data === 'npChatbot successfully linked to your Twitch account') {
+				console.log("**** Twitch Auth Successful ****")
 				setIsTwitchAuthorized(true)
 			} 
-			if (event.data === 'npChatbot authorization with Spotify was successful.') {
+			if (event.data === 'npChatbot successfully linked to your Spotify account') {
+				console.log("**** Spotify Auth Successful ****")
 				setIsSpotifyAuthorized(true)
 			}
 		})
@@ -326,6 +329,8 @@ const App = (): JSX.Element => {
 				: '',
 			isObsResponseEnabled: formData.isObsResponseEnabled,
 			twitchRefreshToken: formData.twitchRefreshToken,
+			spotifyRefreshToken: formData.spotifyRefreshToken,
+			isSpotifyEnabled: formData.isSpotifyEnabled,
 		})
 		console.log('*** startBotScript sent; awaiting response ***')
 		ipcRenderer.on('startBotResponse', (response) => {
@@ -452,6 +457,7 @@ const App = (): JSX.Element => {
 					<>
 						<TitleBar
 							isTwitchAuthorized={isTwitchAuthorized}
+							isSpotifyAuthorized={isSpotifyAuthorized}
 							isBotConnected={isBotConnected}
 						/>
 						<MessagePanel
