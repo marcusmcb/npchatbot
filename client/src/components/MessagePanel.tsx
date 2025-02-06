@@ -26,6 +26,8 @@ const MessagePanel: React.FC<MessagePanelProps> = ({
 				return tooltipTexts.obsWebsocketPassword
 			case 'userEmailAddress':
 				return tooltipTexts.userEmailAddress
+			case 'spotifyPlaylistEnabled':
+				return tooltipTexts.spotifyPlaylistEnabled
 			default:
 				return ''
 		}
