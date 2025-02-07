@@ -497,6 +497,7 @@ const App = (): JSX.Element => {
 							/>
 							<PreferencesPanel
 								formData={formData}
+								isTwitchAuthorized={isTwitchAuthorized}
 								isObsResponseEnabled={isObsResponseEnabled}
 								isSpotifyEnabled={isSpotifyEnabled}
 								isSpotifyAuthorized={isSpotifyAuthorized}

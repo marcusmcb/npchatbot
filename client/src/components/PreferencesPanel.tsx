@@ -12,6 +12,7 @@ type PreferencesPanelProps = {
 		userEmailAddress: string
 	}
 	isObsResponseEnabled: boolean
+	isTwitchAuthorized: boolean
 	setIsObsResponseEnabled: (value: boolean) => void
 	isIntervalEnabled: boolean
 	setIsIntervalEnabled: (value: boolean) => void
@@ -78,20 +79,12 @@ const PreferencesPanel: React.FC<PreferencesPanelProps> = (props) => {
 					type='checkbox'
 					id='obsResponseToggle'
 					checked={props.isObsResponseEnabled}
-					disabled={
-						!(
-							props.formData.obsWebsocketAddress &&
-							props.formData.obsWebsocketPassword
-						) || props.isBotConnected
-					}
+					disabled={!props.isTwitchAuthorized || !props.formData.obsWebsocketAddress || props.isBotConnected}
 					onChange={() => {
 						props.setIsObsResponseEnabled(!props.isObsResponseEnabled)
 					}}
 					className={
-						!(
-							props.formData.obsWebsocketAddress &&
-							props.formData.obsWebsocketPassword
-						) || props.isBotConnected
+						!props.isTwitchAuthorized || !props.formData.obsWebsocketAddress || props.isBotConnected
 							? 'disabled-toggle'
 							: ''
 					}
@@ -154,11 +147,11 @@ const PreferencesPanel: React.FC<PreferencesPanelProps> = (props) => {
 			<div className='toggle-field interval-prefs-element'>
 				<input
 					type='checkbox'
-					disabled={props.isBotConnected}
+					disabled={!props.isTwitchAuthorized || props.isBotConnected}
 					id='intervalMessageToggle'
 					checked={props.isIntervalEnabled}
 					onChange={() => props.setIsIntervalEnabled(!props.isIntervalEnabled)}
-					className={props.isBotConnected ? 'disabled-toggle' : ''}
+					className={!props.isTwitchAuthorized || props.isBotConnected ? 'disabled-toggle' : ''}
 				/>
 
 				<label
