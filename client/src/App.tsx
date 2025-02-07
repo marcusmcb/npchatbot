@@ -39,7 +39,7 @@ const App = (): JSX.Element => {
 
 	const [error, setError] = useState('')
 	const [isObsResponseEnabled, setIsObsResponseEnabled] = useState(false)
-	const [isIntervalEnabled, setIsIntervalEnabled] = useState(false)	
+	const [isIntervalEnabled, setIsIntervalEnabled] = useState(false)
 	const [showTooltip, setShowTooltip] = useState<string | null>(null)
 	const [isBotConnected, setIsBotConnected] = useState(false)
 	const [isTwitchAuthorized, setIsTwitchAuthorized] = useState(false)
@@ -48,16 +48,12 @@ const App = (): JSX.Element => {
 	const [isConnectionReady, setIsConnectionReady] = useState(false)
 	const [messageQueue, setMessageQueue] = useState<string[]>([])
 	const [currentMessage, setCurrentMessage] = useState<string | null>(null)
-	const [isReportEnabled, setIsReportEnabled] = useState(false)	
+	const [isReportEnabled, setIsReportEnabled] = useState(false)
 	const [reportData, setReportData] = useState<ReportData | null>(null)
 	const [isReportReady, setIsReportReady] = useState(false)
 	const [reportView, setReportView] = useState(false)
-	const messageTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-	const ipcRenderer = window.electron.ipcRenderer
-
 	const [initialFormData, setInitialFormData] = useState(formData)
 	const [isFormModified, setIsFormModified] = useState(false)
-
 	const [initialPreferences, setInitialPreferences] = useState({
 		isObsResponseEnabled,
 		isIntervalEnabled,
@@ -66,11 +62,13 @@ const App = (): JSX.Element => {
 		obsClearDisplayTime: formData.obsClearDisplayTime,
 		intervalMessageDuration: formData.intervalMessageDuration,
 	})
+	const messageTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+	const ipcRenderer = window.electron.ipcRenderer
 
 	/* EFFECT HOOKS */
 
 	// hook to load initial user data and preferences
-	useEffect(() => {		
+	useEffect(() => {
 		const ipcRendererInstance = window.electron?.ipcRenderer
 		if (ipcRendererInstance) {
 			ipcRendererInstance.send('getUserData', {})
@@ -96,7 +94,7 @@ const App = (): JSX.Element => {
 	}, [])
 
 	// hook to check current form data against initial form data
-	useEffect(() => {		
+	useEffect(() => {
 		const preferencesModified =
 			isObsResponseEnabled !== initialPreferences.isObsResponseEnabled ||
 			isIntervalEnabled !== initialPreferences.isIntervalEnabled ||
@@ -118,7 +116,7 @@ const App = (): JSX.Element => {
 		isReportEnabled,
 		isSpotifyEnabled,
 		initialPreferences,
-	])	
+	])
 
 	// hook for successful twitch auth callback
 	useEffect(() => {
@@ -133,12 +131,16 @@ const App = (): JSX.Element => {
 			// if (event.data !== 'npChatbot authorization with Twitch was cancelled.') {
 			// 	setIsTwitchAuthorized(true)
 			// }
-			if (event.data === 'npChatbot successfully linked to your Twitch account') {
-				console.log("**** Twitch Auth Successful ****")
+			if (
+				event.data === 'npChatbot successfully linked to your Twitch account'
+			) {
+				console.log('**** Twitch Auth Successful ****')
 				setIsTwitchAuthorized(true)
-			} 
-			if (event.data === 'npChatbot successfully linked to your Spotify account') {
-				console.log("**** Spotify Auth Successful ****")
+			}
+			if (
+				event.data === 'npChatbot successfully linked to your Spotify account'
+			) {
+				console.log('**** Spotify Auth Successful ****')
 				setIsSpotifyAuthorized(true)
 			}
 		})
@@ -497,6 +499,7 @@ const App = (): JSX.Element => {
 								formData={formData}
 								isObsResponseEnabled={isObsResponseEnabled}
 								isSpotifyEnabled={isSpotifyEnabled}
+								isSpotifyAuthorized={isSpotifyAuthorized}
 								setIsSpotifyEnabled={setIsSpotifyEnabled}
 								setIsObsResponseEnabled={setIsObsResponseEnabled}
 								isIntervalEnabled={isIntervalEnabled}
