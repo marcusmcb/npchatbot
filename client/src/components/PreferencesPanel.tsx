@@ -19,6 +19,7 @@ type PreferencesPanelProps = {
 	setIsReportEnabled: (value: boolean) => void
 	isSpotifyEnabled: boolean
 	setIsSpotifyEnabled: (value: boolean) => void
+	isSpotifyAuthorized: boolean
 	handleInputChange: (event: React.ChangeEvent<HTMLInputElement>) => void
 	showTooltip: string | null
 	setShowTooltip: (value: string | null) => void
@@ -34,11 +35,15 @@ const PreferencesPanel: React.FC<PreferencesPanelProps> = (props) => {
 			<div className='toggle-field spotify-prefs-element'>
 				<input
 					type='checkbox'
-					disabled={props.isBotConnected}
+					disabled={!props.isSpotifyAuthorized || props.isBotConnected}
 					id='spotifyPlaylistEnabled'
 					checked={props.isSpotifyEnabled}
 					onChange={() => props.setIsSpotifyEnabled(!props.isSpotifyEnabled)}
-					className={props.isBotConnected ? 'disabled-toggle' : ''}
+					className={
+						!props.isSpotifyAuthorized || props.isBotConnected
+							? 'disabled-toggle'
+							: ''
+					}
 				/>
 
 				<label
@@ -82,7 +87,14 @@ const PreferencesPanel: React.FC<PreferencesPanelProps> = (props) => {
 					onChange={() => {
 						props.setIsObsResponseEnabled(!props.isObsResponseEnabled)
 					}}
-					className={props.isBotConnected ? 'disabled-toggle' : ''}
+					className={
+						!(
+							props.formData.obsWebsocketAddress &&
+							props.formData.obsWebsocketPassword
+						) || props.isBotConnected
+							? 'disabled-toggle'
+							: ''
+					}
 				/>
 				<label
 					htmlFor='obsResponseToggle'
