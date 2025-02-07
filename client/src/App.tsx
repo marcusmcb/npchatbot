@@ -73,6 +73,12 @@ const App = (): JSX.Element => {
 		if (ipcRendererInstance) {
 			ipcRendererInstance.send('getUserData', {})
 			const handleGetUserDataResponse = (response: any) => {
+				console.log('Response: ', response.error)
+				if (response.error) {
+					addMessageToQueue(
+						'To get started, click the Twitch icon to authorize npChatbot.'
+					)
+				}
 				if (response && Object.keys(response.data).length > 0) {
 					setFormData(response.data)
 					setInitialFormData(response.data) // Save the initial form data
