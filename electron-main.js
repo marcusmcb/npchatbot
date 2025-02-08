@@ -17,7 +17,7 @@ const {
 	dypSearchTerms,
 } = require('./bot-assets/command-use/commandUse')
 const createLiveReport = require('./bot-assets/commands/liveReport/createLiveReport')
-const generateSpotifyPlaylistLink = require('./bot-assets/post-stream-report/generateSpotifyPlaylistLink')
+const { generateSpotifyPlaylistLink, createSpotifyPlaylistLink } = require('./bot-assets/post-stream-report/generateSpotifyPlaylistLink')
 
 const {
 	getRefreshToken,
@@ -26,6 +26,7 @@ const {
 } = require('./auth/createAccessToken')
 
 const { initSpotifyAuthToken } = require('./auth/createSpotifyAccessToken')
+const { getSpotifyAccessToken } = require('./auth/getSpotifyAccessToken')
 
 const {
 	seratoURLValidityCheck,
@@ -258,6 +259,7 @@ const startServer = () => {
 ipcMain.on('startBotScript', async (event, arg) => {
 	logToFile('startBotScript CALLED')
 	logToFile('*******************************')
+	console.log("ARG: ", arg)
 	let errorResponse = {
 		success: false,
 		error: null,
@@ -314,6 +316,18 @@ ipcMain.on('startBotScript', async (event, arg) => {
 		event.reply('startBotResponse', errorResponse)
 		return
 	}
+
+	if (arg.isSpotifyEnabled === true) {
+		const spotifyAccessToken = await getSpotifyAccessToken()
+		
+	} else {
+		console.log('Spotify is not enabled')
+	}
+
+	// add logic here to create a new Spotify playlist 
+	// if arg.isSpotifyEnabled === true
+
+	
 
 	// refactor the following sequence to properly await the user
 	// token update before the loadConfigurations method is called

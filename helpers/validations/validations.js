@@ -8,8 +8,10 @@ const seratoURLValidityCheck = async (seratoDisplayName) => {
 	try {
 		const response = await axios.head(url)
 		if (response.status >= 200 && response.status < 300) {
+			console.log('Serato URL found')
 			return true
 		} else {
+			console.log('Serato URL not found')
 			return false
 		}
 	} catch (error) {

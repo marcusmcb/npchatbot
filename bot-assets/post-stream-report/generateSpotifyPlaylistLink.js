@@ -199,6 +199,27 @@ const addTracksToSpotifyPlaylist = async (
 	}
 }
 
+const getSpotifyUserData = (accessToken) => {
+	try {
+		const response = axios.get('https://api.spotify.com/v1/me', {
+			headers: {
+				Authorization: `Bearer ${accessToken}`,
+				'Content-Type': 'application/json',
+			},
+		})
+		console.log('Spotify User Data:', response.data)
+	} catch (error) {
+		console.error('Error getting Spotify user data:', error)
+	}
+}
+
+const createSpotifyPlaylistLink = async () => {
+	const accessToken = await getSpotifyAccessToken()
+	const getSpotifyUserId = await getSpotifyUserData(accessToken)
+	// const playlistId = await createNewPlaylist(accessToken, spotifyUserId)
+	// return playlistId
+}
+
 const generateSpotifyPlaylistLink = async (reportData) => {
 	const accessToken = await getSpotifyAccessToken()
 	let songsPlayed = []
@@ -210,4 +231,4 @@ const generateSpotifyPlaylistLink = async (reportData) => {
 	await addTracksToSpotifyPlaylist(accessToken, playlistId, spotifySongUris)
 }
 
-module.exports = generateSpotifyPlaylistLink
+module.exports = { generateSpotifyPlaylistLink, createSpotifyPlaylistLink }

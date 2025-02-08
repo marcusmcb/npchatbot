@@ -74,7 +74,6 @@ const initSpotifyAuthToken = async (code, wss, mainWindow) => {
 				)}`
 			)
 			logToFile(`* * * * * * *`)
-
 		} else {
 			console.log(
 				`exchangeCodeForSpotifyToken result error: ${JSON.stringify(token)}`
@@ -85,95 +84,92 @@ const initSpotifyAuthToken = async (code, wss, mainWindow) => {
 			logToFile(`* * * * * * *`)
 		}
 
-    db.users.findOne({}, (err, user) => {
-      if (err) {
-        console.error('Error finding the user:', err)
-        logToFile('Error finding the user:', err)
-        logToFile(`* * * * * * *`)
-        return res.status(500).send('Database error.')
-      }
+		db.users.findOne({}, (err, user) => {
+			if (err) {
+				console.error('Error finding the user:', err)
+				logToFile('Error finding the user:', err)
+				logToFile(`* * * * * * *`)
+				return res.status(500).send('Database error.')
+			}
 
-      if (user) {
-        console.log('User found: ', user)
-        logToFile(`User found: ${JSON.stringify(user)}`)
-        logToFile(`* * * * * * *`)
-        db.users.update(
-          { _id: user._id },
-          {
-            $set: {
-              spotifyAccessToken: token.access_token,
-              spotifyRefreshToken: token.refresh_token,
-              spotifyAuthorizationCode: code,
-            },
-          },
-          {},
-          (err, numReplaced) => {
-            if (err) {
-              console.error('Error updating user:', err)
-              logToFile('Error updating user:', err)
-              logToFile(`* * * * * * *`)
-              return res.status(500).send('Database error.')
-            }
+			if (user) {
+				console.log('User found: ', user)
+				logToFile(`User found: ${JSON.stringify(user)}`)
+				logToFile(`* * * * * * *`)
+				db.users.update(
+					{ _id: user._id },
+					{
+						$set: {
+							spotifyAccessToken: token.access_token,
+							spotifyRefreshToken: token.refresh_token,
+							spotifyAuthorizationCode: code,
+						},
+					},
+					{},
+					(err, numReplaced) => {
+						if (err) {
+							console.error('Error updating user:', err)
+							logToFile('Error updating user:', err)
+							logToFile(`* * * * * * *`)
+							return res.status(500).send('Database error.')
+						}
 
-            if (numReplaced) {
-              console.log('User updated successfully!')
-              logToFile('User updated successfully!')
-              logToFile(`* * * * * * *`)
-            }
-          }
-        )
-      } else {
-        db.users.insert(
-          {
-            spotifyAccessToken: token.access_token,
-            spotifyRefreshToken: token.refresh_token,
-            spotifyAuthorizationCode: code,
-          },
-          (err, newDoc) => {
-            if (err) {
-              console.error('Error creating new user:', err)
-              logToFile('Error creating new user:', err)
-              logToFile(`* * * * * * *`)
-              return res.status(500).send('Error adding auth code to user file')
-            }
+						if (numReplaced) {
+							console.log('User updated successfully!')
+							logToFile('User updated successfully!')
+							logToFile(`* * * * * * *`)
+						}
+					}
+				)
+			} else {
+				db.users.insert(
+					{
+						spotifyAccessToken: token.access_token,
+						spotifyRefreshToken: token.refresh_token,
+						spotifyAuthorizationCode: code,
+					},
+					(err, newDoc) => {
+						if (err) {
+							console.error('Error creating new user:', err)
+							logToFile('Error creating new user:', err)
+							logToFile(`* * * * * * *`)
+							return res.status(500).send('Error adding auth code to user file')
+						}
 
-            if (newDoc) {
-              console.log('New user created successfully!')
-              logToFile('New user created successfully!')
-              logToFile(`* * * * * * *`)
-              mainWindow.webContents.send('auth-successful', {
-                _id: newDoc._id,
-                spotifyRefreshToken: newDoc.spotifyRefreshToken,
-              })
-            }
-          }
-        )
-      }
-    })
-    wss.clients.forEach(function each(client) {
-      if (client.readyState === WebSocket.OPEN) {
-        client.send('npChatbot successfully linked to your Spotify account')
-      }
-    })
+						if (newDoc) {
+							console.log('New user created successfully!')
+							logToFile('New user created successfully!')
+							logToFile(`* * * * * * *`)
+							mainWindow.webContents.send('auth-successful', {
+								_id: newDoc._id,
+								spotifyRefreshToken: newDoc.spotifyRefreshToken,
+							})
+						}
+					}
+				)
+			}
+		})
+		wss.clients.forEach(function each(client) {
+			if (client.readyState === WebSocket.OPEN) {
+				client.send('npChatbot successfully linked to your Spotify account')
+			}
+		})
 	} catch (error) {
 		console.error('Error exchanging code for token:', error)
-    wss.clients.forEach(function each(client) {
-      if (client.readyState === WebSocket.OPEN) {
-        client.send(`Error during Spotify auth: ${error}`)
-      }
-    })
+		wss.clients.forEach(function each(client) {
+			if (client.readyState === WebSocket.OPEN) {
+				client.send(`Error during Spotify auth: ${error}`)
+			}
+		})
 		logToFile(`Error exchanging code for token: ${error}`)
 		logToFile(`* * * * * * *`)
 	}
 }
-
-const getSpotifyRefreshToken = async (refreshToken) => {}
 
 const updateSpotifyUserToken = async (db, event, token) => {}
 
 module.exports = {
 	exchangeCodeForSpotifyToken,
 	initSpotifyAuthToken,
-	getSpotifyRefreshToken,
 	updateSpotifyUserToken,
 }
