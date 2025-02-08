@@ -17,7 +17,10 @@ const {
 	dypSearchTerms,
 } = require('./bot-assets/command-use/commandUse')
 const createLiveReport = require('./bot-assets/commands/liveReport/createLiveReport')
-const { generateSpotifyPlaylistLink, createSpotifyPlaylistLink } = require('./bot-assets/post-stream-report/generateSpotifyPlaylistLink')
+const {
+	generateSpotifyPlaylistLink,
+	createSpotifyPlaylistLink,
+} = require('./bot-assets/post-stream-report/generateSpotifyPlaylistLink')
 
 const {
 	getRefreshToken,
@@ -41,7 +44,9 @@ const {
 	updateUserData,
 } = require('./helpers/updateUserParams/updateUserParams')
 
-const { generateRandomState } = require('./bot-assets/post-stream-report/helpers/spotifyHelpers')
+const {
+	generateRandomState,
+} = require('./bot-assets/post-stream-report/helpers/spotifyHelpers')
 
 const errorHandler = require('./helpers/errorHandler/errorHandler')
 
@@ -135,8 +140,10 @@ ipcMain.on('open-spotify-auth-url', async (event, arg) => {
 		}
 	})
 
-	spotifyAuthWindow.on('closed', () => {
-		mainWindow.webContents.send('auth-code', { auth_code_on_close: spotifyAuthCode })
+	spotifyAuthWindow.on('closed', async () => {
+		mainWindow.webContents.send('auth-code', {
+			auth_code_on_close: spotifyAuthCode,
+		})
 		console.log('AUTHCODE ON CLOSE: ', spotifyAuthCode)
 		if (spotifyAuthError) {
 			console.log('NO AUTH CODE RETURNED: ', spotifyAuthError)
@@ -148,7 +155,10 @@ ipcMain.on('open-spotify-auth-url', async (event, arg) => {
 			spotifyAuthWindow = null
 		} else if (spotifyAuthCode !== undefined) {
 			console.log('AUTH CODE: ', spotifyAuthCode)
-			initSpotifyAuthToken(spotifyAuthCode, wss, mainWindow)
+			await initSpotifyAuthToken(spotifyAuthCode, wss, mainWindow)
+			setTimeout(async () => {
+				await getSpotifyAccessToken()
+			}, 1000)
 			spotifyAuthWindow = null
 		}
 	})
@@ -259,7 +269,7 @@ const startServer = () => {
 ipcMain.on('startBotScript', async (event, arg) => {
 	logToFile('startBotScript CALLED')
 	logToFile('*******************************')
-	console.log("ARG: ", arg)
+	console.log('ARG: ', arg)
 	let errorResponse = {
 		success: false,
 		error: null,
@@ -319,15 +329,12 @@ ipcMain.on('startBotScript', async (event, arg) => {
 
 	if (arg.isSpotifyEnabled === true) {
 		const spotifyAccessToken = await getSpotifyAccessToken()
-		
 	} else {
 		console.log('Spotify is not enabled')
 	}
 
-	// add logic here to create a new Spotify playlist 
+	// add logic here to create a new Spotify playlist
 	// if arg.isSpotifyEnabled === true
-
-	
 
 	// refactor the following sequence to properly await the user
 	// token update before the loadConfigurations method is called
