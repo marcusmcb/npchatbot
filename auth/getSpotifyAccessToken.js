@@ -1,4 +1,5 @@
 const axios = require('axios')
+const db = require('../database')
 const dotenv = require('dotenv')
 
 dotenv.config()
@@ -8,6 +9,9 @@ const clientId = process.env.SPOTIFY_CLIENT_ID
 const clientSecret = process.env.SPOTIFY_CLIENT_SECRET
 
 const getSpotifyAccessToken = async () => {
+	console.log('REFRESH TOKEN: ', refreshToken)
+	console.log('CLIENT ID: ', clientId)
+	console.log('CLIENT SECRET: ', clientSecret)
 	try {
 		const response = await axios.post(
 			'https://accounts.spotify.com/api/token',
@@ -23,7 +27,7 @@ const getSpotifyAccessToken = async () => {
 					'Content-Type': 'application/x-www-form-urlencoded',
 				},
 			}
-		)		
+		)
 		return response.data.access_token
 	} catch (error) {
 		console.error('Error refreshing access token:', error.response.data)

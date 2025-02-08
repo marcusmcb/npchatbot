@@ -424,6 +424,7 @@ const App = (): JSX.Element => {
 			isObsResponseEnabled,
 			isIntervalEnabled,
 			isReportEnabled,
+			isSpotifyEnabled
 		}
 
 		ipcRenderer.send('submitUserData', submitData)

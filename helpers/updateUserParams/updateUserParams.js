@@ -25,6 +25,7 @@ const updateUserData = async (db, event, arg) => {
 			seratoDisplayName: arg.seratoDisplayName,
 			isObsResponseEnabled: arg.isObsResponseEnabled,
 			isIntervalEnabled: arg.isIntervalEnabled,
+			isSpotifyEnabled: arg.isSpotifyEnabled,
 			isReportEnabled: arg.isReportEnabled,
 			intervalMessageDuration: arg.intervalMessageDuration,
 			obsWebsocketPassword: arg.obsWebsocketPassword,
