@@ -30,6 +30,7 @@ const {
 
 const { initSpotifyAuthToken } = require('./auth/createSpotifyAccessToken')
 const { getSpotifyAccessToken } = require('./auth/getSpotifyAccessToken')
+const { setSpotifyUserId } = require('./auth/setSpotifyUserId')
 
 const {
 	seratoURLValidityCheck,
@@ -157,8 +158,8 @@ ipcMain.on('open-spotify-auth-url', async (event, arg) => {
 			console.log('AUTH CODE: ', spotifyAuthCode)
 			await initSpotifyAuthToken(spotifyAuthCode, wss, mainWindow)
 			setTimeout(async () => {
-				await getSpotifyAccessToken()
-			}, 1000)
+				await setSpotifyUserId()
+			}, 100)
 			spotifyAuthWindow = null
 		}
 	})
