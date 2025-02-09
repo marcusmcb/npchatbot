@@ -42,6 +42,19 @@ const initializeBot = async (config) => {
 		await connectToOBS(config)
 	}
 
+	if (config.isSpotifyEnabled === true) {
+		// add auto ID method init call here
+		
+		// this will init a currentSong value to null
+		//
+		// currentSong's value will then be set to the 
+		// current song playing in the user's 
+		// Serato Live Playllst results
+		//
+		// currentSong's value will be added to the
+		// spotifyPlaylist
+	}
+
 	autoCommandsConfig(twitchClient, obs, config)
 
 	twitchClient.on('disconnected', () => {
