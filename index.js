@@ -8,6 +8,7 @@ const { obs, connectToOBS } = require('./obs/obsConnection')
 const { returnRefreshTokenConfig } = require('./auth/accessTokenConfig')
 const logToFile = require('./scripts/logger')
 const { npSongsQueried, dypSearchTerms } = require('./bot-assets/command-use/commandUse')
+const { trackCurrentSongPlaying } = require('./bot-assets/auto-id/trackCurrentSongPlaying')
 
 const initializeBot = async (config) => {
 	let userCommandHistory = {}
@@ -43,6 +44,7 @@ const initializeBot = async (config) => {
 	}
 
 	if (config.isSpotifyEnabled === true) {
+		trackCurrentSongPlaying(config)
 		// add auto ID method init call here
 		
 		// this will init a currentSong value to null
