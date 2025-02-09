@@ -23,6 +23,10 @@ const {
 } = require('./bot-assets/post-stream-report/generateSpotifyPlaylistLink')
 
 const {
+	createSpotifyPlaylist
+} = require('./bot-assets/spotify/createSpotifyPlaylist')
+
+const {
 	getRefreshToken,
 	updateUserToken,
 	initAuthToken,
@@ -271,9 +275,19 @@ ipcMain.on('startBotScript', async (event, arg) => {
 	logToFile('startBotScript CALLED')
 	logToFile('*******************************')
 	console.log('ARG: ', arg)
+
 	let errorResponse = {
 		success: false,
 		error: null,
+	}
+
+	// check if bot process is already running
+	if (botProcess) {
+		event.reply('startBotResponse', {
+			success: false,
+			error: 'Bot is already running.',
+		})
+		return
 	}
 
 	// validate local OBS connection if OBS responses are enabled
@@ -291,15 +305,6 @@ ipcMain.on('startBotScript', async (event, arg) => {
 			event.reply('startBotResponse', errorResponse)
 			return
 		}
-	}
-
-	// check if bot process is already running
-	if (botProcess) {
-		event.reply('startBotResponse', {
-			success: false,
-			error: 'Bot is already running.',
-		})
-		return
 	}
 
 	try {
@@ -329,7 +334,8 @@ ipcMain.on('startBotScript', async (event, arg) => {
 	}
 
 	if (arg.isSpotifyEnabled === true) {
-		const spotifyAccessToken = await getSpotifyAccessToken()
+		await getSpotifyAccessToken()
+		await createSpotifyPlaylist()
 	} else {
 		console.log('Spotify is not enabled')
 	}
