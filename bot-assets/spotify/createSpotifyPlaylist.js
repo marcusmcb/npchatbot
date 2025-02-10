@@ -2,16 +2,6 @@ const axios = require('axios')
 const db = require('../../database')
 const { getCurrentDate } = require('../spotify/helpers/spotifyPlaylistHelpers')
 
-const accessToken = user.spotifyAccessToken
-const spotifyUserId = user.spotifyUserId
-const playlistName = `Twitch Stream Playlist - ${getCurrentDate()}`
-
-const data = {
-	name: playlistName,
-	description: 'Selections from my Twitch stream',
-	public: true,
-}
-
 const createSpotifyPlaylist = async () => {
 	try {
 		const user = await new Promise((resolve, reject) => {
@@ -26,6 +16,16 @@ const createSpotifyPlaylist = async () => {
 		} else {
 			console.log('User data found for Spotify playlist creation')
 			console.log('-------------------------')
+		}
+
+		const accessToken = user.spotifyAccessToken
+		const spotifyUserId = user.spotifyUserId
+		const playlistName = `Twitch Stream Playlist - ${getCurrentDate()}`
+
+		const data = {
+			name: playlistName,
+			description: 'Selections from my Twitch stream',
+			public: true,
 		}
 
 		try {
