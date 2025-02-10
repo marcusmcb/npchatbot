@@ -206,6 +206,9 @@ const handleStats = (
 		reportData.average_track_length.minutes +
 		':' +
 		reportData.average_track_length.seconds
+	console.log("Average track length: ")
+	console.log("Minutes: ", reportData.average_track_length.minutes)
+	console.log("Seconds: ", reportData.average_track_length.seconds)
 	const totalTracksPlayed = reportData.total_tracks_played
 	const message = `${config.twitchChannelName} has played ${totalTracksPlayed} songs so far in this set with an average track length of ${averageTrackLength}.`
 	twitchClient.say(channel, message)
