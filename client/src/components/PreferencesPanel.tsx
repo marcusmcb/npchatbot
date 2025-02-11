@@ -77,18 +77,122 @@ const PreferencesPanel: React.FC<PreferencesPanelProps> = (props) => {
 				</span>
 			</div>
 
+			{/* Auto ID Preferences */}
+			<div className='toggle-field autoid-prefs-element'>
+				<input
+					type='checkbox'
+					disabled={!props.isTwitchAuthorized || props.isBotConnected}
+					id='autoIDEnabled'
+					checked={props.isAutoIDEnabled}
+					onChange={() => {
+						props.setIsAutoIDEnabled(!props.isAutoIDEnabled)
+						// if (props.isAutoIDCleanupEnabled) {
+						// 	props.setIsAutoIDCleanupEnabled(false)
+						// }
+					}}
+					className={
+						!props.isTwitchAuthorized || props.isBotConnected
+							? 'disabled-toggle'
+							: ''
+					}
+				/>
+
+				<label
+					htmlFor='autoIDEnabled'
+					className={
+						(!props.isAutoIDEnabled || props.isBotConnected
+							? 'disabled-label'
+							: '') + (props.isBotConnected ? ' greyed-out-label' : '')
+					}
+				>
+					Enable Auto ID
+				</label>
+				<span
+					className={`question-icon ${
+						props.showTooltip === 'autoIDEnabled' ? 'active-icon' : ''
+					}`}
+					onClick={() =>
+						props.setShowTooltip(
+							props.showTooltip === 'autoIDEnabled' ? null : 'autoIDEnabled'
+						)
+					}
+				>
+					?
+				</span>
+			</div>
+
+			{/* Auto ID Cleanup Preferences */}
+			<div className='toggle-field autoidcleanup-prefs-element'>
+				<input
+					type='checkbox'
+					disabled={
+						!props.isTwitchAuthorized ||
+						!props.isAutoIDEnabled ||
+						props.isBotConnected
+					}
+					id='autoIDCleanupEnabled'
+					checked={props.isAutoIDCleanupEnabled}
+					onChange={() =>
+						props.setIsAutoIDCleanupEnabled(!props.isAutoIDCleanupEnabled)
+					}
+					className={
+						!props.isTwitchAuthorized ||
+						!props.isAutoIDEnabled ||
+						props.isBotConnected
+							? 'disabled-toggle'
+							: ''
+					}
+				/>
+
+				<label
+					htmlFor='autoIDCleanupEnabled'
+					className={
+						(!props.isAutoIDEnabled ||
+						!props.isAutoIDCleanupEnabled ||
+						props.isBotConnected
+							? 'disabled-label'
+							: '') +
+						(props.isBotConnected || !props.isAutoIDEnabled
+							? ' greyed-out-label'
+							: '')
+					}
+				>
+					Enable Auto ID Cleanup
+				</label>
+				<span
+					className={`question-icon ${
+						props.showTooltip === 'autoIDCleanupEnabled' ? 'active-icon' : ''
+					}`}
+					onClick={() =>
+						props.setShowTooltip(
+							props.showTooltip === 'autoIDCleanupEnabled'
+								? null
+								: 'autoIDEnabled'
+						)
+					}
+				>
+					?
+				</span>
+			</div>
+
 			{/* OBS preferences */}
 			<div className='toggle-field obs-prefs-element'>
 				<input
 					type='checkbox'
 					id='obsResponseToggle'
 					checked={props.isObsResponseEnabled}
-					disabled={!props.isTwitchAuthorized || !props.formData.obsWebsocketAddress || props.isBotConnected}
+					disabled={
+						!props.isTwitchAuthorized ||
+						!props.formData.obsWebsocketAddress ||
+						props.isBotConnected
+					}
 					onChange={() => {
 						props.setIsObsResponseEnabled(!props.isObsResponseEnabled)
 					}}
 					className={
-						!props.isTwitchAuthorized || !props.formData.obsWebsocketAddress || props.isBotConnected
+						!props.isTwitchAuthorized ||
+						!props.formData.obsWebsocketAddress ||
+						props.isBotConnected
 							? 'disabled-toggle'
 							: ''
 					}
@@ -155,7 +259,11 @@ const PreferencesPanel: React.FC<PreferencesPanelProps> = (props) => {
 					id='intervalMessageToggle'
 					checked={props.isIntervalEnabled}
 					onChange={() => props.setIsIntervalEnabled(!props.isIntervalEnabled)}
-					className={!props.isTwitchAuthorized || props.isBotConnected ? 'disabled-toggle' : ''}
+					className={
+						!props.isTwitchAuthorized || props.isBotConnected
+							? 'disabled-toggle'
+							: ''
+					}
 				/>
 
 				<label
