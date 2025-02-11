@@ -339,6 +339,7 @@ const App = (): JSX.Element => {
 			twitchRefreshToken: formData.twitchRefreshToken,
 			spotifyRefreshToken: formData.spotifyRefreshToken,
 			isSpotifyEnabled: formData.isSpotifyEnabled,
+			seratoDisplayName: formData.seratoDisplayName,
 		})
 		console.log('*** startBotScript sent; awaiting response ***')
 		ipcRenderer.on('startBotResponse', (response) => {

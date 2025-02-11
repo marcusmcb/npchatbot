@@ -1,5 +1,5 @@
 const axios = require('axios')
-const db = require('../database') 
+const db = require('../../database') 
 const dotenv = require('dotenv')
 
 dotenv.config()

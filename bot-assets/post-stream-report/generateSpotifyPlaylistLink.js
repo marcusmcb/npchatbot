@@ -1,8 +1,8 @@
 const dotenv = require('dotenv')
 const axios = require('axios')
 
-const { getSpotifyAccessToken } = require('../../auth/getSpotifyAccessToken')
-const { cleanSongTitle, getCurrentDate } = require('./helpers/spotifyHelpers')
+const { getSpotifyAccessToken } = require('../../auth/spotify/getSpotifyAccessToken')
+const { cleanSongTitle, getCurrentDate } = require('../spotify/helpers/spotifyPlaylistHelpers')
 
 dotenv.config()
 
