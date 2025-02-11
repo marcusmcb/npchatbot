@@ -28,6 +28,8 @@ const MessagePanel: React.FC<MessagePanelProps> = ({
 				return tooltipTexts.userEmailAddress
 			case 'spotifyPlaylistEnabled':
 				return tooltipTexts.spotifyPlaylistEnabled
+			case 'autoIDEnabled':
+				return tooltipTexts.autoIDEnabled
 			default:
 				return ''
 		}
