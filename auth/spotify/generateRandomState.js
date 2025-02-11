@@ -1,12 +1,3 @@
-const cleanSongTitle = (title) => {
-	return title
-		.replace(/\s*[\(\[].*?[\)\]]/g, '')
-		.replace(/[&.,-]/g, '')
-		.replace(/\s+/g, ' ')
-		.trim()
-		.toLowerCase()
-}
-
 const generateRandomState = (length = 16) => {
 	const characters =
 		'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
@@ -17,4 +8,4 @@ const generateRandomState = (length = 16) => {
 	return state
 }
 
-module.exports = { cleanSongTitle, generateRandomState }
+module.exports = { generateRandomState }

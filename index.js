@@ -52,22 +52,12 @@ const initializeBot = async (config) => {
 
 	twitchClient.on('connected', (channel, tags, message, self) => {
 		console.log('Twitch connection successful')
-		console.log('---------------------------------')
-		console.log(channel)
-		console.log(tags)
-		console.log(message)
-		console.log('---------------------------------')
+		console.log('---------------------------------')		
 		if (config.isSpotifyEnabled === true) {
 			trackCurrentSongPlaying(config, url, twitchClient)
 		}
 	})
-
-	twitchClient.on('ready', (channel, tags, message, self) => {
-		setTimeout(() => {
-			
-		}, 1000)
-	})
-
+	
 	twitchClient.on('disconnected', () => {
 		// console.log(npSongsQueried)
 		// console.log(dypSearchTerms)

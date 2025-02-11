@@ -32,8 +32,8 @@ const {
 	initAuthToken,
 } = require('./auth/createAccessToken')
 
-const { initSpotifyAuthToken } = require('./auth/createSpotifyAccessToken')
-const { getSpotifyAccessToken } = require('./auth/getSpotifyAccessToken')
+const { initSpotifyAuthToken } = require('./auth/spotify/createSpotifyAccessToken')
+const { getSpotifyAccessToken } = require('./auth/spotify/getSpotifyAccessToken')
 const { setSpotifyUserId } = require('./auth/setSpotifyUserId')
 
 const {
@@ -51,7 +51,7 @@ const {
 
 const {
 	generateRandomState,
-} = require('./bot-assets/post-stream-report/helpers/spotifyHelpers')
+} = require('./auth/spotify/generateRandomState')
 
 const errorHandler = require('./helpers/errorHandler/errorHandler')
 
@@ -311,8 +311,18 @@ ipcMain.on('startBotScript', async (event, arg) => {
 		// user's live playlist much be reachable before bot
 		// start to ensure proper functionality of the auto-ID
 		// and Spotify playlist features
-
-
+		const seratoDisplayName = arg.seratoDisplayName.replaceAll(' ', '_')
+		const url = `https://serato.com/playlists/${seratoDisplayName}/live`
+		console.log("URL? ", url)
+		const isPlaylistLive = await validateLivePlaylist(url)
+		if (!isPlaylistLive) {
+			errorResponse.error = 'Serato Live Playlist is not live.'
+			event.reply('startBotResponse', errorResponse)
+			return
+		} else {
+			console.log('Serato Live Playlist is live')
+			console.log('--------------------------------------')
+		}
 		// await getSpotifyAccessToken()
 		// await createSpotifyPlaylist()
 	} else {
