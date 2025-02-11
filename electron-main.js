@@ -274,8 +274,7 @@ const startServer = () => {
 ipcMain.on('startBotScript', async (event, arg) => {
 	logToFile('startBotScript CALLED')
 	logToFile('*******************************')
-	console.log('ARG: ', arg)
-
+	
 	let errorResponse = {
 		success: false,
 		error: null,
@@ -307,6 +306,19 @@ ipcMain.on('startBotScript', async (event, arg) => {
 		}
 	}
 
+	if (arg.isSpotifyEnabled === true) {
+		// conduct ping test to user's Serato Live Playlist here
+		// user's live playlist much be reachable before bot
+		// start to ensure proper functionality of the auto-ID
+		// and Spotify playlist features
+
+
+		// await getSpotifyAccessToken()
+		// await createSpotifyPlaylist()
+	} else {
+		console.log('Spotify is not enabled')
+	}
+
 	try {
 		// get a fresh access token and update the user.db file
 		const currentAccessToken = await getRefreshToken(arg.twitchRefreshToken)
@@ -333,12 +345,7 @@ ipcMain.on('startBotScript', async (event, arg) => {
 		return
 	}
 
-	if (arg.isSpotifyEnabled === true) {
-		await getSpotifyAccessToken()
-		await createSpotifyPlaylist()
-	} else {
-		console.log('Spotify is not enabled')
-	}
+	
 
 	// add logic here to create a new Spotify playlist
 	// if arg.isSpotifyEnabled === true

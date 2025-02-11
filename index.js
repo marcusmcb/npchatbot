@@ -7,8 +7,13 @@ const {
 const { obs, connectToOBS } = require('./obs/obsConnection')
 const { returnRefreshTokenConfig } = require('./auth/accessTokenConfig')
 const logToFile = require('./scripts/logger')
-const { npSongsQueried, dypSearchTerms } = require('./bot-assets/command-use/commandUse')
-const { trackCurrentSongPlaying } = require('./bot-assets/auto-id/trackCurrentSongPlaying')
+const {
+	npSongsQueried,
+	dypSearchTerms,
+} = require('./bot-assets/command-use/commandUse')
+const {
+	trackCurrentSongPlaying,
+} = require('./bot-assets/auto-id/trackCurrentSongPlaying')
 
 const initializeBot = async (config) => {
 	let userCommandHistory = {}
@@ -18,7 +23,7 @@ const initializeBot = async (config) => {
 	const displayOBSMessage = config.isObsResponseEnabled
 	const seratoDisplayName = config.seratoDisplayName.replaceAll(' ', '_')
 
-	const url = `https://serato.com/playlists/${seratoDisplayName}/live`	
+	const url = `https://serato.com/playlists/${seratoDisplayName}/live`
 
 	const refreshTokenConfig = returnRefreshTokenConfig(
 		config,
@@ -43,21 +48,25 @@ const initializeBot = async (config) => {
 		await connectToOBS(config)
 	}
 
-	if (config.isSpotifyEnabled === true) {
-		trackCurrentSongPlaying(config)
-		// add auto ID method init call here
-		
-		// this will init a currentSong value to null
-		//
-		// currentSong's value will then be set to the 
-		// current song playing in the user's 
-		// Serato Live Playllst results
-		//
-		// currentSong's value will be added to the
-		// spotifyPlaylist
-	}
-
 	autoCommandsConfig(twitchClient, obs, config)
+
+	twitchClient.on('connected', (channel, tags, message, self) => {
+		console.log('Twitch connection successful')
+		console.log('---------------------------------')
+		console.log(channel)
+		console.log(tags)
+		console.log(message)
+		console.log('---------------------------------')
+		if (config.isSpotifyEnabled === true) {
+			trackCurrentSongPlaying(config, url, twitchClient)
+		}
+	})
+
+	twitchClient.on('ready', (channel, tags, message, self) => {
+		setTimeout(() => {
+			
+		}, 1000)
+	})
 
 	twitchClient.on('disconnected', () => {
 		// console.log(npSongsQueried)
