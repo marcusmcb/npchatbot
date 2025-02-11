@@ -35,6 +35,8 @@ const App = (): JSX.Element => {
 		isIntervalEnabled: false,
 		isReportEnabled: false,
 		isSpotifyEnabled: false,
+		isAutoIDEnabled: false,
+		isAutoIDCleanupEnabled: false,
 	})
 
 	const [error, setError] = useState('')
@@ -46,6 +48,8 @@ const App = (): JSX.Element => {
 	const [isSpotifyAuthorized, setIsSpotifyAuthorized] = useState(false)
 	const [isSpotifyEnabled, setIsSpotifyEnabled] = useState(false)
 	const [isConnectionReady, setIsConnectionReady] = useState(false)
+	const [isAutoIDEnabled, setIsAutoIDEnabled] = useState(false)
+	const [isAutoIDCleanupEnabled, setIsAutoIDCleanupEnabled] = useState(false)
 	const [messageQueue, setMessageQueue] = useState<string[]>([])
 	const [currentMessage, setCurrentMessage] = useState<string | null>(null)
 	const [isReportEnabled, setIsReportEnabled] = useState(false)
@@ -59,6 +63,8 @@ const App = (): JSX.Element => {
 		isIntervalEnabled,
 		isReportEnabled,
 		isSpotifyEnabled,
+		isAutoIDEnabled,
+		isAutoIDCleanupEnabled,
 		obsClearDisplayTime: formData.obsClearDisplayTime,
 		intervalMessageDuration: formData.intervalMessageDuration,
 	})
@@ -89,6 +95,8 @@ const App = (): JSX.Element => {
 						obsClearDisplayTime: response.data.obsClearDisplayTime,
 						intervalMessageDuration: response.data.intervalMessageDuration,
 						isSpotifyEnabled: response.data.isSpotifyEnabled,
+						isAutoIDEnabled: response.data.isAutoIDEnabled,
+						isAutoIDCleanupEnabled: response.data.isAutoIDCleanupEnabled,
 					})
 				}
 			}
@@ -104,6 +112,8 @@ const App = (): JSX.Element => {
 		const preferencesModified =
 			isObsResponseEnabled !== initialPreferences.isObsResponseEnabled ||
 			isIntervalEnabled !== initialPreferences.isIntervalEnabled ||
+			isAutoIDEnabled !== initialPreferences.isAutoIDEnabled ||
+			isAutoIDCleanupEnabled !== initialPreferences.isAutoIDCleanupEnabled ||
 			isReportEnabled !== initialPreferences.isReportEnabled ||
 			isSpotifyEnabled !== initialPreferences.isSpotifyEnabled ||
 			formData.obsClearDisplayTime !== initialPreferences.obsClearDisplayTime ||
@@ -121,6 +131,8 @@ const App = (): JSX.Element => {
 		isIntervalEnabled,
 		isReportEnabled,
 		isSpotifyEnabled,
+		isAutoIDEnabled,
+		isAutoIDCleanupEnabled,
 		initialPreferences,
 	])
 
@@ -196,6 +208,8 @@ const App = (): JSX.Element => {
 					setIsIntervalEnabled(response.data.isIntervalEnabled)
 					setIsReportEnabled(response.data.isReportEnabled)
 					setIsSpotifyEnabled(response.data.isSpotifyEnabled)
+					setIsAutoIDEnabled(response.data.isAutoIDEnabled)
+					setIsAutoIDCleanupEnabled(response.data.isAutoIDCleanupEnabled)
 					setIsSpotifyAuthorized(!!response.data.spotifyAuthorizationCode)
 					setIsTwitchAuthorized(!!response.data.appAuthorizationCode)
 					setIsConnectionReady(
@@ -425,7 +439,9 @@ const App = (): JSX.Element => {
 			isObsResponseEnabled,
 			isIntervalEnabled,
 			isReportEnabled,
-			isSpotifyEnabled
+			isSpotifyEnabled,
+			isAutoIDEnabled,
+			isAutoIDCleanupEnabled,
 		}
 
 		ipcRenderer.send('submitUserData', submitData)
@@ -440,6 +456,8 @@ const App = (): JSX.Element => {
 					isIntervalEnabled: response.data.isIntervalEnabled,
 					isReportEnabled: response.data.isReportEnabled,
 					isSpotifyEnabled: response.data.isSpotifyEnabled,
+					isAutoIDEnabled: response.data.isAutoIDEnabled,
+					isAutoIDCleanupEnabled: response.data.isAutoIDCleanupEnabled,
 					obsClearDisplayTime: response.data.obsClearDisplayTime,
 					intervalMessageDuration: response.data.intervalMessageDuration,
 				})
@@ -509,6 +527,10 @@ const App = (): JSX.Element => {
 								isObsResponseEnabled={isObsResponseEnabled}
 								isSpotifyEnabled={isSpotifyEnabled}
 								isSpotifyAuthorized={isSpotifyAuthorized}
+								isAutoIDEnabled={isAutoIDEnabled}
+								isAutoIDCleanupEnabled={isAutoIDCleanupEnabled}
+								setIsAutoIDEnabled={setIsAutoIDEnabled}
+								setIsAutoIDCleanupEnabled={setIsAutoIDCleanupEnabled}
 								setIsSpotifyEnabled={setIsSpotifyEnabled}
 								setIsObsResponseEnabled={setIsObsResponseEnabled}
 								isIntervalEnabled={isIntervalEnabled}

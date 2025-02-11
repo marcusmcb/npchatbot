@@ -20,6 +20,10 @@ type PreferencesPanelProps = {
 	setIsReportEnabled: (value: boolean) => void
 	isSpotifyEnabled: boolean
 	setIsSpotifyEnabled: (value: boolean) => void
+	isAutoIDEnabled: boolean
+	setIsAutoIDEnabled: (value: boolean) => void
+	isAutoIDCleanupEnabled: boolean
+	setIsAutoIDCleanupEnabled: (value: boolean) => void
 	isSpotifyAuthorized: boolean
 	handleInputChange: (event: React.ChangeEvent<HTMLInputElement>) => void
 	showTooltip: string | null
