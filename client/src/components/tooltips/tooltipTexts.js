@@ -15,11 +15,11 @@ const tooltipTexts = {
 	userEmailAddress:
 		"Enter the email address that you'd like your post-stream report sent to",
 	spotifyPlaylistEnabled:
-		"With this feature enabled, a Spotify Playlist of your current set will be created when you connect npChatbot to Twitch.",
+		'With this feature enabled, a Spotify Playlist of your current set will be created when you connect npChatbot to Twitch.',
 	autoIDEnabled:
-		"Enable this feature to automatically display the song currently playing in your chat.",
+		'Enable this feature to automatically display the song currently playing in your chat.',
 	autoIDCleanupEnabled:
-		"Enabling this feature removes any characters within brackets or parentheses from the song artist/title displayed when the Auto ID feature is enabled.",	
+		'With Auto ID enabled, this feature removes any text within brackets or parentheses from the curren song artist & title displayed.',
 }
 
 export default tooltipTexts

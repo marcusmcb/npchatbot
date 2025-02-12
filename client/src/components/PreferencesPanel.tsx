@@ -167,7 +167,7 @@ const PreferencesPanel: React.FC<PreferencesPanelProps> = (props) => {
 						props.setShowTooltip(
 							props.showTooltip === 'autoIDCleanupEnabled'
 								? null
-								: 'autoIDEnabled'
+								: 'autoIDCleanupEnabled'
 						)
 					}
 				>
