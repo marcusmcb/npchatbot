@@ -1,9 +1,12 @@
 const axios = require('axios')
-const { updateSpotifyPlaylist } = require('../spotify/updateSpotifyPlaylist')
 const scrapeData = require('../commands/liveReport/LiveReportHelpers/scrapeData')
 const {
 	cleanCurrentSongInfo,
 } = require('../spotify/helpers/spotifyPlaylistHelpers')
+const { getSpotifySongData } = require('../spotify/getSpotifySongData')
+const {
+	addTracksToSpotifyPlaylist,
+} = require('../spotify/addTracksToSpotifyPlaylist')
 
 let currentSong = null
 let trackingInterval = null
@@ -13,6 +16,8 @@ const trackCurrentSongPlaying = async (config, url, twitchClient) => {
 	const isSpotifyEnabled = config.isSpotifyEnabled
 	const isAutoIDEnabled = config.isAutoIDEnabled
 	const isAutoIDCleanupEnabled = config.isAutoIDCleanupEnabled
+	const spotifyPlaylistId = config.currentSpotifyPlaylistId
+	const accessToken = config.spotifyAccessToken
 
 	if (currentSong === null) {
 		// if (isSpotifyEnabled === true) {
@@ -39,7 +44,7 @@ const trackCurrentSongPlaying = async (config, url, twitchClient) => {
 				channel,
 				'npChatbot is now tracking the current song playing.'
 			)
-		}, 1000)
+		}, 10000)
 		// add init addTracksToSpotify logic here
 
 		// return the scrapeData results from Serato and
@@ -66,15 +71,10 @@ const trackCurrentSongPlaying = async (config, url, twitchClient) => {
 	}
 
 	trackingInterval = setInterval(async () => {
-		let spotifySongQuery = null
 		let newCurrentSong = await checkCurrentSong(url)
 
 		if (isAutoIDCleanupEnabled === true) {
 			newCurrentSong = cleanCurrentSongInfo(newCurrentSong)
-		}
-
-		if (isSpotifyEnabled === true) {
-			spotifySongQuery === cleanCurrentSongInfo(newCurrentSong)
 		}
 
 		console.log('Current Song Playing: ', currentSong)
@@ -92,20 +92,19 @@ const trackCurrentSongPlaying = async (config, url, twitchClient) => {
 
 			// update the user's Spotify playlist with the current song playing
 			if (isSpotifyEnabled === true) {
-				const accessToken = config.spotifyAccessToken
-				const spotifyPlaylistId = config.spotifyPlaylistId
+				let uri = []
 				const songQuery = cleanCurrentSongInfo(currentSong)
-				// const spotifySongUri = await getSpotifySongData(accessToken, songQuery)
-				// await updateSpotifyPlaylist(
-				// 	accessToken,
-				// 	spotifyPlaylistId,
-				// 	spotifySongUri
-				// )
+				console.log('Spotify Song Query: ', songQuery)
+				const spotifySongUri = await getSpotifySongData(accessToken, songQuery)
+				uri.push(spotifySongUri)
+				if (spotifySongUri) {
+					await addTracksToSpotifyPlaylist(accessToken, spotifyPlaylistId, uri)
+				}
 			}
 		} else {
 			console.log('Current song playing has not changed.')
 		}
-	}, 20000)
+	}, 10000)
 }
 
 const endTrackCurrentSongPlaying = () => {
