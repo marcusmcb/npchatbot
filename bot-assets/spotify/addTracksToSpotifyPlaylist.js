@@ -1,13 +1,10 @@
+const axios = require('axios')
+
 const addTracksToSpotifyPlaylist = async (
 	accessToken,
 	playlistId,
 	trackUris
-) => {
-	console.log('-------------------')
-	console.log('PLAYLIST ID: ', playlistId)
-	console.log('TRACK URIS: ', trackUris)
-	console.log('-------------------')
-	console.log('Track URIs Length: ', trackUris.length)
+) => {	
 	const batchSize = 100
 	for (let i = 0; i < trackUris.length; i += batchSize) {
 		const batch = trackUris.slice(i, i + batchSize)

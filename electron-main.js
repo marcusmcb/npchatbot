@@ -17,13 +17,9 @@ const {
 	dypSearchTerms,
 } = require('./bot-assets/command-use/commandUse')
 const createLiveReport = require('./bot-assets/commands/liveReport/createLiveReport')
-const {
-	generateSpotifyPlaylistLink,
-	createSpotifyPlaylistLink,
-} = require('./bot-assets/post-stream-report/generateSpotifyPlaylistLink')
 
 const {
-	createSpotifyPlaylist
+	createSpotifyPlaylist,
 } = require('./bot-assets/spotify/createSpotifyPlaylist')
 
 const {
@@ -32,8 +28,12 @@ const {
 	initAuthToken,
 } = require('./auth/createAccessToken')
 
-const { initSpotifyAuthToken } = require('./auth/spotify/createSpotifyAccessToken')
-const { getSpotifyAccessToken } = require('./auth/spotify/getSpotifyAccessToken')
+const {
+	initSpotifyAuthToken,
+} = require('./auth/spotify/createSpotifyAccessToken')
+const {
+	getSpotifyAccessToken,
+} = require('./auth/spotify/getSpotifyAccessToken')
 const { setSpotifyUserId } = require('./auth/setSpotifyUserId')
 
 const {
@@ -49,9 +49,7 @@ const {
 	updateUserData,
 } = require('./helpers/updateUserParams/updateUserParams')
 
-const {
-	generateRandomState,
-} = require('./auth/spotify/generateRandomState')
+const { generateRandomState } = require('./auth/spotify/generateRandomState')
 
 const errorHandler = require('./helpers/errorHandler/errorHandler')
 
@@ -274,7 +272,7 @@ const startServer = () => {
 ipcMain.on('startBotScript', async (event, arg) => {
 	logToFile('startBotScript CALLED')
 	logToFile('*******************************')
-	
+
 	let errorResponse = {
 		success: false,
 		error: null,
@@ -313,7 +311,7 @@ ipcMain.on('startBotScript', async (event, arg) => {
 		// and Spotify playlist features
 		const seratoDisplayName = arg.seratoDisplayName.replaceAll(' ', '_')
 		const url = `https://serato.com/playlists/${seratoDisplayName}/live`
-		console.log("URL? ", url)
+		console.log('URL? ', url)
 		const isPlaylistLive = await validateLivePlaylist(url)
 		if (!isPlaylistLive) {
 			errorResponse.error = 'Serato Live Playlist is not live.'
@@ -322,9 +320,9 @@ ipcMain.on('startBotScript', async (event, arg) => {
 		} else {
 			console.log('Serato Live Playlist is live')
 			console.log('--------------------------------------')
+			await getSpotifyAccessToken()
+			await createSpotifyPlaylist()
 		}
-		// await getSpotifyAccessToken()
-		// await createSpotifyPlaylist()
 	} else {
 		console.log('Spotify is not enabled')
 	}
@@ -354,8 +352,6 @@ ipcMain.on('startBotScript', async (event, arg) => {
 		event.reply('startBotResponse', errorResponse)
 		return
 	}
-
-	
 
 	// add logic here to create a new Spotify playlist
 	// if arg.isSpotifyEnabled === true
