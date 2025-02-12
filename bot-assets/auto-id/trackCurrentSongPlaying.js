@@ -58,7 +58,7 @@ const trackCurrentSongPlaying = async (config, url, twitchClient) => {
 			const results = response[0]
 			console.log('Current Song Playing: ')
 			console.log(results[0].children[0].data.trim())
-			console.log('--------------------')			
+			console.log('--------------------')
 			return results[0].children[0].data.trim()
 		} catch (error) {
 			console.log('Error checking current song playing: ', error)
@@ -83,13 +83,11 @@ const trackCurrentSongPlaying = async (config, url, twitchClient) => {
 		// check if the current song playing has changed
 		// and update the current song playing accordingly
 		if (newCurrentSong !== currentSong) {
-			currentSong = newCurrentSong			
+			currentSong = newCurrentSong
 
 			// return the current song playing if the Auto ID feature is enabled
 			if (isAutoIDEnabled === true) {
-				if (isAutoIDCleanupEnabled === true) {
-					twitchClient.say(channel, `Now playing: ${currentSong}`)
-				}
+				twitchClient.say(channel, `Now playing: ${currentSong}`)
 			}
 
 			// update the user's Spotify playlist with the current song playing
@@ -97,10 +95,13 @@ const trackCurrentSongPlaying = async (config, url, twitchClient) => {
 				const accessToken = config.spotifyAccessToken
 				const spotifyPlaylistId = config.spotifyPlaylistId
 				const songQuery = cleanCurrentSongInfo(currentSong)
-				const spotifySongUri = await getSpotifySongData(accessToken, songQuery)
-				await updateSpotifyPlaylist(accessToken, spotifyPlaylistId, spotifySongUri)
+				// const spotifySongUri = await getSpotifySongData(accessToken, songQuery)
+				// await updateSpotifyPlaylist(
+				// 	accessToken,
+				// 	spotifyPlaylistId,
+				// 	spotifySongUri
+				// )
 			}
-			
 		} else {
 			console.log('Current song playing has not changed.')
 		}

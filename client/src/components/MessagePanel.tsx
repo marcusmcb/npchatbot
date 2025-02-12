@@ -30,6 +30,8 @@ const MessagePanel: React.FC<MessagePanelProps> = ({
 				return tooltipTexts.spotifyPlaylistEnabled
 			case 'autoIDEnabled':
 				return tooltipTexts.autoIDEnabled
+			case 'autoIDCleanupEnabled':
+				return tooltipTexts.autoIDCleanupEnabled
 			default:
 				return ''
 		}
