@@ -21,13 +21,9 @@ const getCurrentDate = () => {
 	return formattedDate
 }
 
-const cleanCurrentSongInfo = (title) => {
-	return title
-		.replace(/\s*[\(\[].*?[\)\]]/g, '')
-		.replace(/[&.,-]/g, '')
-		.replace(/\s+/g, ' ')
-		.trim()
-		.toLowerCase()
+const cleanCurrentSongInfo = (songInfo) => {
+	const cleaned = songInfo.replace(/\s*[\(\[].*?[\)\]]\s*/g, '').trim()
+	return cleaned.replace(/\s+/g, ' ')
 }
 
 module.exports = { getCurrentDate, cleanCurrentSongInfo }

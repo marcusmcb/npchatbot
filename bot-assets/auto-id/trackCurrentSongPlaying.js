@@ -1,17 +1,21 @@
 const axios = require('axios')
 const { updateSpotifyPlaylist } = require('../spotify/updateSpotifyPlaylist')
 const scrapeData = require('../commands/liveReport/LiveReportHelpers/scrapeData')
+const {
+	cleanCurrentSongInfo,
+} = require('../spotify/helpers/spotifyPlaylistHelpers')
 
 let currentSong = null
+let trackingInterval = null
 
 const trackCurrentSongPlaying = async (config, url, twitchClient) => {
 	const channel = `#${config.twitchChannelName}`
-	// const isSpotifyEnabled = config.isSpotifyEnabled
-	// const isAutoIDEnabled = config.isAutoIDEnabled
-	// const isAutoIDCleanupEnabled = config.isAutoIDCleanupEnabled
+	const isSpotifyEnabled = config.isSpotifyEnabled
+	const isAutoIDEnabled = config.isAutoIDEnabled
+	const isAutoIDCleanupEnabled = config.isAutoIDCleanupEnabled
 
 	if (currentSong === null) {
-		// if (config.isSpotifyEnabled === true) {
+		// if (isSpotifyEnabled === true) {
 		// 	const spotifyPlaylistLength = await getSpotifyPlaylistLength(
 		// 		config.spotifyAccessToken,
 		// 		config.currentSpotifyPlaylistId
@@ -54,47 +58,64 @@ const trackCurrentSongPlaying = async (config, url, twitchClient) => {
 			const results = response[0]
 			console.log('Current Song Playing: ')
 			console.log(results[0].children[0].data.trim())
-			console.log('--------------------')
-			// for (let i = 0; i < results.length; i++) {
-			// 	let trackId = results[i].children[0].data.trim()
-			// 	console.log(trackId)
-			// }
+			console.log('--------------------')			
 			return results[0].children[0].data.trim()
 		} catch (error) {
 			console.log('Error checking current song playing: ', error)
 		}
 	}
 
-	setInterval(async () => {
+	trackingInterval = setInterval(async () => {
+		let spotifySongQuery = null
 		let newCurrentSong = await checkCurrentSong(url)
+
+		if (isAutoIDCleanupEnabled === true) {
+			newCurrentSong = cleanCurrentSongInfo(newCurrentSong)
+		}
+
+		if (isSpotifyEnabled === true) {
+			spotifySongQuery === cleanCurrentSongInfo(newCurrentSong)
+		}
+
+		console.log('Current Song Playing: ', currentSong)
+		console.log('New Current Song Playing: ', newCurrentSong)
+
 		// check if the current song playing has changed
+		// and update the current song playing accordingly
 		if (newCurrentSong !== currentSong) {
-			console.log('New current song playing: ', newCurrentSong)
-			currentSong = newCurrentSong
-			// check if auto ID and cleanup are enabled
-			// if (config.isAutoIDEnabled === true) {
-			// 	if (config.isAutoIDCleanupEnabled === true) {
-			// 		const currentSongCleaned = cleanCurrentSongInfo(currentSong)
-			// 		twitchClient.say(channel, `Now playing: ${currentSongCleaned}`)
-			// 	} else {
-			// 		twitchClient.say(channel, `Now playing: ${currentSong}`)
-			// 	}
-			// }
-			// // check if the Spotify feature is enabled
-			// if (config.isSpotifyEnabled === true) {
-			// 	const accessToken = config.spotifyAccessToken
-			// 	const spotifyPlaylistId = config.spotifyPlaylistId
-			// 	const songQuery = cleanCurrentSongInfo(currentSong)
-			// 	const spotifySongUri = await getSpotifySongData(accessToken, songQuery)
-			// 	await updateSpotifyPlaylist(accessToken, spotifyPlaylistId, spotifySongUri)
-			// }
-			twitchClient.say(channel, `Now playing: ${currentSong}`)
+			currentSong = newCurrentSong			
+
+			// return the current song playing if the Auto ID feature is enabled
+			if (isAutoIDEnabled === true) {
+				if (isAutoIDCleanupEnabled === true) {
+					twitchClient.say(channel, `Now playing: ${currentSong}`)
+				}
+			}
+
+			// update the user's Spotify playlist with the current song playing
+			if (isSpotifyEnabled === true) {
+				const accessToken = config.spotifyAccessToken
+				const spotifyPlaylistId = config.spotifyPlaylistId
+				const songQuery = cleanCurrentSongInfo(currentSong)
+				const spotifySongUri = await getSpotifySongData(accessToken, songQuery)
+				await updateSpotifyPlaylist(accessToken, spotifyPlaylistId, spotifySongUri)
+			}
+			
 		} else {
 			console.log('Current song playing has not changed.')
 		}
 	}, 20000)
 }
 
+const endTrackCurrentSongPlaying = () => {
+	if (trackingInterval) {
+		clearInterval(trackingInterval)
+		trackingInterval = null
+		console.log('Stopped tracking current song.')
+	}
+}
+
 module.exports = {
 	trackCurrentSongPlaying,
+	endTrackCurrentSongPlaying,
 }

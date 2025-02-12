@@ -12,7 +12,7 @@ const {
 	dypSearchTerms,
 } = require('./bot-assets/command-use/commandUse')
 const {
-	trackCurrentSongPlaying,
+	trackCurrentSongPlaying, endTrackCurrentSongPlaying
 } = require('./bot-assets/auto-id/trackCurrentSongPlaying')
 
 const initializeBot = async (config) => {
@@ -53,7 +53,11 @@ const initializeBot = async (config) => {
 	twitchClient.on('connected', (channel, tags, message, self) => {
 		console.log('Twitch connection successful')
 		console.log('---------------------------------')		
-		if (config.isSpotifyEnabled === true) {
+		if (config.isSpotifyEnabled || config.isAutoIDEnabled === true) {
+			console.log('Config: ')
+			console.log("Spotify Enabled: ", config.isSpotifyEnabled)
+			console.log("Auto Id Enabled: ", config.isAutoIDEnabled)
+			console.log("Cleanup Enabled: ", config.isAutoIDCleanupEnabled)
 			trackCurrentSongPlaying(config, url, twitchClient)
 		}
 	})
@@ -64,6 +68,7 @@ const initializeBot = async (config) => {
 		console.log('---------------------------------')
 		console.log('Twitch client has been disconnected')
 		console.log('---------------------------------')
+		endTrackCurrentSongPlaying()
 	})
 
 	twitchClient.on('message', (channel, tags, message, self) => {
