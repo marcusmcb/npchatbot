@@ -11,6 +11,15 @@ const {
 let currentSong = null
 let trackingInterval = null
 
+const cleanQueryString = (input) => {
+	let cleaned = input.toLowerCase()
+	cleaned = cleaned.replace(/\s*-\s*/g, ' ')
+	cleaned = cleaned.replace(/\s*,\s*/g, ' ')
+	cleaned = cleaned.replace(/[&.]/g, '')
+	cleaned = cleaned.replace(/\s+/g, ' ').trim()
+	return cleaned
+}
+
 const trackCurrentSongPlaying = async (config, url, twitchClient) => {
 	const channel = `#${config.twitchChannelName}`
 	const isSpotifyEnabled = config.isSpotifyEnabled
@@ -20,41 +29,60 @@ const trackCurrentSongPlaying = async (config, url, twitchClient) => {
 	const accessToken = config.spotifyAccessToken
 
 	if (currentSong === null) {
-		// if (isSpotifyEnabled === true) {
-		// 	const spotifyPlaylistLength = await getSpotifyPlaylistLength(
-		// 		config.spotifyAccessToken,
-		// 		config.currentSpotifyPlaylistId
-		// 	)
-		// 	if (spotifyPlaylistLength === 0) {
-		// 		// add all songs from Serato Live Playlist scrape to Spotify playlist
-		// 	} else {
-		// 		// compare spotifyPlaylistLength to Serato Live Playlist
-		// 		// scrape's length to ensure Spotify playlist is updated
-		// 		// accurately even if npChatbot is interrupted
+		if (isSpotifyEnabled === true) {
+			console.log(
+				'Adding all songs from Serato Live Playlist scrape to Spotify playlist...'
+			)
+			console.log('--------------------')
+			const response = await scrapeData(url)
+			const results = response[0]
+			if (!results || results.length === 0) {
+				console.log('No songs found in Serato Live Playlist scrape.')
+				console.log(
+					'Check that your Serato Live Playlist is active and public.'
+				)
+				console.log('--------------------')
+				return
+			} else if (results.length > 0) {
+				let songUris = []
+				for (let i = 0; i < results.length; i++) {
+					const songQuery = cleanCurrentSongInfo(
+						results[i].children[0].data.trim()
+					)
+					const query = cleanQueryString(songQuery)
+					console.log('Spotify Song Query: ', songQuery)
+					const spotifySongUri = await getSpotifySongData(accessToken, query)
+					songUris.push(spotifySongUri)
+				}
+				if (songUris.length > 0) {
+					setTimeout(async () => {
+						await addTracksToSpotifyPlaylist(
+							accessToken,
+							spotifyPlaylistId,
+							songUris
+						)
+					}, 1000)
 
-		// 		// example:
-		// 		// spotify playlist length is 10
-		// 		// serato playlist length is 12
-		// 		// query Spotify for each song in the difference and add
-		// 		// them to the Spotify playlist
-		// 	}
-		// }
+					// set the current song playing to the first song in the playlist
+					// to prevent adding it as a duplicate to the playlist
+					currentSong = results[0].children[0].data.trim()
+					if (isAutoIDCleanupEnabled === true) {
+						currentSong = cleanCurrentSongInfo(currentSong)
+					}
+				} else {
+					console.log(
+						'No Spotify URIs found for songs in Serato Live Playlist.'
+					)
+					console.log('--------------------')
+				}
+			}
+		}
 		setTimeout(() => {
 			twitchClient.say(
 				channel,
 				'npChatbot is now tracking the current song playing.'
 			)
 		}, 10000)
-		// add init addTracksToSpotify logic here
-
-		// return the scrapeData results from Serato and
-		// add each song found on init to the Spotify playlist
-		// then run the checkCurrentSong logic thereafter
-
-		// if a user starts their Serato Live Playlist later
-		// than the Twitch stream start, the songs played will
-		// still be available in the Serato Live Playlist for
-		// use in the Spotify playlist
 	}
 
 	const checkCurrentSong = async (url) => {
@@ -94,8 +122,10 @@ const trackCurrentSongPlaying = async (config, url, twitchClient) => {
 			if (isSpotifyEnabled === true) {
 				let uri = []
 				const songQuery = cleanCurrentSongInfo(currentSong)
+				const query = cleanQueryString(songQuery)
+				console.log('Query: ', query)
 				console.log('Spotify Song Query: ', songQuery)
-				const spotifySongUri = await getSpotifySongData(accessToken, songQuery)
+				const spotifySongUri = await getSpotifySongData(accessToken, query)
 				uri.push(spotifySongUri)
 				if (spotifySongUri) {
 					await addTracksToSpotifyPlaylist(accessToken, spotifyPlaylistId, uri)
@@ -111,7 +141,7 @@ const endTrackCurrentSongPlaying = () => {
 	if (trackingInterval) {
 		clearInterval(trackingInterval)
 		trackingInterval = null
-		console.log('Stopped tracking current song.')
+		console.log('Auto ID tracking interval successfully ended.')
 	}
 }
 
