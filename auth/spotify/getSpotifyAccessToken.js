@@ -23,9 +23,7 @@ const getSpotifyAccessToken = async () => {
 			console.log('-------------------------')
 		}
 
-		const refreshToken = user.spotifyRefreshToken
-		console.log('Using refresh token:', refreshToken)
-		
+		const refreshToken = user.spotifyRefreshToken		
 		const authHeader = Buffer.from(`${clientId}:${clientSecret}`).toString(
 			'base64'
 		)

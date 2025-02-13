@@ -1,7 +1,9 @@
 const createLiveReport = require('../liveReport/createLiveReport')
 const clearOBSResponse = require('../../../obs/obsHelpers/obsHelpers')
 const { npSongsQueried } = require('../../command-use/commandUse')
-const {	vibeCheckSelector } = require('../now-playing/npCommandHelpers/npCommandHelpers')
+const {
+	vibeCheckSelector,
+} = require('../now-playing/npCommandHelpers/npCommandHelpers')
 
 const {
 	NO_LIVE_DATA_MESSAGE,
@@ -206,9 +208,9 @@ const handleStats = (
 		reportData.average_track_length.minutes +
 		':' +
 		reportData.average_track_length.seconds
-	console.log("Average track length: ")
-	console.log("Minutes: ", reportData.average_track_length.minutes)
-	console.log("Seconds: ", reportData.average_track_length.seconds)
+	console.log('Average track length: ')
+	console.log('Minutes: ', reportData.average_track_length.minutes)
+	console.log('Seconds: ', reportData.average_track_length.seconds)
 	const totalTracksPlayed = reportData.total_tracks_played
 	const message = `${config.twitchChannelName} has played ${totalTracksPlayed} songs so far in this set with an average track length of ${averageTrackLength}.`
 	twitchClient.say(channel, message)
@@ -218,6 +220,29 @@ const handleStats = (
 		obsClearDisplayTime,
 		config
 	)
+}
+
+// !np playlist response
+const handlePlaylist = (
+	channel,
+	twitchClient,
+	reportData,
+	obs,
+	obsClearDisplayTime,
+	config,
+	tags
+) => {
+	if (config.isSpotifyEnabled && config.currentSpotifyPlaylistLink) {
+		twitchClient.say(
+			channel,
+			`If you're enjoying the tunes, check out ${config.twitchChannelName}'s Spotify playlist for this live stream here: ${config.currentSpotifyPlaylistLink}`
+		)
+	} else {
+		twitchClient.say(
+			channel,
+			`${config.twitchChannelName} does not have a Spotify playlist set up for this stream.`
+		)
+	}
 }
 
 const COMMAND_MAP = {
@@ -231,6 +256,7 @@ const COMMAND_MAP = {
 	longest: handleLongest,
 	doubles: handleDoubles,
 	stats: handleStats,
+	playlist: handlePlaylist,
 }
 
 const npCommands = async (

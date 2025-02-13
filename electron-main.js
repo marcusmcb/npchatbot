@@ -90,6 +90,7 @@ const isDev = true
 process.env.NODE_ENV = isDev ? 'development' : 'production'
 
 const db = require('./database')
+const { get } = require('http')
 const obs = new OBSWebSocket()
 const wss = new WebSocket.Server({ port: 8080 })
 
@@ -309,20 +310,22 @@ ipcMain.on('startBotScript', async (event, arg) => {
 		// user's live playlist much be reachable before bot
 		// start to ensure proper functionality of the auto-ID
 		// and Spotify playlist features
-		const seratoDisplayName = arg.seratoDisplayName.replaceAll(' ', '_')
-		const url = `https://serato.com/playlists/${seratoDisplayName}/live`
-		console.log('URL? ', url)
-		const isPlaylistLive = await validateLivePlaylist(url)
-		if (!isPlaylistLive) {
-			errorResponse.error = 'Serato Live Playlist is not live.'
-			event.reply('startBotResponse', errorResponse)
-			return
-		} else {
-			console.log('Serato Live Playlist is live')
-			console.log('--------------------------------------')
-			await getSpotifyAccessToken()
-			await createSpotifyPlaylist()
-		}
+		// const seratoDisplayName = arg.seratoDisplayName.replaceAll(' ', '_')
+		// const url = `https://serato.com/playlists/${seratoDisplayName}/live`
+		// console.log('URL? ', url)
+		// const isPlaylistLive = await validateLivePlaylist(url)
+		// if (!isPlaylistLive) {
+		// 	errorResponse.error = 'Serato Live Playlist is not live.'
+		// 	event.reply('startBotResponse', errorResponse)
+		// 	return
+		// } else {
+		// 	console.log('Serato Live Playlist is live')
+		// 	console.log('--------------------------------------')
+		// 	await getSpotifyAccessToken()
+		// 	await createSpotifyPlaylist()
+		// }
+		await getSpotifyAccessToken()
+		await createSpotifyPlaylist()
 	} else {
 		console.log('Spotify is not enabled')
 	}
