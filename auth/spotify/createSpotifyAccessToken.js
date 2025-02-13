@@ -92,9 +92,6 @@ const initSpotifyAuthToken = async (code, wss, mainWindow) => {
 			}
 
 			if (user) {
-				console.log('User found: ', user)
-				logToFile(`User found: ${JSON.stringify(user)}`)
-				logToFile(`* * * * * * *`)
 				db.users.update(
 					{ _id: user._id },
 					{

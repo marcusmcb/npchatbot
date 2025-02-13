@@ -19,8 +19,7 @@ const getSpotifyAccessToken = async () => {
 		if (!user || !user.spotifyRefreshToken) {
 			throw new Error('No stored refresh token found')
 		} else {
-			console.log('User found:')
-			console.log(user)
+			console.log('User found:')			
 			console.log('-------------------------')
 		}
 

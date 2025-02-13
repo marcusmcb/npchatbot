@@ -5,7 +5,7 @@ const {
 	urlCommandList,
 } = require('./bot-assets/command-list/commandList')
 const { obs, connectToOBS } = require('./obs/obsConnection')
-const { returnRefreshTokenConfig } = require('./auth/accessTokenConfig')
+const { returnRefreshTokenConfig } = require('./auth/twitch/accessTokenConfig')
 const logToFile = require('./scripts/logger')
 const {
 	npSongsQueried,
