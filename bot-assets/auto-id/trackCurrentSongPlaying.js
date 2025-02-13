@@ -1,7 +1,7 @@
 const scrapeData = require('../commands/liveReport/LiveReportHelpers/scrapeData')
 const {
 	cleanCurrentSongInfo,
-	cleanQueryString
+	cleanQueryString,
 } = require('../spotify/helpers/spotifyPlaylistHelpers')
 const { getSpotifySongData } = require('../spotify/getSpotifySongData')
 const {
@@ -19,6 +19,13 @@ const trackCurrentSongPlaying = async (config, url, twitchClient) => {
 	const spotifyPlaylistId = config.currentSpotifyPlaylistId
 	const accessToken = config.spotifyAccessToken
 
+	// call checkCurrentSong here to get the current song playing
+	// if the result is null and currentSong is also null:
+	// return
+
+	// once the user's playlist is live and public,
+	// load the tracks found into the Spotify playlist
+
 	if (currentSong === null) {
 		if (isSpotifyEnabled === true) {
 			console.log(
@@ -33,7 +40,6 @@ const trackCurrentSongPlaying = async (config, url, twitchClient) => {
 					'Check that your Serato Live Playlist is active and public.'
 				)
 				console.log('--------------------')
-				return
 			} else if (results.length > 0) {
 				let songUris = []
 				for (let i = 0; i < results.length; i++) {
@@ -80,17 +86,28 @@ const trackCurrentSongPlaying = async (config, url, twitchClient) => {
 		try {
 			const response = await scrapeData(url)
 			const results = response[0]
-			console.log('Current Song Playing: ')
-			console.log(results[0].children[0].data.trim())
-			console.log('--------------------')
-			return results[0].children[0].data.trim()
+			if (results.length > 0) {
+				console.log('Current Song Playing: ')
+				console.log(results[0].children[0].data.trim())
+				console.log('--------------------')
+				return results[0].children[0].data.trim()
+			} else {
+				return null
+			}
 		} catch (error) {
 			console.log('Error checking current song playing: ', error)
+			return null
 		}
 	}
 
 	trackingInterval = setInterval(async () => {
 		let newCurrentSong = await checkCurrentSong(url)
+		if (newCurrentSong === null) {
+			console.log(
+				'No song currently playing.  Please check that your Serato Live Playlist is active and public.'
+			)
+			return
+		}
 
 		if (isAutoIDCleanupEnabled === true) {
 			newCurrentSong = cleanCurrentSongInfo(newCurrentSong)
@@ -101,6 +118,7 @@ const trackCurrentSongPlaying = async (config, url, twitchClient) => {
 
 		// check if the current song playing has changed
 		// and update the current song playing accordingly
+
 		if (newCurrentSong !== currentSong) {
 			currentSong = newCurrentSong
 
@@ -132,6 +150,7 @@ const endTrackCurrentSongPlaying = () => {
 	if (trackingInterval) {
 		clearInterval(trackingInterval)
 		trackingInterval = null
+		currentSong = null
 		console.log('Auto ID tracking interval successfully ended.')
 	}
 }
