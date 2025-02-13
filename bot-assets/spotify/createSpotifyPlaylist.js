@@ -42,7 +42,7 @@ const createSpotifyPlaylist = async () => {
 
 			console.log('New playlist created successfully!')
 			console.log('-------------------------')
-			console.log(response.data)
+			// console.log(response.data)
 
 			await new Promise((resolve, reject) => {
 				db.users.update(

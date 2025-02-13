@@ -1,6 +1,6 @@
 const axios = require('axios')
-const db = require('../database')
-const logToFile = require('../scripts/logger')
+const db = require('../../database')
+const logToFile = require('../../scripts/logger')
 const WebSocket = require('ws')
 
 const exchangeCodeForToken = async (code) => {

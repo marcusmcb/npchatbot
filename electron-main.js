@@ -26,7 +26,7 @@ const {
 	getRefreshToken,
 	updateUserToken,
 	initAuthToken,
-} = require('./auth/createAccessToken')
+} = require('./auth/twitch/createAccessToken')
 
 const {
 	initSpotifyAuthToken,
@@ -34,7 +34,7 @@ const {
 const {
 	getSpotifyAccessToken,
 } = require('./auth/spotify/getSpotifyAccessToken')
-const { setSpotifyUserId } = require('./auth/setSpotifyUserId')
+const { setSpotifyUserId } = require('./auth/spotify/setSpotifyUserId')
 
 const {
 	seratoURLValidityCheck,

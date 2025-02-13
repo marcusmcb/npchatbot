@@ -26,4 +26,13 @@ const cleanCurrentSongInfo = (songInfo) => {
 	return cleaned.replace(/\s+/g, ' ')
 }
 
-module.exports = { getCurrentDate, cleanCurrentSongInfo }
+const cleanQueryString = (queryString) => {
+	let cleaned = queryString.toLowerCase()
+	cleaned = cleaned.replace(/\s*-\s*/g, ' ')
+	cleaned = cleaned.replace(/\s*,\s*/g, ' ')
+	cleaned = cleaned.replace(/[&.]/g, '')
+	cleaned = cleaned.replace(/\s+/g, ' ').trim()
+	return cleaned
+}
+
+module.exports = { getCurrentDate, cleanCurrentSongInfo, cleanQueryString }

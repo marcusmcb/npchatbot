@@ -1,4 +1,4 @@
-const db = require('../database')
+const db = require('../../database')
 const axios = require('axios')
 
 const setSpotifyUserId = async () => {
@@ -14,8 +14,7 @@ const setSpotifyUserId = async () => {
 		if (!user || !user.spotifyAccessToken) {
 			throw new Error('No stored Spotify user ID found')
 		} else {
-			console.log('User found:')
-			console.log(user)
+			console.log('User found:')			
 			console.log('-------------------------')
 		}
 

@@ -1,7 +1,7 @@
-const axios = require('axios')
 const scrapeData = require('../commands/liveReport/LiveReportHelpers/scrapeData')
 const {
 	cleanCurrentSongInfo,
+	cleanQueryString
 } = require('../spotify/helpers/spotifyPlaylistHelpers')
 const { getSpotifySongData } = require('../spotify/getSpotifySongData')
 const {
@@ -10,15 +10,6 @@ const {
 
 let currentSong = null
 let trackingInterval = null
-
-const cleanQueryString = (input) => {
-	let cleaned = input.toLowerCase()
-	cleaned = cleaned.replace(/\s*-\s*/g, ' ')
-	cleaned = cleaned.replace(/\s*,\s*/g, ' ')
-	cleaned = cleaned.replace(/[&.]/g, '')
-	cleaned = cleaned.replace(/\s+/g, ' ').trim()
-	return cleaned
-}
 
 const trackCurrentSongPlaying = async (config, url, twitchClient) => {
 	const channel = `#${config.twitchChannelName}`

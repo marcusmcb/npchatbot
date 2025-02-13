@@ -1,6 +1,4 @@
 const axios = require('axios')
-const { client } = require('tmi.js')
-const WebSocket = require('ws')
 
 // helper method to validate Serato live playlist URL
 const seratoURLValidityCheck = async (seratoDisplayName) => {
@@ -26,7 +24,7 @@ const seratoURLValidityCheck = async (seratoDisplayName) => {
 }
 
 // helper method to validate Twitch URL
-const twitchURLValidityCheck = async (twitchDisplayName, token) => {	
+const twitchURLValidityCheck = async (twitchDisplayName, token) => {
 	const url = `https://api.twitch.tv/helix/users?login=${twitchDisplayName}`
 	try {
 		const response = await axios.get(url, {
@@ -48,13 +46,7 @@ const twitchURLValidityCheck = async (twitchDisplayName, token) => {
 	}
 }
 
-const obsCredentialsCheck = async (
-	obsWebsocketAddress,
-	obsWebsocketPassword
-) => {}
-
 module.exports = {
 	seratoURLValidityCheck: seratoURLValidityCheck,
 	twitchURLValidityCheck: twitchURLValidityCheck,
-	obsCredentialsCheck: obsCredentialsCheck,
 }
