@@ -10,6 +10,37 @@ const {
 
 let currentSong = null
 let trackingInterval = null
+let songsPlayed = []
+
+const getUniqueSongs = (songArray) => {
+	return [...new Set(songArray)]
+}
+
+const hasSongBeenPlayed = (query, songArray) => {
+	return songArray.includes(query)
+}
+
+const prepSongForPlaylist = async (
+	accessToken,
+	spotifyPlaylistId,
+	currentSong
+) => {
+	let uri = []
+	let spotifySongUri = null
+	const songQuery = cleanCurrentSongInfo(currentSong)
+	const spotifyQuery = cleanQueryString(songQuery)
+	const playedSongs = getUniqueSongs(songsPlayed)
+	const doNotAddToSpotify = hasSongBeenPlayed(spotifyQuery, playedSongs) // returns false if the song has NOT been played
+	if (doNotAddToSpotify) {
+		console.log('Song has already been played.')
+	} else {
+		spotifySongUri = await getSpotifySongData(accessToken, spotifyQuery)
+		uri.push(spotifySongUri)
+	}
+	if (spotifySongUri !== null) {
+		await addTracksToSpotifyPlaylist(accessToken, spotifyPlaylistId, uri)
+	}
+}
 
 const trackCurrentSongPlaying = async (config, url, twitchClient) => {
 	const channel = `#${config.twitchChannelName}`
@@ -20,7 +51,7 @@ const trackCurrentSongPlaying = async (config, url, twitchClient) => {
 	const accessToken = config.spotifyAccessToken
 
 	// once the user's playlist is live and public,
-	// load the tracks found into the Spotify playlist
+	// load the tracks found into the user's Spotify playlist
 
 	if (currentSong === null) {
 		if (isSpotifyEnabled === true) {
@@ -28,6 +59,9 @@ const trackCurrentSongPlaying = async (config, url, twitchClient) => {
 				'Adding all songs from Serato Live Playlist scrape to Spotify playlist...'
 			)
 			console.log('--------------------')
+
+			// refactor as a separate method
+
 			const response = await scrapeData(url)
 			const results = response[0]
 			if (!results || results.length === 0) {
@@ -46,8 +80,10 @@ const trackCurrentSongPlaying = async (config, url, twitchClient) => {
 					console.log('Spotify Song Query: ', songQuery)
 					const spotifySongUri = await getSpotifySongData(accessToken, query)
 					songUris.push(spotifySongUri)
+					songsPlayed.push(query)
 				}
 				if (songUris.length > 0) {
+					songUris = [...new Set(songUris)]
 					setTimeout(async () => {
 						await addTracksToSpotifyPlaylist(
 							accessToken,
@@ -104,39 +140,20 @@ const trackCurrentSongPlaying = async (config, url, twitchClient) => {
 			)
 			return
 		}
-
 		if (isAutoIDCleanupEnabled === true) {
 			newCurrentSong = cleanCurrentSongInfo(newCurrentSong)
 		}
-
 		console.log('Current Song Playing: ', currentSong)
 		console.log('New Current Song Playing: ', newCurrentSong)
-
-		// check if the current song playing has changed
-		// and update the current song playing accordingly
-
 		if (newCurrentSong !== currentSong) {
 			currentSong = newCurrentSong
-
 			// return the current song playing if the Auto ID feature is enabled
 			if (isAutoIDEnabled === true) {
 				twitchClient.say(channel, `Now playing: ${currentSong}`)
 			}
-
 			// update the user's Spotify playlist with the current song playing
 			if (isSpotifyEnabled === true) {
-				let uri = []
-				const songQuery = cleanCurrentSongInfo(currentSong)
-				const query = cleanQueryString(songQuery)
-				console.log('Query: ', query)
-				console.log('Spotify Song Query: ', songQuery)
-				const spotifySongUri = await getSpotifySongData(accessToken, query)
-				uri.push(spotifySongUri)
-				// add logic to prevent adding a duplicate uri to the current playlist
-				// const playlistUris = await getSpotifyPlaylistUris(accessToken, spotifyPlaylistId)
-				if (spotifySongUri) {
-					await addTracksToSpotifyPlaylist(accessToken, spotifyPlaylistId, uri)
-				}
+				await prepSongForPlaylist(accessToken, spotifyPlaylistId, currentSong)
 			}
 		} else {
 			console.log('Current song playing has not changed.')
