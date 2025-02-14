@@ -7,20 +7,17 @@ const { getSpotifySongData } = require('../spotify/getSpotifySongData')
 const {
 	addTracksToSpotifyPlaylist,
 } = require('../spotify/addTracksToSpotifyPlaylist')
+const {
+	getUniqueSongs,
+	hasSongBeenPlayed,
+	checkCurrentSong,
+} = require('./helpers/autoIdHelpers')
 
 let currentSong = null
 let trackingInterval = null
 let songsPlayed = []
 
-const getUniqueSongs = (songArray) => {
-	return [...new Set(songArray)]
-}
-
-const hasSongBeenPlayed = (query, songArray) => {
-	return songArray.includes(query)
-}
-
-const prepSongForSpotifyPlaylist = async (
+const addSongToSpotifyPlaylist = async (
 	accessToken,
 	spotifyPlaylistId,
 	currentSong
@@ -91,24 +88,6 @@ const spotifyPlaylistInit = async (
 	}
 }
 
-const checkCurrentSong = async (url) => {
-	try {
-		const response = await scrapeData(url)
-		const results = response[0]
-		if (results.length > 0) {
-			console.log('Current Song Playing: ')
-			console.log(results[0].children[0].data.trim())
-			console.log('--------------------')
-			return results[0].children[0].data.trim()
-		} else {
-			return null
-		}
-	} catch (error) {
-		console.log('Error checking current song playing: ', error)
-		return null
-	}
-}
-
 const trackCurrentSongPlaying = async (config, url, twitchClient) => {
 	const channel = `#${config.twitchChannelName}`
 	const isSpotifyEnabled = config.isSpotifyEnabled
@@ -122,7 +101,7 @@ const trackCurrentSongPlaying = async (config, url, twitchClient) => {
 
 	if (currentSong === null) {
 		if (isSpotifyEnabled === true) {
-			spotifyPlaylistInit(
+			await spotifyPlaylistInit(
 				accessToken,
 				spotifyPlaylistId,
 				url,
@@ -158,7 +137,7 @@ const trackCurrentSongPlaying = async (config, url, twitchClient) => {
 			}
 			// update the user's Spotify playlist with the current song playing
 			if (isSpotifyEnabled === true) {
-				await prepSongForSpotifyPlaylist(
+				await addSongToSpotifyPlaylist(
 					accessToken,
 					spotifyPlaylistId,
 					currentSong
