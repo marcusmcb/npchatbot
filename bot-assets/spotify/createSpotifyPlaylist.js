@@ -24,7 +24,7 @@ const createSpotifyPlaylist = async () => {
 
 		const data = {
 			name: playlistName,
-			description: 'Selections from my Twitch stream',
+			description: `Selections from my stream over at twitch.tv/${user.twitchChannelName}`,
 			public: true,
 		}
 
