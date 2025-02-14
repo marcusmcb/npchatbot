@@ -59,7 +59,7 @@ const PreferencesPanel: React.FC<PreferencesPanelProps> = (props) => {
 							: '') + (props.isBotConnected ? ' greyed-out-label' : '')
 					}
 				>
-					Enable Spotify Playlist
+					Enable Spotify© Playlist
 				</label>
 				<span
 					className={`question-icon ${
