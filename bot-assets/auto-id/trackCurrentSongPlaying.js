@@ -19,10 +19,6 @@ const trackCurrentSongPlaying = async (config, url, twitchClient) => {
 	const spotifyPlaylistId = config.currentSpotifyPlaylistId
 	const accessToken = config.spotifyAccessToken
 
-	// call checkCurrentSong here to get the current song playing
-	// if the result is null and currentSong is also null:
-	// return
-
 	// once the user's playlist is live and public,
 	// load the tracks found into the Spotify playlist
 
@@ -136,6 +132,8 @@ const trackCurrentSongPlaying = async (config, url, twitchClient) => {
 				console.log('Spotify Song Query: ', songQuery)
 				const spotifySongUri = await getSpotifySongData(accessToken, query)
 				uri.push(spotifySongUri)
+				// add logic to prevent adding a duplicate uri to the current playlist
+				// const playlistUris = await getSpotifyPlaylistUris(accessToken, spotifyPlaylistId)
 				if (spotifySongUri) {
 					await addTracksToSpotifyPlaylist(accessToken, spotifyPlaylistId, uri)
 				}
