@@ -401,14 +401,13 @@ ipcMain.on('startBotScript', async (event, arg) => {
 
 // ipc method to disconnect npChatbot script from Twitch
 ipcMain.on('stopBotScript', async (event, arg) => {
-
 	/*
 	
 	add logic to scrape data from "live" playlist page with backup logic to
 	scrape the data from the first playlist in the user's Serato playlists page
 	if the live playlist session has ended
 	
-	*/	
+	*/
 
 	if (tmiInstance) {
 		await tmiInstance.disconnect().then((data) => {
@@ -515,7 +514,7 @@ ipcMain.on('open-auth-settings', (event, url) => {
 	shell.openExternal(url)
 })
 
-// add logic to handle the case where a user opts to 
+// add logic to handle the case where a user opts to
 // fully close the running npChatbot app while it's
 // still connected to Twitch
 
@@ -544,6 +543,12 @@ const createWindow = () => {
 	// mainWindow.webContents.openDevTools()
 }
 
+app.on('activate', () => {
+	if (BrowserWindow.getAllWindows().length === 0) {
+		createWindow()
+	}
+})
+
 app.on('ready', () => {
 	startServer()
 	createWindow()
@@ -563,11 +568,5 @@ app.on('before-quit', () => {
 app.on('window-all-closed', () => {
 	if (process.platform !== 'darwin') {
 		app.quit()
-	}
-})
-
-app.on('activate', () => {
-	if (BrowserWindow.getAllWindows().length === 0) {
-		createWindow()
 	}
 })
