@@ -5,6 +5,7 @@ const addTracksToSpotifyPlaylist = async (
 	playlistId,
 	trackUris
 ) => {	
+	console.log("Track Uri's: ", trackUris.length)
 	const batchSize = 100
 	for (let i = 0; i < trackUris.length; i += batchSize) {
 		const batch = trackUris.slice(i, i + batchSize)

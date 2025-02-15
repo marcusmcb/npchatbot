@@ -1,5 +1,17 @@
 import '../App.css'
 
+/*
+
+add option in the preferences UI for the user to
+- enter in their own Spotify playlist title
+- use the default ("Twitch Stream Playlist - Date")
+- use their current Twitch stream title
+
+add option to resume last Spotify playlist on startup
+- if npChatbot has been disconnected, restarted, crashed, etc
+
+*/
+
 type PreferencesPanelProps = {
 	formData: {
 		twitchChannelName: string
