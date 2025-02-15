@@ -6,8 +6,7 @@ throughout the back end into this main constants file for centralization.
 */
 
 
-const NO_LIVE_DATA_MESSAGE =
-	'No live playlist data for this stream at the moment.'
+const NO_LIVE_DATA_MESSAGE = 'No live playlist data for this stream at the moment.'
 
 const ERROR_MESSAGE = "That doesn't appear to be working right now."
 
