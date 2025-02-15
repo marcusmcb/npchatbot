@@ -1,11 +1,11 @@
-const scrapeData = require('../liveReport/LiveReportHelpers/scrapeData')
+const scrapeData = require('../create-serato-report/helpers/scrapeData')
 
 const {
 	extractPlaylistName,
 	formatDateWithSuffix,
 	lengthToMs,
 	transformTimePlayed,
-} = require('../liveReport/LiveReportHelpers/liveReportHelpers')
+} = require('../create-serato-report/helpers/liveReportHelpers')
 
 const createLiveReport = async (url) => {
 	try {

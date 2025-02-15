@@ -1,4 +1,4 @@
-const scrapeData = require('../../commands/liveReport/LiveReportHelpers/scrapeData')
+const scrapeData = require('../../commands/create-serato-report/helpers/scrapeData')
 
 const getUniqueSongs = (songArray) => {
 	return [...new Set(songArray)]

@@ -33,11 +33,6 @@ body {
 	color: var(--main-text-color);
 }
 
-.creds-prefs-panel {
-	display: flex;
-	flex-direction: row;
-}
-
 .app-container-column {
 	margin-right: 25px;
 }
@@ -250,6 +245,11 @@ button:disabled:hover {
 
 .spotify-prefs-element {
 	margin-top: 20px;
+}
+
+.creds-prefs-panel {
+	display: flex;
+	flex-direction: row;
 }
 
 .question-icon,
