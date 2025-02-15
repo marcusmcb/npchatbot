@@ -1,12 +1,16 @@
 const scrapeData = require('../commands/liveReport/LiveReportHelpers/scrapeData')
+
 const {
 	cleanCurrentSongInfo,
 	cleanQueryString,
 } = require('../spotify/helpers/spotifyPlaylistHelpers')
+
 const { getSpotifySongData } = require('../spotify/getSpotifySongData')
+
 const {
 	addTracksToSpotifyPlaylist,
 } = require('../spotify/addTracksToSpotifyPlaylist')
+
 const {
 	getUniqueSongs,
 	hasSongBeenPlayed,
@@ -17,7 +21,7 @@ let currentSong = null
 let trackingInterval = null
 let songsPlayed = []
 
-const addSongToSpotifyPlaylist = async (
+const prepSongForSpotifyPlaylist = async (
 	accessToken,
 	spotifyPlaylistId,
 	currentSong
@@ -39,7 +43,7 @@ const addSongToSpotifyPlaylist = async (
 	}
 }
 
-const spotifyPlaylistInit = async (
+const initSpotifyPlaylist = async (
 	accessToken,
 	spotifyPlaylistId,
 	url,
@@ -59,11 +63,12 @@ const spotifyPlaylistInit = async (
 		let songUris = []
 		for (let i = 0; i < results.length; i++) {
 			const songQuery = cleanCurrentSongInfo(results[i].children[0].data.trim())
-			const query = cleanQueryString(songQuery)
-			console.log('Spotify Song Query: ', songQuery)
+			const query = cleanQueryString(songQuery)			
 			const spotifySongUri = await getSpotifySongData(accessToken, query)
-			songUris.push(spotifySongUri)
-			songsPlayed.push(query)
+			if (spotifySongUri !== null) {
+				songUris.push(spotifySongUri)
+				songsPlayed.push(query)
+			}
 		}
 		if (songUris.length > 0) {
 			songUris = [...new Set(songUris)]
@@ -81,6 +86,7 @@ const spotifyPlaylistInit = async (
 			if (isAutoIDCleanupEnabled === true) {
 				currentSong = cleanCurrentSongInfo(currentSong)
 			}
+			console.log("Serato Playlist Length: ", results.length)
 		} else {
 			console.log('No Spotify URIs found for songs in Serato Live Playlist.')
 			console.log('--------------------')
@@ -101,7 +107,7 @@ const trackCurrentSongPlaying = async (config, url, twitchClient) => {
 
 	if (currentSong === null) {
 		if (isSpotifyEnabled === true) {
-			await spotifyPlaylistInit(
+			await initSpotifyPlaylist(
 				accessToken,
 				spotifyPlaylistId,
 				url,
@@ -127,9 +133,11 @@ const trackCurrentSongPlaying = async (config, url, twitchClient) => {
 		if (isAutoIDCleanupEnabled === true) {
 			newCurrentSong = cleanCurrentSongInfo(newCurrentSong)
 		}
-		console.log('Current Song Playing: ', currentSong)
-		console.log('New Current Song Playing: ', newCurrentSong)
+
 		if (newCurrentSong !== currentSong) {
+			console.log('Previous Current Song Playing: ', currentSong)
+			console.log('New Current Song Playing: ', newCurrentSong)
+			console.log('--------------------')
 			currentSong = newCurrentSong
 			// return the current song playing if the Auto ID feature is enabled
 			if (isAutoIDEnabled === true) {
@@ -137,14 +145,12 @@ const trackCurrentSongPlaying = async (config, url, twitchClient) => {
 			}
 			// update the user's Spotify playlist with the current song playing
 			if (isSpotifyEnabled === true) {
-				await addSongToSpotifyPlaylist(
+				await prepSongForSpotifyPlaylist(
 					accessToken,
 					spotifyPlaylistId,
 					currentSong
 				)
 			}
-		} else {
-			console.log('Current song playing has not changed.')
 		}
 	}, 10000)
 }

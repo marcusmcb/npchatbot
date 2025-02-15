@@ -8,7 +8,28 @@ The updated logic should evaluate the title and artist values relative
 to the top 3 results returned from Spotify.  The title and artist values 
 of each result can be parsed from the response data returned. 
 
+UPDATE:
+
+Currently, npChatbot returns the first result from the Spotify search
+as the result to add to the user's playlist. 
+
+Clean the tracks[i].name and tracks[i].artists[0].name values returned
+and create a string to compare to the songQuery string submitted.
+
+If the strings match, return the tracks[i].uri value to be added to the
+playlist.  
+
+If no match is found, then the songQuery submitted may need
+to be sent as an object with separate artist and title values to
+evaluate against the Spotify results.  Alternately, the comparison
+can be submitted again using the 2nd and 3rd results returned.
+
 */
+
+const {
+	cleanCurrentSongInfo,
+	cleanQueryString,
+} = require('../spotify/helpers/spotifyPlaylistHelpers')
 
 const axios = require('axios')
 
@@ -22,16 +43,40 @@ const getSpotifySongData = async (accessToken, songQuery) => {
 			},
 		})
 		const tracks = response.data.tracks.items
-		console.log('Spotify Response for: ', songQuery)
-		console.log('-------------------')
-		for (let i = 0; i < tracks.length; i++) {
-			console.log('Track ', i + 1)
-			console.log(tracks[i].name)
-			console.log(tracks[i].artists[0].name)
-			console.log('-------------------')
-		}
+		// console.log('Spotify Response for: ', songQuery)
+		// console.log('-------------------')
+		// for (let i = 0; i < tracks.length; i++) {
+		// 	console.log('Track ', i + 1)
+		// 	console.log(tracks[i].name)
+		// 	console.log(tracks[i].artists[0].name)
+		// 	console.log('-------------------')
+		// }
 		const firstTrack = tracks[0]
-		return firstTrack ? firstTrack.uri : null
+		const firstTrackString = `${firstTrack.artists[0].name} - ${firstTrack.name}`
+		const firstTrackCleaned = cleanCurrentSongInfo(firstTrackString)
+		const firstTrackComparison = cleanQueryString(firstTrackCleaned)
+
+		// console.log('Song Query: ', songQuery)
+		// console.log('First Track Returned: ', firstTrackComparison)
+		// console.log('-------------------')
+
+		const normalizedSongQuery = songQuery.toLowerCase().trim()
+		const normalizedFirstTrack = firstTrackComparison.toLowerCase().trim()
+
+		if (normalizedSongQuery === normalizedFirstTrack) {
+			// console.log('Match found for song query.')
+			// console.log("Normalized Song Query: ", normalizedSongQuery)
+			// console.log("Normalized First Track: ", normalizedFirstTrack)
+			// console.log('-------------------')
+			return firstTrack.uri
+		} else {
+			console.log('No match found for song query.')
+			console.log("- - - - - - - - - - - - - - -")
+			console.log("Normalized Song Query: ", normalizedSongQuery)
+			console.log("Normalized First Track: ", normalizedFirstTrack)
+			console.log('-------------------')
+			return null
+		}
 	} catch (error) {
 		console.error(
 			`Error getting song data for "${songQuery}":`,
