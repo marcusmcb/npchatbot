@@ -1,4 +1,4 @@
-const createLiveReport = require('../liveReport/createLiveReport')
+const createLiveReport = require('../create-serato-report/createLiveReport')
 const clearOBSResponse = require('../../../obs/obsHelpers/obsHelpers')
 const {
 	NO_LIVE_DATA_MESSAGE,

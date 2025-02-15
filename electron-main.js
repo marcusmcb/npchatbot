@@ -3,20 +3,16 @@ const path = require('path')
 const https = require('https')
 const bodyParser = require('body-parser')
 const cors = require('cors')
-const express = require('express')
-const { app, BrowserWindow, ipcMain, shell } = require('electron')
 const OBSWebSocket = require('obs-websocket-js').default
 const dotenv = require('dotenv')
 const WebSocket = require('ws')
 const { URL } = require('url')
+
+const express = require('express')
+const { app, BrowserWindow, ipcMain, shell } = require('electron')
 const logToFile = require('./scripts/logger')
 const loadConfigurations = require('./config')
 const initializeBot = require('./index')
-const {
-	npSongsQueried,
-	dypSearchTerms,
-} = require('./bot-assets/command-use/commandUse')
-const createLiveReport = require('./bot-assets/commands/liveReport/createLiveReport')
 
 const {
 	createSpotifyPlaylist,
@@ -49,7 +45,7 @@ const {
 	updateUserData,
 } = require('./helpers/updateUserParams/updateUserParams')
 
-const { generateRandomState } = require('./auth/spotify/generateRandomState')
+const { generateRandomState } = require('./auth/helpers/generateRandomState')
 
 const errorHandler = require('./helpers/errorHandler/errorHandler')
 
@@ -90,7 +86,7 @@ const isDev = true
 process.env.NODE_ENV = isDev ? 'development' : 'production'
 
 const db = require('./database')
-const { get } = require('http')
+// const { get } = require('http')
 const obs = new OBSWebSocket()
 const wss = new WebSocket.Server({ port: 8080 })
 
@@ -112,7 +108,7 @@ ipcMain.on('open-spotify-auth-url', async (event, arg) => {
 
 	spotifyAuthWindow = new BrowserWindow({
 		width: 800,
-		height: 600,
+		height: 800,
 		webPreferences: {
 			nodeIntegration: false,
 			contextIsolation: true,
@@ -172,11 +168,16 @@ ipcMain.on('open-spotify-auth-url', async (event, arg) => {
 ipcMain.on('open-twitch-auth-url', async (event, arg) => {
 	const clientId = process.env.TWITCH_CLIENT_ID
 	const redirectUri = process.env.TWITCH_AUTH_REDIRECT_URL
+
+	// update this to use the randomized state generator method used in the Spotify auth handler
+
 	const authUrl = `https://id.twitch.tv/oauth2/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&scope=chat:read+chat:edit&state=c3ab8aa609ea11e793ae92361f002671`
+
+	// set authWindow height to user's screen height
 
 	authWindow = new BrowserWindow({
 		width: 800,
-		height: 600,
+		height: 800,
 		webPreferences: {
 			nodeIntegration: false,
 			contextIsolation: true,
@@ -356,9 +357,6 @@ ipcMain.on('startBotScript', async (event, arg) => {
 		return
 	}
 
-	// add logic here to create a new Spotify playlist
-	// if arg.isSpotifyEnabled === true
-
 	// refactor the following sequence to properly await the user
 	// token update before the loadConfigurations method is called
 
@@ -403,58 +401,14 @@ ipcMain.on('startBotScript', async (event, arg) => {
 
 // ipc method to disconnect npChatbot script from Twitch
 ipcMain.on('stopBotScript', async (event, arg) => {
-	// const seratoDisplayName = arg.seratoDisplayName.replaceAll(' ', '_')
-	// const url = `https://serato.com/playlists/${seratoDisplayName}/live`
-	// const reportData = await createLiveReport(url)
-	// const spotifyPlaylistLink = generateSpotifyPlaylistLink(reportData)
 
 	/*
-	--------------------------------------
-	add logic to return generated Spotify playlist link to the user's chat
-	--------------------------------------
+	
 	add logic to scrape data from "live" playlist page with backup logic to
 	scrape the data from the first playlist in the user's Serato playlists page
 	if the live playlist session has ended
-	--------------------------------------
-	add logic to trigger playlist creation and return the link to the chat 
-	when an end-of-stream raid event is detected?
-	--------------------------------------
-	*/
-
-	// console.log('REPORT DATA: ')
-	// console.log(reportData)
-	// console.log('--------------------------------------')
-
-	// const finalReportData = {
-	// 	dj_name: reportData.dj_name,
-	// 	set_start_time: reportData.set_start_time,
-	// 	playlist_date: reportData.playlist_date,
-	// 	average_track_length_minutes: reportData.average_track_length.minutes,
-	// 	average_track_length_seconds: reportData.average_track_length.seconds,
-	// 	total_tracks_played: reportData.total_tracks_played,
-	// 	set_length: reportData.set_length.length_value,
-	// 	set_length_hours: reportData.set_length.hours,
-	// 	set_length_minutes: reportData.set_length.minutes,
-	// 	set_length_seconds: reportData.set_length.seconds,
-	// 	// shortest_track_name: reportData.shortest_track.name,
-	// 	// shortest_track_length: reportData.shortest_track.length_value,
-	// 	// shortest_track_minutes: reportData.shortest_track.minutes,
-	// 	// shortest_track_seconds: reportData.shortest_track.seconds,
-	// 	// longest_track_name: reportData.longest_track.name,
-	// 	// longest_track_length: reportData.longest_track.length_value,
-	// 	// longest_track_minutes: reportData.longest_track.minutes,
-	// 	// longest_track_seconds: reportData.longest_track.seconds,
-	// 	doubles_played: reportData.doubles_played,
-	// 	// top_three_longest: reportData.top_three_longest,
-	// 	// top_three_shortest: reportData.top_three_shortest,
-	// 	np_songs_queried: npSongsQueried,
-	// 	dyp_search_terms: dypSearchTerms,
-	// }
-
-	// console.log("--------------------------------------")
-	// console.log('REPORT DATA: ')
-	// console.log(finalReportData)
-	// console.log("--------------------------------------")
+	
+	*/	
 
 	if (tmiInstance) {
 		await tmiInstance.disconnect().then((data) => {
@@ -522,6 +476,8 @@ ipcMain.on('submitUserData', async (event, arg) => {
 		return
 	}
 
+	// validate the user's Serato and Twitch channel names
+	// before submitting the update
 	const seratoDisplayName = arg.seratoDisplayName.replaceAll(' ', '_')
 	const isValidSeratoURL = await seratoURLValidityCheck(seratoDisplayName)
 	const isValidTwitchURL = await twitchURLValidityCheck(
@@ -554,9 +510,14 @@ ipcMain.on('submitUserData', async (event, arg) => {
 // ipc method to handle npChatbot disconnection from Twitch
 // add method to clear users.db file if user opts to fully
 // remove the app from their Twitch configuration
+
 ipcMain.on('open-auth-settings', (event, url) => {
 	shell.openExternal(url)
 })
+
+// add logic to handle the case where a user opts to 
+// fully close the running npChatbot app while it's
+// still connected to Twitch
 
 const createWindow = () => {
 	mainWindow = new BrowserWindow({

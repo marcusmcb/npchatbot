@@ -1,4 +1,4 @@
-const createLiveReport = require('../liveReport/createLiveReport')
+const createLiveReport = require('../create-serato-report/createLiveReport')
 const clearOBSResponse = require('../../../obs/obsHelpers/obsHelpers')
 const { npSongsQueried } = require('../../command-use/commandUse')
 const {
@@ -24,6 +24,8 @@ const updateOBSWithText = (obs, text, obsClearDisplayTime, config) => {
 }
 
 // !np test response
+// test this command to either remove it here
+// or from the test-command directory
 const handleTest = (channel, twitchClient, tags) => {
 	twitchClient.say(
 		channel,

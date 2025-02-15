@@ -19,10 +19,31 @@ and create a string to compare to the songQuery string submitted.
 If the strings match, return the tracks[i].uri value to be added to the
 playlist.  
 
+UPDATE: 
+
 If no match is found, then the songQuery submitted may need
 to be sent as an object with separate artist and title values to
 evaluate against the Spotify results.  Alternately, the comparison
 can be submitted again using the 2nd and 3rd results returned.
+
+In the calling method, parse the scraped result from each Serato
+song entry as an object with artist and title key/value pairs.
+
+Pass the resulting queryObject into the getSpotifySongData method 
+to use in the comparison.  Apply the strict comparison as we are
+currently but add in a partial match methodology if the strict
+comparison fails.
+
+Apply the partial match logic to the normalized title and artist
+values against the normalized Spotify response values.  If a partial
+match is found between the combined comparison, then return the
+first track uri to use update the playlist.
+
+If the partial match logic fails on the first track returned, then
+apply the same logic cycle to the 2nd result returned (and the 3rd
+if necessary).  Update on the first strict comparison or partial match
+found if the first track result is not useable.
+
 
 */
 
@@ -65,16 +86,17 @@ const getSpotifySongData = async (accessToken, songQuery) => {
 
 		if (normalizedSongQuery === normalizedFirstTrack) {
 			// console.log('Match found for song query.')
-			// console.log("Normalized Song Query: ", normalizedSongQuery)
-			// console.log("Normalized First Track: ", normalizedFirstTrack)
+			// console.log('Normalized Song Query: ', normalizedSongQuery)
+			// console.log('Normalized First Track: ', normalizedFirstTrack)
 			// console.log('-------------------')
 			return firstTrack.uri
 		} else {
+			console.log('* * * * * * * * * * * *')
 			console.log('No match found for song query.')
-			console.log("- - - - - - - - - - - - - - -")
-			console.log("Normalized Song Query: ", normalizedSongQuery)
-			console.log("Normalized First Track: ", normalizedFirstTrack)
-			console.log('-------------------')
+			console.log('- - - - - - - - - - - - - - -')
+			console.log('Normalized Song Query: ', normalizedSongQuery)
+			console.log('Normalized First Track: ', normalizedFirstTrack)
+			console.log('* * * * * * * * * * * *')
 			return null
 		}
 	} catch (error) {

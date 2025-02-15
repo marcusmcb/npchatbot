@@ -1,3 +1,11 @@
+/* 
+
+Move message values from error response handlers (Spotify, Serato, Twitch, etc)
+throughout the back end into this main constants file for centralization.
+
+*/
+
+
 const NO_LIVE_DATA_MESSAGE =
 	'No live playlist data for this stream at the moment.'
 
