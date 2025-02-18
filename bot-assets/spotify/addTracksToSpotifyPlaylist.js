@@ -1,3 +1,10 @@
+/*
+
+Update the following logic to account for an expired access token
+when adding tracks to the user's Spotify playlist
+
+*/
+
 const axios = require('axios')
 
 const addTracksToSpotifyPlaylist = async (
