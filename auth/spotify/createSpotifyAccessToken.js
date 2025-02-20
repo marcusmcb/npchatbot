@@ -1,3 +1,13 @@
+/*
+
+Per the recent Spotify API changes, the user authorization redirect will
+need to use secured HTTP to receive the initial app authorization code.
+
+Update the stored .env Spotify redirect URI to use HTTPS and test
+before the next build
+
+*/
+
 const axios = require('axios')
 const db = require('../../database')
 const logToFile = require('../../scripts/logger')
