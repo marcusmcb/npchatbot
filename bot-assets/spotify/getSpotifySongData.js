@@ -77,28 +77,30 @@ const getSpotifySongData = async (accessToken, songQuery) => {
 		const firstTrackCleaned = cleanCurrentSongInfo(firstTrackString)
 		const firstTrackComparison = cleanQueryString(firstTrackCleaned)
 
-		// console.log('Song Query: ', songQuery)
-		// console.log('First Track Returned: ', firstTrackComparison)
-		// console.log('-------------------')
+		console.log('Song Query: ', songQuery)
+		console.log('First Track Returned: ', firstTrackComparison)
+		console.log('-------------------')
 
-		const normalizedSongQuery = songQuery.toLowerCase().trim()
-		const normalizedFirstTrack = firstTrackComparison.toLowerCase().trim()
+		return firstTrack.uri
 
-		if (normalizedSongQuery === normalizedFirstTrack) {
-			// console.log('Match found for song query.')
-			// console.log('Normalized Song Query: ', normalizedSongQuery)
-			// console.log('Normalized First Track: ', normalizedFirstTrack)
-			// console.log('-------------------')
-			return firstTrack.uri
-		} else {
-			console.log('* * * * * * * * * * * *')
-			console.log('No match found for song query.')
-			console.log('- - - - - - - - - - - - - - -')
-			console.log('Normalized Song Query: ', normalizedSongQuery)
-			console.log('Normalized First Track: ', normalizedFirstTrack)
-			console.log('* * * * * * * * * * * *')
-			return null
-		}
+		// const normalizedSongQuery = songQuery.toLowerCase().trim()
+		// const normalizedFirstTrack = firstTrackComparison.toLowerCase().trim()
+
+		// if (normalizedSongQuery === normalizedFirstTrack) {
+		// 	// console.log('Match found for song query.')
+		// 	// console.log('Normalized Song Query: ', normalizedSongQuery)
+		// 	// console.log('Normalized First Track: ', normalizedFirstTrack)
+		// 	// console.log('-------------------')
+		// 	return firstTrack.uri
+		// } else {
+		// 	console.log('* * * * * * * * * * * *')
+		// 	console.log('No match found for song query.')
+		// 	console.log('- - - - - - - - - - - - - - -')
+		// 	console.log('Normalized Song Query: ', normalizedSongQuery)
+		// 	console.log('Normalized First Track: ', normalizedFirstTrack)
+		// 	console.log('* * * * * * * * * * * *')
+		// 	return null
+		// }
 	} catch (error) {
 		console.error(
 			`Error getting song data for "${songQuery}":`,
