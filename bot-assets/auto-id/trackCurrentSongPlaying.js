@@ -35,11 +35,13 @@ const prepSongForSpotifyPlaylist = async (
 	if (doNotAddToSpotify) {
 		console.log('Song has already been played.')
 	} else {
-		spotifySongUri = await getSpotifySongData(accessToken, spotifyQuery)
+		spotifySongUri = await getSpotifySongData(spotifyQuery)
 		uri.push(spotifySongUri)
 	}
 	if (spotifySongUri !== null) {
-		await addTracksToSpotifyPlaylist(accessToken, spotifyPlaylistId, uri)
+		// add logic to check if the user's current Spotify access token is still valid
+		// if not, update it in the user's db file and then add the song to the playlist
+		await addTracksToSpotifyPlaylist(spotifyPlaylistId, uri)
 	}
 }
 
@@ -64,7 +66,7 @@ const initSpotifyPlaylist = async (
 		for (let i = 0; i < results.length; i++) {
 			const songQuery = cleanCurrentSongInfo(results[i].children[0].data.trim())
 			const query = cleanQueryString(songQuery)			
-			const spotifySongUri = await getSpotifySongData(accessToken, query)
+			const spotifySongUri = await getSpotifySongData(query)
 			if (spotifySongUri !== null) {
 				songUris.push(spotifySongUri)
 				songsPlayed.push(query)
@@ -73,8 +75,7 @@ const initSpotifyPlaylist = async (
 		if (songUris.length > 0) {
 			songUris = [...new Set(songUris)]
 			setTimeout(async () => {
-				await addTracksToSpotifyPlaylist(
-					accessToken,
+				await addTracksToSpotifyPlaylist(					
 					spotifyPlaylistId,
 					songUris
 				)
