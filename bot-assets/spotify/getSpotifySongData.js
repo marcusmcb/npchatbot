@@ -47,14 +47,25 @@ found if the first track result is not useable.
 
 */
 
+const axios = require('axios')
+const {
+	checkSpotifyAccessToken,
+} = require('../../auth/spotify/checkSpotifyAccessToken')
+
 const {
 	cleanCurrentSongInfo,
 	cleanQueryString,
 } = require('../spotify/helpers/spotifyPlaylistHelpers')
 
-const axios = require('axios')
+const getSpotifySongData = async (songQuery) => {
+	const accessToken = await checkSpotifyAccessToken()
+	if (!accessToken) {
+		console.error('Cannot submit track search, Spotify authentication failed.')
+		return
+	}
 
-const getSpotifySongData = async (accessToken, songQuery) => {
+	console.log('Updated Access Token: ', accessToken)
+	
 	try {
 		const url = `https://api.spotify.com/v1/search?q=${songQuery}&type=track&limit=3&market=USA`
 		const response = await axios.get(url, {
