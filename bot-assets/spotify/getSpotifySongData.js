@@ -113,6 +113,7 @@ const getSpotifySongData = async (songQuery) => {
 		// 	return null
 		// }
 	} catch (error) {
+		// add error message to response and return it
 		console.error(
 			`Error getting song data for "${songQuery}":`,
 			error.response?.data || error.message

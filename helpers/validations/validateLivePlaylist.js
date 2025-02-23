@@ -15,6 +15,7 @@ const validateLivePlaylist = async (url) => {
     }
   } catch (error) {
     console.error("Error checking live playlist URL: ", error);
+    // add error message to response and return it
     return false;
   }
 };

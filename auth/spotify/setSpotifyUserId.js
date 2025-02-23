@@ -44,9 +44,11 @@ const setSpotifyUserId = async () => {
 			})
       console.log('Spotify User ID updated successfully')
 		} catch (error) {
+			// add error message to response and return it
 			console.error('Error getting Spotify user data:', error)
 		}
 	} catch (error) {
+		// add error message to response and return it
 		console.error('Error updating credentials with Spotify User ID:', error)
 	}
 }

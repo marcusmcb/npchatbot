@@ -42,6 +42,7 @@ const twitchURLValidityCheck = async (twitchDisplayName, token) => {
 		}
 	} catch (error) {
 		console.error('Error checking Twitch channel by content:', error)
+		// add error message to response and return it
 		return false
 	}
 }
