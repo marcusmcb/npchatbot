@@ -32,6 +32,8 @@ const MessagePanel: React.FC<MessagePanelProps> = ({
 				return tooltipTexts.autoIDEnabled
 			case 'autoIDCleanupEnabled':
 				return tooltipTexts.autoIDCleanupEnabled
+			case 'continueLastPlaylist':
+				return tooltipTexts.continueLastPlaylist
 			default:
 				return ''
 		}

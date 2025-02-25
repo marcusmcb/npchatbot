@@ -26,6 +26,7 @@ const updateUserData = async (db, event, arg) => {
 			isObsResponseEnabled: arg.isObsResponseEnabled,
 			isIntervalEnabled: arg.isIntervalEnabled,
 			isSpotifyEnabled: arg.isSpotifyEnabled,
+			continueLastPlaylist: arg.continueLastPlaylist,
 			isAutoIDEnabled: arg.isAutoIDEnabled,
 			isAutoIDCleanupEnabled: arg.isAutoIDCleanupEnabled,
 			isReportEnabled: arg.isReportEnabled,

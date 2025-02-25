@@ -35,6 +35,7 @@ const App = (): JSX.Element => {
 		isIntervalEnabled: false,
 		isReportEnabled: false,
 		isSpotifyEnabled: false,
+		continueLastPlaylist: false,
 		isAutoIDEnabled: false,
 		isAutoIDCleanupEnabled: false,
 	})
@@ -50,6 +51,7 @@ const App = (): JSX.Element => {
 	const [isConnectionReady, setIsConnectionReady] = useState(false)
 	const [isAutoIDEnabled, setIsAutoIDEnabled] = useState(false)
 	const [isAutoIDCleanupEnabled, setIsAutoIDCleanupEnabled] = useState(false)
+	const [continueLastPlaylist, setContinueLastPlaylist] = useState(false)	
 	const [messageQueue, setMessageQueue] = useState<string[]>([])
 	const [currentMessage, setCurrentMessage] = useState<string | null>(null)
 	const [isReportEnabled, setIsReportEnabled] = useState(false)
@@ -65,6 +67,7 @@ const App = (): JSX.Element => {
 		isSpotifyEnabled,
 		isAutoIDEnabled,
 		isAutoIDCleanupEnabled,
+		continueLastPlaylist,
 		obsClearDisplayTime: formData.obsClearDisplayTime,
 		intervalMessageDuration: formData.intervalMessageDuration,
 	})
@@ -97,6 +100,7 @@ const App = (): JSX.Element => {
 						isSpotifyEnabled: response.data.isSpotifyEnabled,
 						isAutoIDEnabled: response.data.isAutoIDEnabled,
 						isAutoIDCleanupEnabled: response.data.isAutoIDCleanupEnabled,
+						continueLastPlaylist: response.data.continueLastPlaylist,
 					})
 				}
 			}
@@ -116,6 +120,7 @@ const App = (): JSX.Element => {
 			isAutoIDCleanupEnabled !== initialPreferences.isAutoIDCleanupEnabled ||
 			isReportEnabled !== initialPreferences.isReportEnabled ||
 			isSpotifyEnabled !== initialPreferences.isSpotifyEnabled ||
+			continueLastPlaylist !== initialPreferences.continueLastPlaylist ||
 			formData.obsClearDisplayTime !== initialPreferences.obsClearDisplayTime ||
 			formData.intervalMessageDuration !==
 				initialPreferences.intervalMessageDuration
@@ -133,6 +138,7 @@ const App = (): JSX.Element => {
 		isSpotifyEnabled,
 		isAutoIDEnabled,
 		isAutoIDCleanupEnabled,
+		continueLastPlaylist,
 		initialPreferences,
 	])
 
@@ -210,6 +216,7 @@ const App = (): JSX.Element => {
 					setIsSpotifyEnabled(response.data.isSpotifyEnabled)
 					setIsAutoIDEnabled(response.data.isAutoIDEnabled)
 					setIsAutoIDCleanupEnabled(response.data.isAutoIDCleanupEnabled)
+					setContinueLastPlaylist(response.data.continueLastPlaylist)
 					setIsSpotifyAuthorized(!!response.data.spotifyAuthorizationCode)
 					setIsTwitchAuthorized(!!response.data.appAuthorizationCode)
 					setIsConnectionReady(
@@ -353,6 +360,7 @@ const App = (): JSX.Element => {
 			twitchRefreshToken: formData.twitchRefreshToken,
 			spotifyRefreshToken: formData.spotifyRefreshToken,
 			isSpotifyEnabled: formData.isSpotifyEnabled,
+			continueLastPlaylist: formData.continueLastPlaylist,
 			seratoDisplayName: formData.seratoDisplayName,
 		})
 		console.log('*** startBotScript sent; awaiting response ***')
@@ -442,6 +450,7 @@ const App = (): JSX.Element => {
 			isSpotifyEnabled,
 			isAutoIDEnabled,
 			isAutoIDCleanupEnabled,
+			continueLastPlaylist,
 		}
 
 		ipcRenderer.send('submitUserData', submitData)
@@ -458,6 +467,7 @@ const App = (): JSX.Element => {
 					isSpotifyEnabled: response.data.isSpotifyEnabled,
 					isAutoIDEnabled: response.data.isAutoIDEnabled,
 					isAutoIDCleanupEnabled: response.data.isAutoIDCleanupEnabled,
+					continueLastPlaylist: response.data.continueLastPlaylist,
 					obsClearDisplayTime: response.data.obsClearDisplayTime,
 					intervalMessageDuration: response.data.intervalMessageDuration,
 				})
@@ -532,6 +542,8 @@ const App = (): JSX.Element => {
 								setIsAutoIDEnabled={setIsAutoIDEnabled}
 								setIsAutoIDCleanupEnabled={setIsAutoIDCleanupEnabled}
 								setIsSpotifyEnabled={setIsSpotifyEnabled}
+								continueLastPlaylist={continueLastPlaylist}
+								setContinueLastPlaylist={setContinueLastPlaylist}
 								setIsObsResponseEnabled={setIsObsResponseEnabled}
 								isIntervalEnabled={isIntervalEnabled}
 								setIsIntervalEnabled={setIsIntervalEnabled}

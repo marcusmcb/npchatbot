@@ -41,6 +41,8 @@ type PreferencesPanelProps = {
 	showTooltip: string | null
 	setShowTooltip: (value: string | null) => void
 	isBotConnected: boolean
+	continueLastPlaylist: boolean
+	setContinueLastPlaylist: (value: boolean) => void
 }
 
 const PreferencesPanel: React.FC<PreferencesPanelProps> = (props) => {
@@ -82,6 +84,60 @@ const PreferencesPanel: React.FC<PreferencesPanelProps> = (props) => {
 							props.showTooltip === 'spotifyPlaylistEnabled'
 								? null
 								: 'spotifyPlaylistEnabled'
+						)
+					}
+				>
+					?
+				</span>
+			</div>
+
+			{/* Continue Last Playlist */}
+			<div className='toggle-field'>
+				<input
+					type='checkbox'
+					disabled={
+						!props.isSpotifyAuthorized ||
+						!props.isSpotifyEnabled ||
+						props.isBotConnected
+					}
+					id='spotifyPlaylistEnabled'
+					checked={props.continueLastPlaylist}
+					onChange={() =>
+						props.setContinueLastPlaylist(!props.continueLastPlaylist)
+					}
+					className={
+						!props.isSpotifyAuthorized ||
+						!props.isSpotifyEnabled ||
+						props.isBotConnected
+							? 'disabled-toggle'
+							: ''
+					}
+				/>
+
+				<label
+					htmlFor='continueLastPlaylist'
+					className={
+						(!props.isSpotifyEnabled ||
+						!props.isSpotifyEnabled ||
+						props.isBotConnected
+							? 'disabled-label'
+							: '') +
+						(!props.isSpotifyEnabled || props.isBotConnected
+							? ' greyed-out-label'
+							: '')
+					}
+				>
+					Continue Last Playlist
+				</label>
+				<span
+					className={`question-icon ${
+						props.showTooltip === 'continueLastPlaylist' ? 'active-icon' : ''
+					}`}
+					onClick={() =>
+						props.setShowTooltip(
+							props.showTooltip === 'continueLastPlaylist'
+								? null
+								: 'continueLastPlaylist'
 						)
 					}
 				>
