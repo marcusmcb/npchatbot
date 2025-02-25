@@ -326,7 +326,16 @@ ipcMain.on('startBotScript', async (event, arg) => {
 		// 	await createSpotifyPlaylist()
 		// }
 		await getSpotifyAccessToken()
-		await createSpotifyPlaylist()
+		if (!arg.continueLastPlaylist === true) {
+			console.log("*******************************")
+			console.log("Creating new Spotify playlist")
+			console.log("*******************************")
+			await createSpotifyPlaylist()
+		} else {
+			console.log("***-----------------------------***")
+			console.log("Continuing last Spotify playlist")
+			console.log("***-----------------------------***")
+		}		
 	} else {
 		console.log('Spotify is not enabled')
 	}
