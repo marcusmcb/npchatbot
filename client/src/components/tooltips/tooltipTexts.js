@@ -15,7 +15,9 @@ const tooltipTexts = {
 	userEmailAddress:
 		"Enter the email address that you'd like your post-stream report sent to",
 	spotifyPlaylistEnabled:
-		'With this feature enabled, a Spotify© playlist of your current set will be created when you connect npChatbot to Twitch.',
+		'With this feature enabled, a Spotify© playlist of your current set will be created each time you connect npChatbot to Twitch.',
+	continueLastPlaylist:
+		'If you need to disconnect and reconnect npChatbot to Twitch during your stream, enabling this feature will continue adding songs to the last Spotify© playlist created instead of creating a new one.',
 	autoIDEnabled:
 		'Enable this feature to automatically display the song currently playing in your chat as it changes.',
 	autoIDCleanupEnabled:
