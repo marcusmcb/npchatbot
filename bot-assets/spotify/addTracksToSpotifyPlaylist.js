@@ -14,7 +14,7 @@ const addTracksToSpotifyPlaylist = async (playlistId, trackUris) => {
 		return
 	}
 
-	console.log('Updated Access Token: ', accessToken)
+	// console.log('Updated Access Token: ', accessToken)
 	console.log('Playlist ID: ', playlistId)
 
 	// 🔹 Step 2: Process tracks in batches of 100
