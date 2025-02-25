@@ -64,7 +64,7 @@ const getSpotifySongData = async (songQuery) => {
 		return
 	}
 
-	console.log('Updated Access Token: ', accessToken)
+	// console.log('Updated Access Token: ', accessToken)
 	
 	try {
 		const url = `https://api.spotify.com/v1/search?q=${songQuery}&type=track&limit=3&market=USA`
@@ -75,14 +75,16 @@ const getSpotifySongData = async (songQuery) => {
 			},
 		})
 		const tracks = response.data.tracks.items
-		// console.log('Spotify Response for: ', songQuery)
-		// console.log('-------------------')
-		// for (let i = 0; i < tracks.length; i++) {
-		// 	console.log('Track ', i + 1)
-		// 	console.log(tracks[i].name)
-		// 	console.log(tracks[i].artists[0].name)
-		// 	console.log('-------------------')
-		// }
+		console.log("")
+		console.log('-------------------')
+		console.log('Spotify Response for: ', songQuery)
+		console.log('-------------------')
+		for (let i = 0; i < tracks.length; i++) {
+			console.log('Track ', i + 1)
+			console.log(tracks[i].name)
+			console.log(tracks[i].artists[0].name)
+			console.log('-------------------')
+		}
 		const firstTrack = tracks[0]
 		const firstTrackString = `${firstTrack.artists[0].name} - ${firstTrack.name}`
 		const firstTrackCleaned = cleanCurrentSongInfo(firstTrackString)
