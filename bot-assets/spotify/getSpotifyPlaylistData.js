@@ -19,10 +19,6 @@ const getSpotifyPlaylistData = async (spotifyPlaylistId) => {
 				'Content-Type': 'application/json',
 			},
 		})
-		console.log('-------------------')
-		console.log('Spotify Playlist Data Response: ')
-		console.log(response.data.tracks.items.length)
-		console.log('-------------------')
 		return response.data.tracks.items.length
 	} catch (error) {
 		console.error('Error getting Spotify song data: ', error)
@@ -30,5 +26,5 @@ const getSpotifyPlaylistData = async (spotifyPlaylistId) => {
 }
 
 module.exports = {
-	getSpotifyPlaylistData
+	getSpotifyPlaylistData,
 }

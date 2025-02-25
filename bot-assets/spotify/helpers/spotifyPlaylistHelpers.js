@@ -1,3 +1,5 @@
+const scrapeData = require('../../commands/create-serato-report/helpers/scrapeData')
+
 const getCurrentDate = () => {
 	const date = new Date()
 	const options = { weekday: 'long', month: 'long', day: 'numeric' }
@@ -35,4 +37,15 @@ const cleanQueryString = (queryString) => {
 	return cleaned
 }
 
-module.exports = { getCurrentDate, cleanCurrentSongInfo, cleanQueryString }
+const getSeratoPlaylistData = async (url) => {
+	const response = await scrapeData(url)
+	const results = response[0]
+	return results
+}
+
+module.exports = {
+	getCurrentDate,
+	cleanCurrentSongInfo,
+	cleanQueryString,
+	getSeratoPlaylistData,
+}

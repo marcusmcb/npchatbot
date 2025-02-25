@@ -1,5 +1,3 @@
-const scrapeData = require('../commands/create-serato-report/helpers/scrapeData')
-
 const {
 	cleanCurrentSongInfo,
 	cleanQueryString,
@@ -13,10 +11,16 @@ const {
 } = require('../spotify/addTracksToSpotifyPlaylist')
 
 const {
+	getSeratoPlaylistData,
+} = require('../spotify/helpers/spotifyPlaylistHelpers')
+
+const {
 	getUniqueSongs,
 	hasSongBeenPlayed,
 	checkCurrentSong,
 } = require('./helpers/autoIdHelpers')
+
+/* GLOBAL VALUES */
 
 let currentSong = null
 let trackingInterval = null
@@ -35,28 +39,28 @@ const prepSongForSpotifyPlaylist = async (spotifyPlaylistId, currentSong) => {
 		spotifySongUri = await getSpotifySongData(spotifyQuery)
 		uri.push(spotifySongUri)
 	}
-	if (spotifySongUri !== null) {
-		// add logic to check if the user's current Spotify access token is still valid
-		// if not, update it in the user's db file and then add the song to the playlist
+	if (spotifySongUri !== null) {		
 		await addTracksToSpotifyPlaylist(spotifyPlaylistId, uri)
 	}
 }
 
+// method to resume updating the user's last Spotify playlist
+// based on their Serato Live Playlist
 const resumeSpotifyPlaylist = async (
 	spotifyPlaylistId,
 	url,
 	isAutoIDCleanupEnabled
 ) => {
-	console.log('Resuming Spotify playlist...')
-	const response = await scrapeData(url)
-	const results = response[0]
-
+	// create songsPlayed array for tracking
+	const results = await getSeratoPlaylistData(url)
 	for (let i = 0; i < results.length; i++) {
 		const songQuery = cleanCurrentSongInfo(results[i].children[0].data.trim())
 		const query = cleanQueryString(songQuery)
 		songsPlayed.push(query)
 	}
 
+	// compare the current Serato & Spotify playlist lengths and
+	// add any missing songs to the Spotify playlist
 	const seratoPlaylistLength = results.length
 	const spotifyPlaylistLength = await getSpotifyPlaylistData(spotifyPlaylistId)
 
@@ -73,6 +77,7 @@ const resumeSpotifyPlaylist = async (
 		console.log('--------------------')
 		console.log('Songs in Serato Playlist but not in Spotify Playlist: ')
 		console.log('--------------------')
+
 		let songUris = []
 		const lengthDifference = seratoPlaylistLength - spotifyPlaylistLength
 		for (let i = 0; i < lengthDifference; i++) {
@@ -100,6 +105,8 @@ const resumeSpotifyPlaylist = async (
 	}
 }
 
+// method to create and initially populate the user's Spotify playlist
+// based on their Serato Live Playlist
 const initSpotifyPlaylist = async (
 	spotifyPlaylistId,
 	url,
@@ -109,8 +116,7 @@ const initSpotifyPlaylist = async (
 		'Adding all songs from Serato Live Playlist scrape to Spotify playlist...'
 	)
 	console.log('--------------------')
-	const response = await scrapeData(url)
-	const results = response[0]
+	const results = await getSeratoPlaylistData(url)
 	if (!results || results.length === 0) {
 		console.log('No songs found in Serato Live Playlist scrape.')
 		console.log('Check that your Serato Live Playlist is active and public.')
@@ -132,9 +138,6 @@ const initSpotifyPlaylist = async (
 			setTimeout(async () => {
 				await addTracksToSpotifyPlaylist(spotifyPlaylistId, songUris)
 			}, 1000)
-
-			// set the current song playing to the most recent playlist entry
-			// and clean up tag if Auto ID Cleanup is enabled
 			currentSong = results[0].children[0].data.trim()
 			if (isAutoIDCleanupEnabled === true) {
 				currentSong = cleanCurrentSongInfo(currentSong)
@@ -169,6 +172,8 @@ const trackCurrentSongPlaying = async (config, url, twitchClient) => {
 					isAutoIDCleanupEnabled
 				)
 			} else {
+				console.log('Initializing new playlist...')
+				console.log('--------------------')
 				await initSpotifyPlaylist(
 					spotifyPlaylistId,
 					url,
@@ -197,9 +202,6 @@ const trackCurrentSongPlaying = async (config, url, twitchClient) => {
 		}
 
 		if (newCurrentSong !== currentSong) {
-			console.log('Previous Current Song Playing: ', currentSong)
-			console.log('New Current Song Playing: ', newCurrentSong)
-			console.log('--------------------')
 			currentSong = newCurrentSong
 			// return the current song playing if the Auto ID feature is enabled
 			if (isAutoIDEnabled === true) {
