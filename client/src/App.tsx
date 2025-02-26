@@ -51,7 +51,7 @@ const App = (): JSX.Element => {
 	const [isConnectionReady, setIsConnectionReady] = useState(false)
 	const [isAutoIDEnabled, setIsAutoIDEnabled] = useState(false)
 	const [isAutoIDCleanupEnabled, setIsAutoIDCleanupEnabled] = useState(false)
-	const [continueLastPlaylist, setContinueLastPlaylist] = useState(false)	
+	const [continueLastPlaylist, setContinueLastPlaylist] = useState(false)
 	const [messageQueue, setMessageQueue] = useState<string[]>([])
 	const [currentMessage, setCurrentMessage] = useState<string | null>(null)
 	const [isReportEnabled, setIsReportEnabled] = useState(false)
@@ -151,10 +151,7 @@ const App = (): JSX.Element => {
 
 		socket.addEventListener('message', (event) => {
 			console.log('Message from server: ', event.data)
-			addMessageToQueue(event.data)
-			// if (event.data !== 'npChatbot authorization with Twitch was cancelled.') {
-			// 	setIsTwitchAuthorized(true)
-			// }
+			addMessageToQueue(event.data)			
 			if (
 				event.data === 'npChatbot successfully linked to your Twitch account'
 			) {
@@ -176,6 +173,21 @@ const App = (): JSX.Element => {
 		return () => {
 			socket.close()
 		}
+	}, [])
+
+	// hook to listen for Spotify update messages
+	useEffect(() => {
+		const socket = new WebSocket('ws://localhost:8081')
+		socket.addEventListener('open', () => {
+			console.log('WebSocket is open now.')
+		})
+		socket.addEventListener('message', (event) => {
+			console.log('Message from server: ', event.data)
+			addMessageToQueue(event.data)
+		})
+		socket.addEventListener('error', (event) => {
+			console.error('WebSocket error:', event)
+		})
 	}, [])
 
 	// hook to initially set user id in state
@@ -364,7 +376,7 @@ const App = (): JSX.Element => {
 			seratoDisplayName: formData.seratoDisplayName,
 		})
 		console.log('*** startBotScript sent; awaiting response ***')
-		ipcRenderer.on('startBotResponse', (response) => {			
+		ipcRenderer.on('startBotResponse', (response) => {
 			if (response && response.success) {
 				console.log('--- successfully startBotResponse ---')
 				addMessageToQueue(response.message)
