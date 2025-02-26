@@ -330,7 +330,10 @@ ipcMain.on('startBotScript', async (event, arg) => {
 			console.log("*******************************")
 			console.log("Creating new Spotify playlist")
 			console.log("*******************************")
-			await createSpotifyPlaylist()
+			let response = await createSpotifyPlaylist()
+			if (response) {
+				event.reply('startBotResponse', response)
+			}
 		} else {
 			console.log("***-----------------------------***")
 			console.log("Continuing last Spotify playlist")
@@ -391,7 +394,7 @@ ipcMain.on('startBotScript', async (event, arg) => {
 					botProcess === true
 					event.reply('startBotResponse', {
 						success: true,
-						message: 'Bot started successfully.',
+						message: 'npChatbot is connected to your Twitch channel.',
 					})
 				}, 1000)
 			})

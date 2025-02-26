@@ -60,13 +60,22 @@ const createSpotifyPlaylist = async () => {
 					}
 				)
 			})
+			return {
+				success: true,
+				message: 'New Spotify playlist created successfully.',
+			}
 		} catch (error) {
 			console.error('Error creating new playlist:', error.response.data)
-			return null
+			console.log('Spotify Playlist error - playlist creation failed')
+			return {
+				success: false,
+				error:
+					'There was an error creating your Spotify playlist. Please reauthorize npChatbot with Spotify and try again.',
+			}
 		}
-		console.log('-------------------------')
 	} catch (error) {
 		console.error('Error creating new playlist:', error)
+		console.log('Spotify Playlist error - no user found')
 		return null
 	}
 }
