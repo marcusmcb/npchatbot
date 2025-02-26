@@ -364,10 +364,10 @@ const App = (): JSX.Element => {
 			seratoDisplayName: formData.seratoDisplayName,
 		})
 		console.log('*** startBotScript sent; awaiting response ***')
-		ipcRenderer.on('startBotResponse', (response) => {
+		ipcRenderer.on('startBotResponse', (response) => {			
 			if (response && response.success) {
 				console.log('--- successfully startBotResponse ---')
-				addMessageToQueue('npChatbot is connected to your Twitch chat')
+				addMessageToQueue(response.message)
 				setIsBotConnected(true)
 			} else if (response && response.error) {
 				console.error(response.error)
