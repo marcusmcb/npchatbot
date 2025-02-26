@@ -26,7 +26,7 @@ let currentSong = null
 let trackingInterval = null
 let songsPlayed = []
 
-const prepSongForSpotifyPlaylist = async (spotifyPlaylistId, currentSong) => {
+const prepSongForSpotifyPlaylist = async (spotifyPlaylistId, currentSong, wss) => {
 	let uri = []
 	let spotifySongUri = null
 	const songQuery = cleanCurrentSongInfo(currentSong)
@@ -40,7 +40,7 @@ const prepSongForSpotifyPlaylist = async (spotifyPlaylistId, currentSong) => {
 		uri.push(spotifySongUri)
 	}
 	if (spotifySongUri !== null) {		
-		await addTracksToSpotifyPlaylist(spotifyPlaylistId, uri)
+		await addTracksToSpotifyPlaylist(spotifyPlaylistId, uri, wss)
 	}
 }
 
@@ -49,7 +49,8 @@ const prepSongForSpotifyPlaylist = async (spotifyPlaylistId, currentSong) => {
 const resumeSpotifyPlaylist = async (
 	spotifyPlaylistId,
 	url,
-	isAutoIDCleanupEnabled
+	isAutoIDCleanupEnabled,
+	wss
 ) => {
 	// create songsPlayed array for tracking
 	const results = await getSeratoPlaylistData(url)
@@ -92,7 +93,7 @@ const resumeSpotifyPlaylist = async (
 		if (songUris.length > 0) {
 			songUris = [...new Set(songUris)]
 			setTimeout(async () => {
-				await addTracksToSpotifyPlaylist(spotifyPlaylistId, songUris)
+				await addTracksToSpotifyPlaylist(spotifyPlaylistId, songUris, wss)
 			}, 1000)
 			currentSong = results[0].children[0].data.trim()
 			if (isAutoIDCleanupEnabled === true) {
@@ -110,7 +111,8 @@ const resumeSpotifyPlaylist = async (
 const initSpotifyPlaylist = async (
 	spotifyPlaylistId,
 	url,
-	isAutoIDCleanupEnabled
+	isAutoIDCleanupEnabled,
+	wss
 ) => {
 	console.log(
 		'Adding all songs from Serato Live Playlist scrape to Spotify playlist...'
@@ -136,7 +138,7 @@ const initSpotifyPlaylist = async (
 		if (songUris.length > 0) {
 			songUris = [...new Set(songUris)]
 			setTimeout(async () => {
-				await addTracksToSpotifyPlaylist(spotifyPlaylistId, songUris)
+				await addTracksToSpotifyPlaylist(spotifyPlaylistId, songUris, wss)
 			}, 1000)
 			currentSong = results[0].children[0].data.trim()
 			if (isAutoIDCleanupEnabled === true) {
@@ -150,7 +152,7 @@ const initSpotifyPlaylist = async (
 	}
 }
 
-const trackCurrentSongPlaying = async (config, url, twitchClient) => {
+const trackCurrentSongPlaying = async (config, url, twitchClient, wss) => {
 	const channel = `#${config.twitchChannelName}`
 	const isSpotifyEnabled = config.isSpotifyEnabled
 	const isAutoIDEnabled = config.isAutoIDEnabled
@@ -169,7 +171,8 @@ const trackCurrentSongPlaying = async (config, url, twitchClient) => {
 				await resumeSpotifyPlaylist(
 					spotifyPlaylistId,
 					url,
-					isAutoIDCleanupEnabled
+					isAutoIDCleanupEnabled, 
+					wss
 				)
 			} else {
 				console.log('Initializing new playlist...')
@@ -177,7 +180,8 @@ const trackCurrentSongPlaying = async (config, url, twitchClient) => {
 				await initSpotifyPlaylist(
 					spotifyPlaylistId,
 					url,
-					isAutoIDCleanupEnabled
+					isAutoIDCleanupEnabled,
+					wss
 				)
 			}
 		}
@@ -209,7 +213,7 @@ const trackCurrentSongPlaying = async (config, url, twitchClient) => {
 			}
 			// update the user's Spotify playlist with the current song playing
 			if (isSpotifyEnabled === true) {
-				await prepSongForSpotifyPlaylist(spotifyPlaylistId, currentSong)
+				await prepSongForSpotifyPlaylist(spotifyPlaylistId, currentSong, wss)
 			}
 		}
 	}, 10000)

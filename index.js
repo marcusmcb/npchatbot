@@ -1,4 +1,5 @@
 const tmi = require('tmi.js')
+const WebSocket = require('ws')
 const autoCommandsConfig = require('./bot-assets/auto-commands/config/autoCommandsConfig')
 const {
 	commandList,
@@ -14,6 +15,8 @@ const {
 const {
 	trackCurrentSongPlaying, endTrackCurrentSongPlaying
 } = require('./bot-assets/auto-id/trackCurrentSongPlaying')
+
+const wss = new WebSocket.Server({ port: 8081 })
 
 const initializeBot = async (config) => {
 	let userCommandHistory = {}
@@ -58,7 +61,7 @@ const initializeBot = async (config) => {
 			console.log("Spotify Enabled: ", config.isSpotifyEnabled)
 			console.log("Auto Id Enabled: ", config.isAutoIDEnabled)
 			console.log("Cleanup Enabled: ", config.isAutoIDCleanupEnabled)
-			trackCurrentSongPlaying(config, url, twitchClient)
+			trackCurrentSongPlaying(config, url, twitchClient, wss)
 		}
 	})
 	
