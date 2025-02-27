@@ -117,7 +117,7 @@ const PreferencesPanel: React.FC<PreferencesPanelProps> = (props) => {
 				<label
 					htmlFor='continueLastPlaylist'
 					className={
-						(!props.isSpotifyEnabled ||
+						(!props.isSpotifyAuthorized ||
 						!props.isSpotifyEnabled ||
 						props.isBotConnected
 							? 'disabled-label'
