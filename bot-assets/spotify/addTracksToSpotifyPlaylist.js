@@ -38,6 +38,11 @@ const addTracksToSpotifyPlaylist = async (playlistId, trackUris, wss) => {
 				`Error adding batch to playlist:`,
 				error.response?.data || error.message
 			)
+			wss.clients.forEach((client) => {
+				if (client.readyState === WebSocket.OPEN) {
+					client.send('npChatbot could not update your Spotify playlist.')
+				}
+			})
 			return
 		}
 		await new Promise((resolve) => setTimeout(resolve, 1000))
