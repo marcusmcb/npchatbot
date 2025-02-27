@@ -19,6 +19,10 @@ const {
 } = require('./bot-assets/spotify/createSpotifyPlaylist')
 
 const {
+	getSpotifyPlaylistData,
+} = require('./bot-assets/spotify/getSpotifyPlaylistData')
+
+const {
 	getRefreshToken,
 	updateUserToken,
 	initAuthToken,
@@ -89,6 +93,23 @@ const db = require('./database')
 // const { get } = require('http')
 const obs = new OBSWebSocket()
 const wss = new WebSocket.Server({ port: 8080 })
+
+// refactor as stand-alone helper method
+const getUserData = async (db) => {
+	const user = await new Promise((resolve, reject) => {
+		db.users.findOne({}, (err, doc) => {
+			if (err) reject(err)
+			else resolve(doc)
+		})
+	})
+
+	if (!user) {
+		console.error('No stored user data found.')
+		return null
+	} else {
+		return user
+	}
+}
 
 server.get('/', (req, res) => {
 	res.send('NPChatbot is up and running')
@@ -224,6 +245,7 @@ ipcMain.on('open-twitch-auth-url', async (event, arg) => {
 
 // ipc method to fetch user data on app load
 ipcMain.on('getUserData', async (event, arg) => {
+	// replace with stand-alone helper method
 	if (fs.existsSync(db.users.filename)) {
 		try {
 			const user = await new Promise((resolve, reject) => {
@@ -306,24 +328,52 @@ ipcMain.on('startBotScript', async (event, arg) => {
 		}
 	}
 
-	// if Spotify is enabled, get a fresh access token and
-	// create a new Spotify playlist or continue the most
-	// recent one
-	if (arg.isSpotifyEnabled === true) {		
+	// if Spotify is enabled, get a fresh access token
+	if (arg.isSpotifyEnabled === true) {
 		await getSpotifyAccessToken()
+		// if Continue Last Playlist is not enabled, create a new Spotify playlist
 		if (!arg.continueLastPlaylist === true) {
-			console.log("*******************************")
-			console.log("Creating new Spotify playlist")
-			console.log("*******************************")
+			console.log('Creating new Spotify playlist')
+			console.log('-------------------------')
 			let response = await createSpotifyPlaylist()
 			if (response) {
 				event.reply('startBotResponse', response)
 			}
 		} else {
-			console.log("***-----------------------------***")
-			console.log("Continuing last Spotify playlist")
-			console.log("***-----------------------------***")
-		}		
+			// get the currentSpotifyPlaylistId from the user.db file
+			console.log('Continuing last Spotify playlist')
+			console.log('-------------------------')
+
+			const user = await getUserData(db)
+			if (
+				user.currentSpotifyPlaylistId !== null ||
+				user.currentSpotifyPlaylistId !== undefined
+			) {
+				const spotifyPlaylistData = await getSpotifyPlaylistData(
+					user.currentSpotifyPlaylistId
+				)
+				// check that the currentSpotifyPlaylistId is still valid
+				// if not, create a new playlist
+				if (spotifyPlaylistData === null || spotifyPlaylistData === undefined) {
+					console.log(
+						'Existing Spotify playlist data not found, creating a new one...'
+					)
+					console.log('-------------------------')
+					// send message to the client UI when this occurs
+					let response = await createSpotifyPlaylist()
+					if (response) {
+						event.reply('startBotResponse', response)
+					}
+				}
+			} else {
+				console.log('No stored Spotify playlist found, creating a new one')
+				console.log('-------------------------')
+				let response = await createSpotifyPlaylist()
+				if (response) {
+					event.reply('startBotResponse', response)
+				}
+			}
+		}
 	} else {
 		console.log('Spotify is not enabled')
 	}
@@ -546,7 +596,7 @@ app.on('activate', () => {
 	}
 })
 
-app.on('ready', () => {
+app.on('ready', async () => {
 	startServer()
 	createWindow()
 })

@@ -27,7 +27,8 @@ const getSpotifyPlaylistData = async (spotifyPlaylistId) => {
 		console.log('--------------------------------')
 		return response.data.tracks.items.length
 	} catch (error) {
-		console.error('Error getting Spotify song data: ', error)
+		console.error('Error getting Spotify song data: ', error.response)
+		return null
 	}
 }
 

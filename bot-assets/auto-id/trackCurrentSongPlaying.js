@@ -62,6 +62,9 @@ const resumeSpotifyPlaylist = async (
 
 	// compare the current Serato & Spotify playlist lengths and
 	// add any missing songs to the Spotify playlist
+
+	// update this logic to accurately compare the results of the two playlists
+	
 	const seratoPlaylistLength = results.length
 	const spotifyPlaylistLength = await getSpotifyPlaylistData(spotifyPlaylistId)
 
