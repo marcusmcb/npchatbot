@@ -306,25 +306,10 @@ ipcMain.on('startBotScript', async (event, arg) => {
 		}
 	}
 
-	if (arg.isSpotifyEnabled === true) {
-		// conduct ping test to user's Serato Live Playlist here
-		// user's live playlist much be reachable before bot
-		// start to ensure proper functionality of the auto-ID
-		// and Spotify playlist features
-		// const seratoDisplayName = arg.seratoDisplayName.replaceAll(' ', '_')
-		// const url = `https://serato.com/playlists/${seratoDisplayName}/live`
-		// console.log('URL? ', url)
-		// const isPlaylistLive = await validateLivePlaylist(url)
-		// if (!isPlaylistLive) {
-		// 	errorResponse.error = 'Serato Live Playlist is not live.'
-		// 	event.reply('startBotResponse', errorResponse)
-		// 	return
-		// } else {
-		// 	console.log('Serato Live Playlist is live')
-		// 	console.log('--------------------------------------')
-		// 	await getSpotifyAccessToken()
-		// 	await createSpotifyPlaylist()
-		// }
+	// if Spotify is enabled, get a fresh access token and
+	// create a new Spotify playlist or continue the most
+	// recent one
+	if (arg.isSpotifyEnabled === true) {		
 		await getSpotifyAccessToken()
 		if (!arg.continueLastPlaylist === true) {
 			console.log("*******************************")
