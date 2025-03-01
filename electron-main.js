@@ -129,7 +129,7 @@ ipcMain.on('open-spotify-auth-url', async (event, arg) => {
 
 	spotifyAuthWindow = new BrowserWindow({
 		width: 800,
-		height: 800,
+		height: 830,
 		webPreferences: {
 			nodeIntegration: false,
 			contextIsolation: true,
@@ -198,7 +198,7 @@ ipcMain.on('open-twitch-auth-url', async (event, arg) => {
 
 	authWindow = new BrowserWindow({
 		width: 800,
-		height: 800,
+		height: 830,
 		webPreferences: {
 			nodeIntegration: false,
 			contextIsolation: true,

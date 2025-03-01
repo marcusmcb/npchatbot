@@ -155,8 +155,8 @@ const getRefreshToken = async (refreshToken) => {
 		console.log('--------------------------------------')
 		return response.data
 	} catch (error) {
-		logToFile(`REFRESH TOKEN ERROR: ${error.response.data}`)
-		console.log('REFRESH TOKEN ERROR: ', error.response.data)
+		logToFile(`TWITCH REFRESH TOKEN ERROR: ${error.response.data}`)
+		console.log('TWITCH REFRESH TOKEN ERROR: ', error.response.data)
 		return error.response.data
 	}
 }
