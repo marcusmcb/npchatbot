@@ -19,9 +19,11 @@ const getSpotifyPlaylistData = async (spotifyPlaylistId) => {
 				'Content-Type': 'application/json',
 			},
 		})
+		console.log('Spotify Playlist Data: ')
 		console.log('---------------------------------')
 		
 		for (let i = 0; i < response.data.tracks.items.length; i++) {
+			console.log(response.data.tracks.items[i].track.artists[0].name)
 			console.log(response.data.tracks.items[i].track.name)
 		}
 		console.log('--------------------------------')
