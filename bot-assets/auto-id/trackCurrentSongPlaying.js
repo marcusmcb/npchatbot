@@ -68,6 +68,18 @@ const resumeSpotifyPlaylist = async (
 	const seratoPlaylistLength = results.length
 	const spotifyPlaylistLength = await getSpotifyPlaylistData(spotifyPlaylistId)
 
+	/* LOGGING FOR TESTING */
+
+	console.log("Serato Playlist Data: ")
+	console.log("-------------------------------")
+	for (let i = 0; i < results.length; i++) {
+		console.log(results[i].children[0].data.trim())
+	}
+	console.log("-------------------------------")
+
+	console.log("Serato Playlist Length: ", seratoPlaylistLength)
+	console.log("Spotify Playlist Length: ", spotifyPlaylistLength)	
+
 	if (spotifyPlaylistLength === seratoPlaylistLength) {
 		console.log('Spotify playlist is up to date with Serato playlist.')
 		console.log('--------------------')
