@@ -488,7 +488,7 @@ ipcMain.on('validateLivePlaylist', async (event, arg) => {
 	event.reply('validateLivePlaylistResponse', { isValid: isValid })
 })
 
-// ipc method to notify client when user data is udpated
+// ipc method to notify client when user data is updated
 ipcMain.on('userDataUpdated', () => {
 	mainWindow.webContents.send('userDataUpdated')
 })
