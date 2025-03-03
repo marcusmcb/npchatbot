@@ -1,6 +1,7 @@
 const axios = require('axios')
 const db = require('../../database')
 const { getCurrentDate } = require('../spotify/helpers/spotifyPlaylistHelpers')
+const logToFile = require('../../scripts/logger')
 
 const createSpotifyPlaylist = async () => {
 	try {
@@ -12,8 +13,11 @@ const createSpotifyPlaylist = async () => {
 		})
 
 		if (!user || !user.spotifyAccessToken || !user.spotifyUserId) {
+			logToFile('No stored access token or Spotify user ID found')
 			throw new Error('No stored access token or Spotify user ID found')
 		} else {
+			logToFile('User data found for Spotify playlist creation')
+			logToFile('-------------------------')
 			console.log('User data found for Spotify playlist creation')
 			console.log('-------------------------')
 		}
@@ -27,6 +31,13 @@ const createSpotifyPlaylist = async () => {
 			description: `Selections from my stream over at twitch.tv/${user.twitchChannelName}`,
 			public: true,
 		}
+
+		logToFile('Creating new Spotify playlist...')
+		logToFile('-------------------------')
+		logToFile(`Access token: ${accessToken}`)
+		logToFile(`User ID: ${spotifyUserId}`)
+		logToFile(`Playlist name: ${playlistName}`)
+
 
 		try {
 			const response = await axios.post(
@@ -64,7 +75,9 @@ const createSpotifyPlaylist = async () => {
 				success: true,
 				message: 'New Spotify playlist created successfully.',
 			}
-		} catch (error) {
+		} catch (error) {			
+			logToFile(`SPOTIFY AXIOS CALL: ${JSON.stringify(error)}`)
+			logToFile('-------------------------')
 			console.error('Error creating new playlist:', error.response.data)
 			console.log('Spotify Playlist error - playlist creation failed')
 			return {
@@ -74,6 +87,9 @@ const createSpotifyPlaylist = async () => {
 			}
 		}
 	} catch (error) {
+		logToFile('No user found for Spotify playlist creation')
+		logToFile(`SPOTIFY USER LOOKUP FAILED: ${JSON.stringify(error)}`)	
+		logToFile('-------------------------')
 		console.error('Error creating new playlist:', error)
 		console.log('Spotify Playlist error - no user found')
 		return null
