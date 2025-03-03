@@ -1,13 +1,10 @@
 const axios = require('axios')
 const db = require('../../database')
-const dotenv = require('dotenv')
-
-dotenv.config()
-
-const clientId = process.env.SPOTIFY_CLIENT_ID
-const clientSecret = process.env.SPOTIFY_CLIENT_SECRET
+const logToFile = require('../../scripts/logger')
 
 const getSpotifyAccessToken = async () => {
+	logToFile('Refreshing Spotify access token...')
+	logToFile('-------------------------')
 	try {
 		const user = await new Promise((resolve, reject) => {
 			db.users.findOne({}, (err, doc) => {
@@ -18,22 +15,28 @@ const getSpotifyAccessToken = async () => {
 
 		if (!user || !user.spotifyRefreshToken) {
 			throw new Error('No stored refresh token found')
-		} else {
+		} else {			
+			logToFile(`SPOTIFY TOKEN UPDATE - User found: ${JSON.stringify(user)}`)
+			logToFile('-------------------------')
 			console.log('User found:')
 			console.log('-------------------------')
 		}
 
 		const refreshToken = user.spotifyRefreshToken
-		const authHeader = Buffer.from(`${clientId}:${clientSecret}`).toString(
+		const authHeader = Buffer.from(`${process.env.SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`).toString(
 			'base64'
 		)
 
 		const data = new URLSearchParams({
 			grant_type: 'refresh_token',
 			refresh_token: refreshToken,
-			client_id: clientId,
-			client_secret: clientSecret,
+			client_id: process.env.SPOTIFY_CLIENT_ID,
+			client_secret: process.env.SPOTIFY_CLIENT_SECRET,
 		}).toString()
+
+		logToFile('Sending request to Spotify for new access token...')
+		logToFile(`${JSON.stringify(data)}`)
+		logToFile('-------------------------')
 
 		const response = await axios.post(
 			'https://accounts.spotify.com/api/token',
@@ -47,6 +50,11 @@ const getSpotifyAccessToken = async () => {
 		)
 
 		const newAccessToken = response.data.access_token
+		
+		logToFile('New Spotify access token:')
+		logToFile('-------------------------')
+		logToFile(newAccessToken)
+		logToFile('-------------------------')
 		console.log('New Spotify access token:', newAccessToken)
 		console.log('-------------------------')
 
@@ -64,6 +72,8 @@ const getSpotifyAccessToken = async () => {
 
 		return newAccessToken
 	} catch (error) {
+		logToFile(`Error refreshing access token: ${JSON.stringify(error)}`)
+		logToFile('-------------------------')
 		console.error('Error refreshing access token:', error.message)
 		// add error message response to return
 		return null
