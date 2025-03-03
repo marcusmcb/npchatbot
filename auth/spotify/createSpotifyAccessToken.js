@@ -12,23 +12,22 @@ const axios = require('axios')
 const db = require('../../database')
 const logToFile = require('../../scripts/logger')
 const WebSocket = require('ws')
-const dotenv = require('dotenv')
-dotenv.config()
-
-const spotifyClientId = process.env.SPOTIFY_CLIENT_ID
-const spotifyClientSecret = process.env.SPOTIFY_CLIENT_SECRET
-const spotifyRedirectUri = process.env.SPOTIFY_REDIRECT_URI
 
 const exchangeCodeForSpotifyToken = async (code) => {
 	logToFile(`exchangeCodeForSpotifyToken called with code: ${code}`)
+	logToFile(`* * * * * * *`)
+	logToFile(`Spotify client ID: ${process.env.SPOTIFY_CLIENT_ID}`)
+	logToFile(`Spotify client secret: ${process.env.SPOTIFY_CLIENT_SECRET}`)
+	logToFile(`Spotify redirect URI: ${process.env.SPOTIFY_REDIRECT_URI}`)
+	logToFile(`* * * * * * *`)
 
 	const authHeader = Buffer.from(
-		`${spotifyClientId}:${spotifyClientSecret}`
+		`${process.env.SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`
 	).toString('base64')
 
 	const data = new URLSearchParams({
 		code: code,
-		redirect_uri: spotifyRedirectUri,
+		redirect_uri: process.env.SPOTIFY_REDIRECT_URI,
 		grant_type: 'authorization_code',
 	}).toString()
 
