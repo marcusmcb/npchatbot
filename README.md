@@ -55,6 +55,18 @@ Font size/color, element sizing, and placement are <b>not</b> programmatically s
 
 <hr>
 
+### Authorizing via Spotify (optional):
+
+npChatbot also gives you the option to connect the app to your Spotify account.  Once authorized, enabling the "Create Spotify Playlist" option from the UI will create a new Spotify playlist each time npChatbot is connected to Twitch.
+
+The playlist created will then be updated with the songs you play during your DJ set in real time.  You and your viewers can view the playlist at any time during your stream using the included "!np playlist" command which returns a link to the current stream's playlist to your chat.
+
+<hr>
+
+### Auto ID & Tag Cleanup (optional)
+
+When enabled, npChatbot will automatically send a message to your channel's chat with the artist and title of each new song you play during your stream.  Additionally, npChatbot includes a tag clean-up feature which removes any additional text in parentheses or brackets from the current song playing before sending it to your chat.
+
 ### Automated/Interval Messages (optional)
 
 In the Preferences section, when "Enable Interval Message" is enabled, npChatbot will periodically add a message to your chat that prompts your viewers to try out the various npChatbot commands.
