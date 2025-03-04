@@ -2,6 +2,7 @@ import '../App.css'
 import SpotifyIcon from './icons/spotify/SpotifyIcon'
 import TwitchIcon from './icons/twitch/TwitchIcon'
 import { TitleBarProps } from '../types'
+import './styles/titlebar.css'
 
 const ipcRenderer = window.electron.ipcRenderer
 
@@ -33,6 +34,7 @@ const TitleBar = ({
 	return (
 		<div>
 			<div className='app-title'>npChatbot</div>
+			{/* <div className='auth-button-labels'>Authorizations</div> */}
 			<div className='auth-button-row'>
 				<button
 					onClick={handleAuthClick}
@@ -58,6 +60,7 @@ const TitleBar = ({
 						{/* {isTwitchAuthorized ? 'Authorized' : 'Authorize'} */}
 					</span>
 				</button>
+				<div className='auth-button-label'>Linked Accounts</div>
 			</div>
 		</div>
 	)
