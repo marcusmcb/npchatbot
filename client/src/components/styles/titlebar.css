@@ -1,0 +1,21 @@
+:root {
+	--main-bg-color: rgb(49, 49, 49);
+	--main-text-color: #fff;
+	--highlight-color: rgb(74, 242, 228);
+	--success-color: rgb(87, 255, 104);
+	--error-color: rgb(226, 115, 115);
+	--session-info-label-color: rgb(240, 253, 155);
+	--update-color: rgb(36, 102, 97);
+	--session-info-status-color: rgb(253, 157, 155);
+	--disabled-color: #aaa;
+	--fira-sans: 'Fira Sans', sans-serif;
+	--dm-sans: 'DM Sans', sans-serif;
+}
+
+.auth-button-label {
+  color: var(--main-text-color);
+  font-family: var(--fira-sans);  
+  font-size: 15px;
+  margin-top: 12px;
+  margin-left: 5px;
+}
