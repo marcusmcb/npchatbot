@@ -1,31 +1,24 @@
 const axios = require('axios')
 const db = require('../../database/database')
+const getUserData = require('../../database/helpers/getUserData')
 const logToFile = require('../../scripts/logger')
 
 const getSpotifyAccessToken = async () => {
 	logToFile('Refreshing Spotify access token...')
 	logToFile('-------------------------')
 	try {
-		const user = await new Promise((resolve, reject) => {
-			db.users.findOne({}, (err, doc) => {
-				if (err) reject(err)
-				else resolve(doc)
-			})
-		})
-
+		const user = await getUserData(db)
 		if (!user || !user.spotifyRefreshToken) {
 			throw new Error('No stored refresh token found')
-		} else {			
+		} else {
 			logToFile(`SPOTIFY TOKEN UPDATE - User found: ${JSON.stringify(user)}`)
 			logToFile('-------------------------')
-			console.log('User found:')
-			console.log('-------------------------')
 		}
 
 		const refreshToken = user.spotifyRefreshToken
-		const authHeader = Buffer.from(`${process.env.SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`).toString(
-			'base64'
-		)
+		const authHeader = Buffer.from(
+			`${process.env.SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`
+		).toString('base64')
 
 		const data = new URLSearchParams({
 			grant_type: 'refresh_token',
@@ -50,7 +43,7 @@ const getSpotifyAccessToken = async () => {
 		)
 
 		const newAccessToken = response.data.access_token
-		
+
 		logToFile('New Spotify access token:')
 		logToFile('-------------------------')
 		logToFile(newAccessToken)

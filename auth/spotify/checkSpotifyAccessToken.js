@@ -1,19 +1,13 @@
 const axios = require('axios')
 const db = require('../../database/database')
+const getUserData = require('../../database/helpers/getUserData')
 const {
 	getSpotifyAccessToken,
 } = require('../../auth/spotify/getSpotifyAccessToken')
 
 const checkSpotifyAccessToken = async () => {
-	try {
-		// Retrieve user from NEDB
-		const user = await new Promise((resolve, reject) => {
-			db.users.findOne({}, (err, doc) => {
-				if (err) reject(err)
-				else resolve(doc)
-			})
-		})
-
+	try {		
+		const user = await getUserData(db)
 		if (!user || !user.spotifyAccessToken) {
 			console.error('No stored access token found.')
 			return null
@@ -21,7 +15,7 @@ const checkSpotifyAccessToken = async () => {
 
 		let accessToken = user.spotifyAccessToken
 
-		// Test the current access token with a simple request to Spotify
+		// test the current access token with a simple request to Spotify
 		try {
 			await axios.get('https://api.spotify.com/v1/me', {
 				headers: {
@@ -30,14 +24,13 @@ const checkSpotifyAccessToken = async () => {
 				},
 			})
 
-			// If successful, return the valid access token
+			// if successful, return the valid access token
 			console.log('Spotify access token is valid.')
 			return accessToken
 		} catch (error) {
 			if (error.response && error.response.status === 401) {
 				console.error('Spotify access token expired. Refreshing token...')
-
-				// Refresh token
+				// else, fetch a new access token and update the user's data
 				const newAccessToken = await getSpotifyAccessToken()
 
 				if (!newAccessToken) {
