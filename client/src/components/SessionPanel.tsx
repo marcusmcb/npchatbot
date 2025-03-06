@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react'
 import { ReportData, SessionPanelProps } from '../types'
 // import ReportViewer from './ReportViewer'
 import '../App.css'
+import './styles/sessionpanel.css'
 
 // add logic to handle any errors returned
 // during the Twitch IRC connection process
@@ -60,7 +61,7 @@ const SessionPanel: React.FC<SessionPanelProps> = (props) => {
 
 	return (
 		<div className='chatbot-controls'>
-			<div className='app-form-title start-chatbot'>Chatbot Controls:</div>
+			<div className='app-form-title'>Chatbot Controls:</div>
 			<div className='bot-control-button-panel'>
 				<button
 					className={

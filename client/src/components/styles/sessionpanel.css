@@ -1,0 +1,51 @@
+:root {
+	--main-bg-color: rgb(49, 49, 49);
+	--main-text-color: #fff;
+	--highlight-color: rgb(74, 242, 228);
+	--success-color: rgb(87, 255, 104);
+	--error-color: rgb(226, 115, 115);
+	--session-info-label-color: rgb(240, 253, 155);
+	--update-color: rgb(36, 102, 97);
+	--session-info-status-color: rgb(253, 157, 155);
+	--disabled-color: #aaa;
+	--fira-sans: 'Fira Sans', sans-serif;
+	--dm-sans: 'DM Sans', sans-serif;
+}
+
+.chatbot-controls {
+	margin-right: 20px;
+}
+
+.bot-control-button {
+	flex: 1 1 45%;
+	margin: 0;
+	padding: 15px;
+	text-align: center;
+}
+
+.bot-control-button-panel {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 15px;
+}
+
+.session-info {
+	margin-top: 30px;
+	color: var(--session-info-label-color);
+}
+
+.session-info-status {
+	margin-left: 15px;
+	color: var(--session-info-status-color);
+}
+
+.session-info-label {
+	font-family: var(--fira-sans);
+	margin: 15px 0px 15px 0px;
+}
+
+.greyed-out-on-connect {
+	background-color: #666 !important;
+	/* border: 2px solid var(--session-info-label-color); */
+}
