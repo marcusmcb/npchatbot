@@ -14,7 +14,7 @@ const returnAccessTokenConfig = (config) => {
 	return connectWithAccessTokenConfig
 }
 
-const returnRefreshTokenConfig = (config, token) => {
+const returnTwitchRefreshTokenConfig = (config, token) => {
 	const connectWithRefreshTokenConfig = {
 		options: { debug: true },
 		connection: {
@@ -30,4 +30,4 @@ const returnRefreshTokenConfig = (config, token) => {
 	return connectWithRefreshTokenConfig
 }
 
-module.exports = { returnAccessTokenConfig, returnRefreshTokenConfig }
+module.exports = { returnAccessTokenConfig, returnTwitchRefreshTokenConfig }

@@ -1,5 +1,5 @@
 const axios = require('axios')
-const db = require('../../database')
+const db = require('../../database/database')
 const logToFile = require('../../scripts/logger')
 const WebSocket = require('ws')
 
@@ -46,8 +46,8 @@ const exchangeCodeForToken = async (code) => {
 	}
 }
 
-const initAuthToken = async (code, wss, mainWindow) => {
-	// mainWindow.webContents.send('auth-code', { initAuthToken: code })
+const initTwitchAuthToken = async (code, wss, mainWindow) => {
+	// mainWindow.webContents.send('auth-code', { initTwitchAuthToken: code })
 	try {
 		const token = await exchangeCodeForToken(code)
 		if (token) {
@@ -138,7 +138,7 @@ const initAuthToken = async (code, wss, mainWindow) => {
 	}
 }
 
-const getRefreshToken = async (refreshToken) => {
+const getTwitchRefreshToken = async (refreshToken) => {
 	const params = new URLSearchParams()
 	params.append('client_id', `${process.env.TWITCH_CLIENT_ID}`)
 	params.append('client_secret', `${process.env.TWITCH_CLIENT_SECRET}`)
@@ -215,7 +215,7 @@ const updateUserToken = async (db, event, token) => {
 
 module.exports = {
 	exchangeCodeForToken,
-	getRefreshToken,
+	getTwitchRefreshToken,
 	updateUserToken,
-	initAuthToken,
+	initTwitchAuthToken,
 }
