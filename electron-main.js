@@ -3,7 +3,6 @@ const path = require('path')
 const https = require('https')
 const bodyParser = require('body-parser')
 const cors = require('cors')
-const OBSWebSocket = require('obs-websocket-js').default
 const dotenv = require('dotenv')
 const WebSocket = require('ws')
 const express = require('express')

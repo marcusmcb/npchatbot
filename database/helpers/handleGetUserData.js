@@ -1,3 +1,6 @@
+// utility ipcMain method to return the user's data
+// to the client UI
+
 const fs = require('fs')
 const db = require('../database')
 
