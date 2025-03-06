@@ -1,4 +1,5 @@
 import '../App.css'
+import './styles/preferencespanel.css'
 
 /*
 
@@ -146,7 +147,7 @@ const PreferencesPanel: React.FC<PreferencesPanelProps> = (props) => {
 			</div>
 
 			{/* Auto ID Preferences */}
-			<div className='toggle-field autoid-prefs-element'>
+			<div className='toggle-field'>
 				<input
 					type='checkbox'
 					disabled={!props.isTwitchAuthorized || props.isBotConnected}
@@ -190,7 +191,7 @@ const PreferencesPanel: React.FC<PreferencesPanelProps> = (props) => {
 			</div>
 
 			{/* Auto ID Cleanup Preferences */}
-			<div className='toggle-field autoidcleanup-prefs-element'>
+			<div className='toggle-field'>
 				<input
 					type='checkbox'
 					disabled={

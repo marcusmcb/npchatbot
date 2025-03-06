@@ -78,13 +78,6 @@ body {
 	/* margin-top: 20px; */
 }
 
-.bot-control-button-panel {
-	display: flex;
-	flex-wrap: wrap;
-	justify-content: center;
-	gap: 15px;
-}
-
 .button-row {
 	display: flex;
 	justify-content: space-between;
@@ -94,11 +87,6 @@ body {
 	font-family: var(--fira-sans);
 	font-weight: 400;
 	width: 100%;
-}
-
-.button-modified {
-	background-color: var(--update-color);
-	color: white;
 }
 
 .button-row button {
@@ -209,42 +197,8 @@ button:disabled:hover {
 	cursor: pointer;
 }
 
-.disabled-toggle {
-	background-color: var(--disabled-color);
-	cursor: not-allowed;
-}
-
-.disabled-toggle:before {
-	background-color: #666 !important;
-}
-
-.greyed-out-on-connect {
-	background-color: #666 !important;
-	/* border: 2px solid var(--session-info-label-color); */
-}
-
-.greyed-out-label {
-	color: var(--disabled-color);
-}
-
-.disabled-label {
-	color: var(--disabled-color);
-}
-
-.obs-prefs-element {
-	margin-top: 10px;
-}
-
 .report-prefs-element {
 	margin-top: 15px;
-}
-
-.interval-prefs-element {
-	margin-top: 10px;
-}
-
-.spotify-prefs-element {
-	margin-top: 20px;
 }
 
 .creds-prefs-panel {
@@ -283,28 +237,6 @@ button:disabled:hover {
 	margin-top: 5px;
 }
 
-.bot-control-button {
-	flex: 1 1 45%;
-	margin: 0;
-	padding: 15px;
-	text-align: center;
-}
-
-.session-info {
-	margin-top: 30px;
-	color: var(--session-info-label-color);
-}
-
-.session-info-status {
-	margin-left: 15px;
-	color: var(--session-info-status-color);
-}
-
-.session-info-label {
-	font-family: var(--fira-sans);
-	margin: 15px 0px 15px 0px;
-}
-
 .info-tooltip a:visited {
 	color: var(--highlight-color);
 }
@@ -323,28 +255,6 @@ button:disabled:hover {
 .toggle-field label {
 	margin-left: 10px;
 	flex: 1;
-}
-
-.disabled-label {
-	color: #888;
-	pointer-events: none;
-}
-
-.message-panel {
-	height: 100px;
-	margin-left: 50px;
-}
-
-.success-message {
-	color: var(--success-color);
-	font-family: var(--dm-sans);
-	font-size: 20px;
-}
-
-.error-message {
-	color: var(--error-color);
-	font-family: var(--dm-sans);
-	font-size: 20px;
 }
 
 .app-info-panel {
@@ -398,27 +308,6 @@ input[type='checkbox']:before {
 
 input[type='checkbox']:checked:before {
 	left: 12px;
-}
-
-.hide-sensitive-toggle {
-	margin-left: 50px;
-	margin-top: 30px;
-}
-
-.toggle-text-label-color {
-	color: var(--highlight-color);
-}
-
-.muted-input {
-	color: var(--disabled-color);
-}
-
-.pref-input {
-	width: 50px;
-}
-
-.chatbot-controls {
-	margin-right: 20px;
 }
 
 @media (max-width: 800px) {
