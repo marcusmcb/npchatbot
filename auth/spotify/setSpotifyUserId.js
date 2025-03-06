@@ -1,24 +1,14 @@
 const db = require('../../database/database')
+const getUserData = require('../../database/helpers/getUserData')
 const axios = require('axios')
 
 const setSpotifyUserId = async () => {
 	try {
-		// fetch user object from database
-		const user = await new Promise((resolve, reject) => {
-			db.users.findOne({}, (err, doc) => {
-				if (err) reject(err)
-				else resolve(doc)
-			})
-		})
-
+		const user = await getUserData(db)
 		if (!user || !user.spotifyAccessToken) {
 			throw new Error('No stored Spotify user ID found')
-		} else {
-			console.log('User found:')			
-			console.log('-------------------------')
-		}
-
-		// parse the access token needed to return user's data
+		} 
+		
 		const accessToken = user.spotifyAccessToken
 
 		try {
@@ -42,7 +32,7 @@ const setSpotifyUserId = async () => {
 					}
 				)
 			})
-      console.log('Spotify User ID updated successfully')
+			console.log('Spotify User ID updated successfully')
 		} catch (error) {
 			// add error message to response and return it
 			console.error('Error getting Spotify user data:', error)
