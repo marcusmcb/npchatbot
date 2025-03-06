@@ -1,4 +1,4 @@
-const db = require('../../database')
+const db = require('../../database/database')
 const axios = require('axios')
 
 const setSpotifyUserId = async () => {

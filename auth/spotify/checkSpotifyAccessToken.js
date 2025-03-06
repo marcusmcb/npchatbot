@@ -1,5 +1,5 @@
 const axios = require('axios')
-const db = require('../../database')
+const db = require('../../database/database')
 const {
 	getSpotifyAccessToken,
 } = require('../../auth/spotify/getSpotifyAccessToken')

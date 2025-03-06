@@ -9,7 +9,7 @@ before the next build
 */
 
 const axios = require('axios')
-const db = require('../../database')
+const db = require('../../database/database')
 const logToFile = require('../../scripts/logger')
 const WebSocket = require('ws')
 

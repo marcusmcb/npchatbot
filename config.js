@@ -1,4 +1,4 @@
-const db = require('./database')
+const db = require('./database/database')
 // const logToFile = require('./scripts/logger')
 
 const loadConfigurations = () => {

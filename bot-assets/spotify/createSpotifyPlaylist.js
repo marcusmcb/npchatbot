@@ -1,5 +1,5 @@
 const axios = require('axios')
-const db = require('../../database')
+const db = require('../../database/database')
 const { getCurrentDate } = require('../spotify/helpers/spotifyPlaylistHelpers')
 const logToFile = require('../../scripts/logger')
 

@@ -6,53 +6,51 @@ const cors = require('cors')
 const OBSWebSocket = require('obs-websocket-js').default
 const dotenv = require('dotenv')
 const WebSocket = require('ws')
-const { URL } = require('url')
-
 const express = require('express')
 const { app, BrowserWindow, ipcMain, shell } = require('electron')
-const logToFile = require('./scripts/logger')
+
+// db, bot config/initialization, and utility methods
+const db = require('./database/database')
 const loadConfigurations = require('./config')
 const initializeBot = require('./index')
+const logToFile = require('./scripts/logger')
+const errorHandler = require('./helpers/errorHandler/errorHandler')
 
-const {
-	createSpotifyPlaylist,
-} = require('./bot-assets/spotify/createSpotifyPlaylist')
-
-const {
-	getSpotifyPlaylistData,
-} = require('./bot-assets/spotify/getSpotifyPlaylistData')
-
-const {
-	getRefreshToken,
-	updateUserToken,
-	initAuthToken,
-} = require('./auth/twitch/createAccessToken')
-
-const {
-	initSpotifyAuthToken,
-} = require('./auth/spotify/createSpotifyAccessToken')
-const {
-	getSpotifyAccessToken,
-} = require('./auth/spotify/getSpotifyAccessToken')
-const { setSpotifyUserId } = require('./auth/spotify/setSpotifyUserId')
-
-const {
-	seratoURLValidityCheck,
-	twitchURLValidityCheck,
-} = require('./helpers/validations/validations')
-
-const {
-	validateLivePlaylist,
-} = require('./helpers/validations/validateLivePlaylist')
-
+// auth handlers and user data methods
+const { handleSpotifyAuth } = require('./auth/spotify/handleSpotifyAuth')
+const { handleTwitchAuth } = require('./auth/twitch/handleTwitchAuth')
+const { handleGetUserData } = require('./database/helpers/handleGetUserData')
 const {
 	updateUserData,
 } = require('./helpers/updateUserParams/updateUserParams')
 
-const { generateRandomState } = require('./auth/helpers/generateRandomState')
+// spotify playlist methods
+const {
+	createSpotifyPlaylist,
+} = require('./bot-assets/spotify/createSpotifyPlaylist')
+const {
+	getSpotifyPlaylistData,
+} = require('./bot-assets/spotify/getSpotifyPlaylistData')
 
-const errorHandler = require('./helpers/errorHandler/errorHandler')
+// auth token methods
+const {
+	getTwitchRefreshToken,
+	updateUserToken,
+} = require('./auth/twitch/createTwitchAccessToken')
+const {
+	getSpotifyAccessToken,
+} = require('./auth/spotify/getSpotifyAccessToken')
 
+// playlist and user screen name validation methods
+const {
+	seratoURLValidityCheck,
+	twitchURLValidityCheck,
+} = require('./helpers/validations/validations')
+const {
+	validateLivePlaylist,
+} = require('./helpers/validations/validateLivePlaylist')
+
+// error text constants
 const {
 	INVALID_TWITCH_CHATBOT_URL,
 	INVALID_TWITCH_URL,
@@ -61,38 +59,42 @@ const {
 
 if (require('electron-squirrel-startup')) app.quit()
 
+// https cert options, used during twitch & spotify auth processes
 const options = {
 	key: fs.readFileSync(path.join(__dirname, './server.key')),
 	cert: fs.readFileSync(path.join(__dirname, './server.cert')),
 }
 
+// load environment variables & set path
 const envPath = path.join(__dirname, '.env')
 dotenv.config({ path: envPath })
 
+// environment variables
 let mainWindow
 let tmiInstance
 let serverInstance
-let authWindow
-let spotifyAuthWindow
-let authCode
-let authError
-let spotifyAuthCode
-let spotifyAuthError
 let botProcess = false
 
+// server config and middleware
 const server = express()
 const PORT = process.env.PORT || 5000
 server.use(bodyParser.json())
 server.use(cors())
 
-const isDev = false
+const isDev = true
 
 process.env.NODE_ENV = isDev ? 'development' : 'production'
 
-const db = require('./database')
-// const { get } = require('http')
+// socket config for OBS and auth responses
 const obs = new OBSWebSocket()
 const wss = new WebSocket.Server({ port: 8080 })
+
+// utility method to start app server
+const startServer = () => {
+	serverInstance = https.createServer(options, server).listen(PORT, () => {
+		console.log(`npChatbot HTTPS server is running on port ${PORT}`)
+	})
+}
 
 // refactor as stand-alone helper method
 const getUserData = async (db) => {
@@ -115,182 +117,30 @@ server.get('/', (req, res) => {
 	res.send('NPChatbot is up and running')
 })
 
-// future workflow and handlers for Spotify app authorization process
+ipcMain.on('open-auth-settings', (event, url) => {
+	shell.openExternal(url)
+})
+
 ipcMain.on('open-spotify-auth-url', async (event, arg) => {
-	const spotifyClientId = process.env.SPOTIFY_CLIENT_ID
-	const spotifyRedirectUri = process.env.SPOTIFY_REDIRECT_URI
-	const scope = 'playlist-modify-public playlist-modify-private'
-	const state = generateRandomState()
-	const spotifyAuthUrl = `https://accounts.spotify.com/authorize?response_type=code&client_id=${spotifyClientId}&scope=${scope}&state=${state}&redirect_uri=${spotifyRedirectUri}`
-
-	console.log('SPOTIFY AUTH URL: ')
-	console.log(spotifyAuthUrl)
-	console.log('--------------------------------------')
-
-	spotifyAuthWindow = new BrowserWindow({
-		width: 800,
-		height: 830,
-		webPreferences: {
-			nodeIntegration: false,
-			contextIsolation: true,
-		},
-	})
-
-	spotifyAuthWindow.loadURL(spotifyAuthUrl)
-
-	spotifyAuthWindow.webContents.on('will-navigate', async (event, url) => {
-		spotifyAuthError = false
-		console.log('URL:', url)
-		const urlObj = new URL(url)
-		const code = urlObj.searchParams.get('code')
-		const error = urlObj.searchParams.get('error')
-		const state = urlObj.searchParams.get('state')
-		if (code) {
-			console.log('CODE: ', code)
-			if (state) {
-				console.log('STATE: ', state)
-			} else {
-				console.log('NO STATE PARAMETER RETURNED')
-			}
-			spotifyAuthCode = code
-			spotifyAuthWindow.close()
-		} else if (error) {
-			console.log('ERROR: ', error)
-			spotifyAuthError = true
-			spotifyAuthWindow.close()
-		}
-	})
-
-	spotifyAuthWindow.on('closed', async () => {
-		mainWindow.webContents.send('auth-code', {
-			auth_code_on_close: spotifyAuthCode,
-		})
-		console.log('AUTHCODE ON CLOSE: ', spotifyAuthCode)
-		if (spotifyAuthError) {
-			console.log('NO AUTH CODE RETURNED: ', spotifyAuthError)
-			wss.clients.forEach(function each(client) {
-				if (client.readyState === WebSocket.OPEN) {
-					client.send('npChatbot authorization with Spotify was cancelled.')
-				}
-			})
-			spotifyAuthWindow = null
-		} else if (spotifyAuthCode !== undefined) {
-			console.log('AUTH CODE: ', spotifyAuthCode)
-			await initSpotifyAuthToken(spotifyAuthCode, wss, mainWindow)
-			setTimeout(async () => {
-				await setSpotifyUserId()
-			}, 100)
-			spotifyAuthWindow = null
-		}
-	})
+	handleSpotifyAuth(event, arg, mainWindow, wss)
 })
 
-// ipc handler for opening the Twitch auth window and response
 ipcMain.on('open-twitch-auth-url', async (event, arg) => {
-	const clientId = process.env.TWITCH_CLIENT_ID
-	const redirectUri = process.env.TWITCH_AUTH_REDIRECT_URL
-
-	// update this to use the randomized state generator method used in the Spotify auth handler
-
-	const authUrl = `https://id.twitch.tv/oauth2/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&scope=chat:read+chat:edit&state=c3ab8aa609ea11e793ae92361f002671`
-
-	// set authWindow height to user's screen height
-
-	authWindow = new BrowserWindow({
-		width: 800,
-		height: 830,
-		webPreferences: {
-			nodeIntegration: false,
-			contextIsolation: true,
-		},
-	})
-
-	authWindow.loadURL(authUrl)
-
-	authWindow.webContents.on('will-navigate', async (event, url) => {
-		authError = false
-		console.log('URL:', url)
-		const urlObj = new URL(url)
-		const code = urlObj.searchParams.get('code')
-		const error = urlObj.searchParams.get('error')
-		if (code) {
-			console.log('CODE: ', code)
-			authCode = code
-			authWindow.close()
-		} else if (error) {
-			console.log('ERROR: ', error)
-			authError = true
-			authWindow.close()
-		}
-	})
-
-	authWindow.on('closed', () => {
-		mainWindow.webContents.send('auth-code', { auth_code_on_close: authCode })
-		console.log('AUTHCODE ON CLOSE: ', authCode)
-		if (authError) {
-			console.log('NO AUTH CODE RETURNED: ', authError)
-			wss.clients.forEach(function each(client) {
-				if (client.readyState === WebSocket.OPEN) {
-					client.send('npChatbot authorization with Twitch was cancelled.')
-				}
-			})
-			authWindow = null
-		} else if (authCode !== undefined) {
-			console.log('AUTH CODE: ', authCode)
-			initAuthToken(authCode, wss, mainWindow)
-			authWindow = null
-		}
-	})
+	handleTwitchAuth(event, arg, mainWindow, wss)
 })
 
-// ipc method to fetch user data on app load
 ipcMain.on('getUserData', async (event, arg) => {
-	// replace with stand-alone helper method
-	if (fs.existsSync(db.users.filename)) {
-		try {
-			const user = await new Promise((resolve, reject) => {
-				db.users.findOne({}, (err, user) => {
-					if (err) {
-						reject(err)
-					} else {
-						resolve(user)
-					}
-				})
-			})
-
-			if (user) {
-				const responseObject = {
-					success: true,
-					data: user,
-				}
-				event.reply('getUserDataResponse', responseObject)
-			} else {
-				event.reply('getUserDataResponse', {
-					success: false,
-					error: 'No user found',
-				})
-			}
-		} catch (error) {
-			console.error('Error fetching user data:', error)
-			event.reply('getUserDataResponse', {
-				success: false,
-				error: 'Error fetching user data',
-			})
-		}
-	} else {
-		event.reply('getUserDataResponse', {
-			success: false,
-			error: 'users.db was not found',
-		})
-	}
+	handleGetUserData(event, arg)
 })
 
-// method to start HTTPS server
-const startServer = () => {
-	serverInstance = https.createServer(options, server).listen(PORT, () => {
-		console.log(`npChatbot HTTPS server is running on port ${PORT}`)
-	})
-}
+ipcMain.on('userDataUpdated', () => {
+	mainWindow.webContents.send('userDataUpdated')
+})
+
+ipcMain.on('validateLivePlaylist', async (event, arg) => {
+	const isValid = await validateLivePlaylist(arg.url)
+	event.reply('validateLivePlaylistResponse', { isValid: isValid })
+})
 
 // ipc method to connect the npChatbot script to Twitch
 ipcMain.on('startBotScript', async (event, arg) => {
@@ -380,7 +230,9 @@ ipcMain.on('startBotScript', async (event, arg) => {
 
 	try {
 		// get a fresh access token and update the user.db file
-		const currentAccessToken = await getRefreshToken(arg.twitchRefreshToken)
+		const currentAccessToken = await getTwitchRefreshToken(
+			arg.twitchRefreshToken
+		)
 		if (currentAccessToken.status === 400) {
 			const errorResponse = {
 				success: false,
@@ -482,22 +334,13 @@ ipcMain.on('stopBotScript', async (event, arg) => {
 	}
 })
 
-// ipc method to validate Serato Playlist is live
-ipcMain.on('validateLivePlaylist', async (event, arg) => {
-	const isValid = await validateLivePlaylist(arg.url)
-	event.reply('validateLivePlaylistResponse', { isValid: isValid })
-})
-
-// ipc method to notify client when user data is updated
-ipcMain.on('userDataUpdated', () => {
-	mainWindow.webContents.send('userDataUpdated')
-})
-
 // ipc method to handler user data/preference updates
 ipcMain.on('submitUserData', async (event, arg) => {
 	let token
 	try {
-		const currentAccessToken = await getRefreshToken(arg.twitchRefreshToken)
+		const currentAccessToken = await getTwitchRefreshToken(
+			arg.twitchRefreshToken
+		)
 		if (currentAccessToken.status === 400) {
 			const errorResponse = {
 				success: false,
@@ -556,10 +399,6 @@ ipcMain.on('submitUserData', async (event, arg) => {
 // ipc method to handle npChatbot disconnection from Twitch
 // add method to clear users.db file if user opts to fully
 // remove the app from their Twitch configuration
-
-ipcMain.on('open-auth-settings', (event, url) => {
-	shell.openExternal(url)
-})
 
 // add logic to handle the case where a user opts to
 // fully close the running npChatbot app while it's
