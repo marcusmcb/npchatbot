@@ -7,6 +7,8 @@ import MessagePanel from './components/MessagePanel'
 import { BotProcessResponse, AuthSuccess } from './types'
 import { ReportData } from './types'
 import ReportViewer from './components/ReportViewer'
+import handleDisconnect from './utils/handleDisconnect'
+import validateLivePlaylist from './utils/validateLivePlaylist'
 import './App.css'
 
 const App = (): JSX.Element => {
@@ -151,7 +153,7 @@ const App = (): JSX.Element => {
 
 		socket.addEventListener('message', (event) => {
 			console.log('Message from server: ', event.data)
-			addMessageToQueue(event.data)			
+			addMessageToQueue(event.data)
 			if (
 				event.data === 'npChatbot successfully linked to your Twitch account'
 			) {
@@ -326,34 +328,16 @@ const App = (): JSX.Element => {
 
 	// method to validate that the user's Serato Live Playlist is public
 	// and can be accessed by npChatbot
-	const validateLivePlaylist = async (
+	const validateLivePlaylistWrapper = async (
 		event: React.MouseEvent<HTMLButtonElement>
 	) => {
-		const seratoDisplayName = formData.seratoDisplayName.replaceAll(' ', '_')
-		const livePlaylistURL =
-			'https://www.serato.com/playlists/' + seratoDisplayName + '/live'
-		ipcRenderer.send('validateLivePlaylist', { url: livePlaylistURL })
-		ipcRenderer.once('validateLivePlaylistResponse', (response) => {
-			if (response && response.isValid) {
-				addMessageToQueue(
-					'Your Serato Live Playlist is public and ready for use with npChatbot.'
-				)
-			} else if (response && !response.isValid) {
-				setError(
-					'Your current Serato Live Playlist cannot be reached. Please ensure your playlist is live and public and try again.'
-				)
-				setTimeout(() => {
-					setError('')
-				}, 5000)
-			} else if (response && response.error) {
-				console.error(response.error)
-				addMessageToQueue(response.error)
-			} else {
-				console.error(
-					'Unexpected response format from validateLivePlaylistResponse'
-				)
-			}
-		})
+		validateLivePlaylist(
+			event,
+			formData,
+			ipcRenderer,
+			addMessageToQueue,
+			setError
+		)
 	}
 
 	// handle npChatbot script connection
@@ -391,27 +375,19 @@ const App = (): JSX.Element => {
 	}
 
 	// handle npChatbot script disconnection
-	const handleDisconnect = async (
+	const handleDisconnectWrapper = (
 		event: React.MouseEvent<HTMLButtonElement>
 	) => {
-		console.log('*** npChatbot disconnect event ***')
-		ipcRenderer.send('stopBotScript', {
-			seratoDisplayName: formData.seratoDisplayName,
-		})
-		ipcRenderer.once('stopBotResponse', (response) => {
-			if (response && response.success) {
-				console.log('Final Report Data: ', response.data)
-				setReportData(response.data as ReportData)
-				setIsReportReady(true)
-				addMessageToQueue('npChatbot has been disconnected')
-				setIsBotConnected(false)
-			} else if (response && response.error) {
-				console.log('Disconnection error: ', response.error)
-				addMessageToQueue(response.error)
-			} else {
-				console.log('Unexpected response from stopBotResponse')
-			}
-		})
+		handleDisconnect(
+			event,
+			ipcRenderer,
+			formData,
+			setReportData,
+			setIsReportReady,
+			addMessageToQueue,
+			setIsBotConnected,
+			setError
+		)
 	}
 
 	// handle user input changes
@@ -569,7 +545,7 @@ const App = (): JSX.Element => {
 						</div>
 						<SessionPanel
 							handleConnect={handleConnect}
-							handleDisconnect={handleDisconnect}
+							handleDisconnect={handleDisconnectWrapper}
 							isBotConnected={isBotConnected}
 							isTwitchAuthorized={isTwitchAuthorized}
 							isConnectionReady={isConnectionReady}
@@ -577,7 +553,7 @@ const App = (): JSX.Element => {
 							isReportReady={isReportReady}
 							setReportView={setReportView}
 							reportView={reportView}
-							validateLivePlaylist={validateLivePlaylist}
+							validateLivePlaylist={validateLivePlaylistWrapper}
 						/>
 					</div>
 				)}
