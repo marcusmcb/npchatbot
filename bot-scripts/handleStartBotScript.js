@@ -19,9 +19,6 @@ const getUserData = require('../database/helpers/getUserData')
 const OBSWebSocket = require('obs-websocket-js').default
 const obs = new OBSWebSocket()
 
-// refactor as stand-alone helper method
-
-
 const handleStartBotScript = async (event, arg, botProcess) => {
 	logToFile('startBotScript CALLED')
 	logToFile('*******************************')

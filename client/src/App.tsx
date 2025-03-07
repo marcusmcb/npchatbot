@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect } from 'react'
 import TitleBar from './components/TitleBar'
 import CredentialsPanel from './components/CredentialsPanel'
 import PreferencesPanel from './components/PreferencesPanel'
@@ -12,6 +12,10 @@ import handleDisconnect from './utils/handleDisconnect'
 import handleSubmit from './utils/handleSubmit'
 import validateLivePlaylist from './utils/validateLivePlaylist'
 import useWebSocket from './hooks/useWebSocket'
+import useGetUserData from './hooks/useGetUserData'
+import useMessageQueue from './hooks/useMessageQueue'
+import useTooltipVisibility from './hooks/useTooltipVisibility'
+import useFormModified from './hooks/useFormModified'
 import './App.css'
 
 const App = (): JSX.Element => {
@@ -76,8 +80,29 @@ const App = (): JSX.Element => {
 		obsClearDisplayTime: formData.obsClearDisplayTime,
 		intervalMessageDuration: formData.intervalMessageDuration,
 	})
-	const messageTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+
 	const ipcRenderer = window.electron.ipcRenderer
+
+	/* CLIENT UI HELPER METHODS */
+
+	// helper to add user response messages to message queue
+	const addMessageToQueue = (newMessage: string) => {
+		if (newMessage !== undefined) {
+			setMessageQueue((prevQueue) => [...prevQueue, newMessage])
+		} else return
+	}
+
+	// helper to validate submitted email string
+	const isValidEmail = (email: string) => {
+		var pattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/
+		return pattern.test(email)
+	}
+
+	// handle user input changes
+	const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+		const { name, value } = event.target
+		setFormData((prevFormData) => ({ ...prevFormData, [name]: value }))
+	}
 
 	/* EFFECT HOOKS */
 
@@ -123,75 +148,19 @@ const App = (): JSX.Element => {
 		}
 	)
 
-	// hook to load initial user data and preferences
-	useEffect(() => {
-		const ipcRendererInstance = window.electron?.ipcRenderer
-		if (ipcRendererInstance) {
-			ipcRendererInstance.send('getUserData', {})
-			const handleGetUserDataResponse = (response: any) => {
-				console.log('Response: ', response.error)
-				if (response.error) {
-					addMessageToQueue(
-						'To get started, click the Twitch icon to authorize npChatbot.'
-					)
-				}
-				if (response && Object.keys(response.data).length > 0) {
-					setFormData(response.data)
-					setInitialFormData(response.data) // Save the initial form data
-					setInitialPreferences({
-						isObsResponseEnabled: response.data.isObsResponseEnabled,
-						isIntervalEnabled: response.data.isIntervalEnabled,
-						isReportEnabled: response.data.isReportEnabled,
-						obsClearDisplayTime: response.data.obsClearDisplayTime,
-						intervalMessageDuration: response.data.intervalMessageDuration,
-						isSpotifyEnabled: response.data.isSpotifyEnabled,
-						isAutoIDEnabled: response.data.isAutoIDEnabled,
-						isAutoIDCleanupEnabled: response.data.isAutoIDCleanupEnabled,
-						continueLastPlaylist: response.data.continueLastPlaylist,
-					})
-					setIsObsResponseEnabled(response.data.isObsResponseEnabled)
-					setIsIntervalEnabled(response.data.isIntervalEnabled)
-					setIsReportEnabled(response.data.isReportEnabled)
-					setIsSpotifyEnabled(response.data.isSpotifyEnabled)
-					setIsAutoIDEnabled(response.data.isAutoIDEnabled)
-					setIsAutoIDCleanupEnabled(response.data.isAutoIDCleanupEnabled)
-					setContinueLastPlaylist(response.data.continueLastPlaylist)
-					setIsSpotifyAuthorized(!!response.data.spotifyAuthorizationCode)
-					setIsTwitchAuthorized(!!response.data.appAuthorizationCode)
-					setIsConnectionReady(
-						// Check if all necessary fields are filled for connection
-						!!response.data.twitchChannelName &&
-							!!response.data.twitchChatbotName &&
-							!!response.data.seratoDisplayName
-					)
-				}
-			}
-			ipcRendererInstance.once('getUserDataResponse', handleGetUserDataResponse)
-			return () => {
-				ipcRendererInstance.removeAllListeners('getUserDataResponse')
-			}
-		}
-	}, [])	
+	// hook to handle tooltip visibility
+	useTooltipVisibility(showTooltip, setShowTooltip)
+
+	// hook to handle user response messages in the UI via message queue
+	useMessageQueue(
+		messageQueue,
+		setMessageQueue,
+		currentMessage,
+		setCurrentMessage
+	)
 
 	// hook to check current form data against initial form data
-	useEffect(() => {
-		const preferencesModified =
-			isObsResponseEnabled !== initialPreferences.isObsResponseEnabled ||
-			isIntervalEnabled !== initialPreferences.isIntervalEnabled ||
-			isAutoIDEnabled !== initialPreferences.isAutoIDEnabled ||
-			isAutoIDCleanupEnabled !== initialPreferences.isAutoIDCleanupEnabled ||
-			isReportEnabled !== initialPreferences.isReportEnabled ||
-			isSpotifyEnabled !== initialPreferences.isSpotifyEnabled ||
-			continueLastPlaylist !== initialPreferences.continueLastPlaylist ||
-			formData.obsClearDisplayTime !== initialPreferences.obsClearDisplayTime ||
-			formData.intervalMessageDuration !==
-				initialPreferences.intervalMessageDuration
-
-		const formModified =
-			JSON.stringify(formData) !== JSON.stringify(initialFormData)
-
-		setIsFormModified(preferencesModified || formModified)
-	}, [
+	useFormModified(
 		formData,
 		initialFormData,
 		isObsResponseEnabled,
@@ -202,7 +171,26 @@ const App = (): JSX.Element => {
 		isAutoIDCleanupEnabled,
 		continueLastPlaylist,
 		initialPreferences,
-	])
+		setIsFormModified
+	)
+
+	// hook to load initial user data and preferences
+	useGetUserData(
+		setFormData,
+		setInitialFormData,
+		setInitialPreferences,
+		setIsObsResponseEnabled,
+		setIsIntervalEnabled,
+		setIsReportEnabled,
+		setIsSpotifyEnabled,
+		setIsAutoIDEnabled,
+		setIsAutoIDCleanupEnabled,
+		setContinueLastPlaylist,
+		setIsSpotifyAuthorized,
+		setIsTwitchAuthorized,
+		setIsConnectionReady,
+		addMessageToQueue
+	)
 
 	// hook to initially set user id in state
 	// once the app has been authorized via Twitch
@@ -221,24 +209,6 @@ const App = (): JSX.Element => {
 		}
 	}, [])
 
-	// hook to handle user response messages in the UI via message queue
-	useEffect(() => {
-		if (messageTimeoutRef.current) {
-			clearTimeout(messageTimeoutRef.current)
-			messageTimeoutRef.current = null
-		}
-		if (messageQueue.length > 0 || currentMessage) {
-			if (messageQueue.length > 0) {
-				const newMessage = messageQueue[0]
-				setCurrentMessage(newMessage)
-				setMessageQueue((prevQueue) => prevQueue.slice(1))
-			}
-			messageTimeoutRef.current = setTimeout(() => {
-				setCurrentMessage(null)
-			}, 5000)
-		}
-	}, [messageQueue, currentMessage])
-
 	// hook to handle error messages from bot process
 	useEffect(() => {
 		const handleBotProcessData = (response: BotProcessResponse) => {
@@ -250,44 +220,6 @@ const App = (): JSX.Element => {
 			window.electron.ipcRenderer.removeAllListeners('botProcessResponse')
 		}
 	}, [])
-
-	// hook to handle tooltip visibility
-	useEffect(() => {
-		const handleOutsideClick = (event: any) => {
-			if (
-				showTooltip &&
-				!event.target.closest('.question-icon') &&
-				!event.target.closest('.info-tooltip')
-			) {
-				setShowTooltip(null)
-			}
-		}
-		window.addEventListener('click', handleOutsideClick)
-		return () => {
-			window.removeEventListener('click', handleOutsideClick)
-		}
-	}, [showTooltip])
-
-	/* CLIENT UI HELPER METHODS */
-
-	// helper to add user response messages to message queue
-	const addMessageToQueue = (newMessage: string) => {
-		if (newMessage !== undefined) {
-			setMessageQueue((prevQueue) => [...prevQueue, newMessage])
-		} else return
-	}
-
-	// helper to validate submitted email string
-	const isValidEmail = (email: string) => {
-		var pattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/
-		return pattern.test(email)
-	}
-
-	// handle user input changes
-	const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-		const { name, value } = event.target
-		setFormData((prevFormData) => ({ ...prevFormData, [name]: value }))
-	}
 
 	// method to validate that the user's Serato Live Playlist
 	// is public and can be accessed by npChatbot
