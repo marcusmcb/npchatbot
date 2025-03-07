@@ -24,6 +24,11 @@ const useWebSocket = (
 			if (onError) onError(event)
 		})
 
+		// socket.addEventListener('close', () => {
+		// 	console.log(`WebSocket is closed now: ${url}`)
+		// 	socket.close()
+		// })
+
 		// return () => {
 		// 	socket.close()
 		// }
