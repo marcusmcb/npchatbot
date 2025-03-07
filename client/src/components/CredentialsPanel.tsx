@@ -26,7 +26,7 @@ const fieldsConfig: CredentialsFieldConfig[] = [
 		id: 'obs-websocket-address',
 		label: 'OBS Websocket Address:',
 		name: 'obsWebsocketAddress',
-		placeholder: 'optional',
+		placeholder: '192.0.0.1:4455',
 	},
 	{
 		id: 'obs-websocket-password',
