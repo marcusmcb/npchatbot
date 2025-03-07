@@ -28,10 +28,12 @@
 .disabled-label {
 	color: var(--disabled-color);
 	pointer-events: none;
+	margin-left: 5px;
 }
 
 .greyed-out-label {
 	color: var(--disabled-color);
+	margin-left: 5px;
 }
 
 .obs-prefs-element {

@@ -271,7 +271,10 @@ const PreferencesPanel: React.FC<PreferencesPanelProps> = (props) => {
 					className={
 						(!props.isObsResponseEnabled || props.isBotConnected
 							? 'disabled-label'
-							: '') + (props.isBotConnected ? ' greyed-out-label' : '')
+							: '') +
+						(!props.isObsResponseEnabled || props.isBotConnected
+							? 'greyed-out-label'
+							: '')
 					}
 				>
 					Enable On-Screen OBS Responses

@@ -301,15 +301,15 @@ const App = (): JSX.Element => {
 
 	// FOR TESTING ONLY
 	// effect hook to check if auth code returned from Twitch in packaged version
-	useEffect(() => {
-		const handleAuthCode = (response: any) => {
-			console.log('Auth code:', response)
-		}
-		window.electron.ipcRenderer.on('auth-code', handleAuthCode)
-		return () => {
-			window.electron.ipcRenderer.removeAllListeners('auth-code')
-		}
-	}, [])
+	// useEffect(() => {
+	// 	const handleAuthCode = (response: any) => {
+	// 		console.log('Auth code:', response)
+	// 	}
+	// 	window.electron.ipcRenderer.on('auth-code', handleAuthCode)
+	// 	return () => {
+	// 		window.electron.ipcRenderer.removeAllListeners('auth-code')
+	// 	}
+	// }, [])
 
 	/* CLIENT UI HELPER METHODS */
 
