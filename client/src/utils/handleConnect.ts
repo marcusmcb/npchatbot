@@ -31,6 +31,7 @@ const handleConnect = async (
           setIsBotConnected(true)
       } else if (response && response.error) {
           console.error(response.error)
+          setError(response.error)
           addMessageToQueue(response.error)
       } else {
           console.error('Unexpected response format from startBotResponse')
