@@ -1,6 +1,6 @@
-import '../App.css'
 import React from 'react'
 import { CredentialsPanelProps, CredentialsFieldConfig } from '../types'
+import '../App.css'
 import './styles/credentialspanel.css'
 
 const fieldsConfig: CredentialsFieldConfig[] = [

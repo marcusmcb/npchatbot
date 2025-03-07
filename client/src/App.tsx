@@ -7,8 +7,11 @@ import MessagePanel from './components/MessagePanel'
 import { BotProcessResponse, AuthSuccess } from './types'
 import { ReportData } from './types'
 import ReportViewer from './components/ReportViewer'
+import handleConnect from './utils/handleConnect'
 import handleDisconnect from './utils/handleDisconnect'
+import handleSubmit from './utils/handleSubmit'
 import validateLivePlaylist from './utils/validateLivePlaylist'
+import useWebSocket from './hooks/useWebSocket'
 import './App.css'
 
 const App = (): JSX.Element => {
@@ -78,6 +81,48 @@ const App = (): JSX.Element => {
 
 	/* EFFECT HOOKS */
 
+	// hook for successful twitch auth callback
+	useWebSocket(
+		'ws://localhost:8080',
+		(event) => {
+			console.log('Message from server: ', event.data)
+			addMessageToQueue(event.data)
+			if (
+				event.data === 'npChatbot successfully linked to your Twitch account'
+			) {
+				console.log('**** Twitch Auth Successful ****')
+				setIsTwitchAuthorized(true)
+			}
+			if (
+				event.data === 'npChatbot successfully linked to your Spotify account'
+			) {
+				console.log('**** Spotify Auth Successful ****')
+				setIsSpotifyAuthorized(true)
+			}
+		},
+		() => {
+			console.log('WebSocket is open now.')
+		},
+		(event) => {
+			console.error('WebSocket error:', event)
+		}
+	)
+
+	// hook to listen for Spotify update messages
+	useWebSocket(
+		'ws://localhost:8081',
+		(event) => {
+			console.log('Spotify Message from server: ', event.data)
+			addMessageToQueue(event.data)
+		},
+		() => {
+			console.log('Spotify WebSocket is open now.')
+		},
+		(event) => {
+			console.error('Spotify WebSocket error:', event)
+		}
+	)
+
 	// hook to load initial user data and preferences
 	useEffect(() => {
 		const ipcRendererInstance = window.electron?.ipcRenderer
@@ -104,6 +149,21 @@ const App = (): JSX.Element => {
 						isAutoIDCleanupEnabled: response.data.isAutoIDCleanupEnabled,
 						continueLastPlaylist: response.data.continueLastPlaylist,
 					})
+					setIsObsResponseEnabled(response.data.isObsResponseEnabled)
+					setIsIntervalEnabled(response.data.isIntervalEnabled)
+					setIsReportEnabled(response.data.isReportEnabled)
+					setIsSpotifyEnabled(response.data.isSpotifyEnabled)
+					setIsAutoIDEnabled(response.data.isAutoIDEnabled)
+					setIsAutoIDCleanupEnabled(response.data.isAutoIDCleanupEnabled)
+					setContinueLastPlaylist(response.data.continueLastPlaylist)
+					setIsSpotifyAuthorized(!!response.data.spotifyAuthorizationCode)
+					setIsTwitchAuthorized(!!response.data.appAuthorizationCode)
+					setIsConnectionReady(
+						// Check if all necessary fields are filled for connection
+						!!response.data.twitchChannelName &&
+							!!response.data.twitchChatbotName &&
+							!!response.data.seratoDisplayName
+					)
 				}
 			}
 			ipcRendererInstance.once('getUserDataResponse', handleGetUserDataResponse)
@@ -111,7 +171,7 @@ const App = (): JSX.Element => {
 				ipcRendererInstance.removeAllListeners('getUserDataResponse')
 			}
 		}
-	}, [])
+	}, [])	
 
 	// hook to check current form data against initial form data
 	useEffect(() => {
@@ -144,60 +204,8 @@ const App = (): JSX.Element => {
 		initialPreferences,
 	])
 
-	// hook for successful twitch auth callback
-	useEffect(() => {
-		const socket = new WebSocket('ws://localhost:8080')
-		socket.addEventListener('open', () => {
-			console.log('WebSocket is open now.')
-		})
-
-		socket.addEventListener('message', (event) => {
-			console.log('Message from server: ', event.data)
-			addMessageToQueue(event.data)
-			if (
-				event.data === 'npChatbot successfully linked to your Twitch account'
-			) {
-				console.log('**** Twitch Auth Successful ****')
-				setIsTwitchAuthorized(true)
-			}
-			if (
-				event.data === 'npChatbot successfully linked to your Spotify account'
-			) {
-				console.log('**** Spotify Auth Successful ****')
-				setIsSpotifyAuthorized(true)
-			}
-		})
-
-		socket.addEventListener('error', (event) => {
-			console.error('WebSocket error:', event)
-		})
-
-		return () => {
-			socket.close()
-		}
-	}, [])
-
-	// hook to listen for Spotify update messages
-	useEffect(() => {
-		const socket = new WebSocket('ws://localhost:8081')
-		socket.addEventListener('open', () => {
-			console.log('WebSocket is open now.')
-		})
-		socket.addEventListener('message', (event) => {
-			console.log('Message from server: ', event.data)
-			addMessageToQueue(event.data)
-		})
-		socket.addEventListener('error', (event) => {
-			console.error('WebSocket error:', event)
-		})
-	}, [])
-
 	// hook to initially set user id in state
 	// once the app has been authorized via Twitch
-
-	// update hook and back end Electron handler
-	// to handle successful auth response from
-	// Twitch
 	useEffect(() => {
 		const handleAuthSuccess = (response: AuthSuccess) => {
 			console.log('Auth success:', response)
@@ -210,45 +218,6 @@ const App = (): JSX.Element => {
 		window.electron.ipcRenderer.on('auth-successful', handleAuthSuccess)
 		return () => {
 			window.electron.ipcRenderer.removeAllListeners('authSuccess')
-		}
-	}, [])
-
-	// hook to set user data in client UI on app load
-	useEffect(() => {
-		const ipcRendererInstance = window.electron?.ipcRenderer
-		if (ipcRendererInstance) {
-			ipcRendererInstance.send('getUserData', {})
-			const handleGetUserDataResponse = (response: any) => {
-				if (response && Object.keys(response.data).length > 0) {
-					console.log('USER DATA: ')
-					console.log(response.data)
-					console.log('-------------------------')
-					setFormData(response.data)
-					setIsObsResponseEnabled(response.data.isObsResponseEnabled)
-					setIsIntervalEnabled(response.data.isIntervalEnabled)
-					setIsReportEnabled(response.data.isReportEnabled)
-					setIsSpotifyEnabled(response.data.isSpotifyEnabled)
-					setIsAutoIDEnabled(response.data.isAutoIDEnabled)
-					setIsAutoIDCleanupEnabled(response.data.isAutoIDCleanupEnabled)
-					setContinueLastPlaylist(response.data.continueLastPlaylist)
-					setIsSpotifyAuthorized(!!response.data.spotifyAuthorizationCode)
-					setIsTwitchAuthorized(!!response.data.appAuthorizationCode)
-					setIsConnectionReady(
-						// Check if all necessary fields are filled for connection
-						!!response.data.twitchChannelName &&
-							!!response.data.twitchChatbotName &&
-							!!response.data.seratoDisplayName
-					)
-				} else {
-					console.log('NO VALUES STORED')
-				}
-				console.log('USER DATA: ')
-				console.log(response.data)
-			}
-			ipcRendererInstance.once('getUserDataResponse', handleGetUserDataResponse)
-			return () => {
-				ipcRendererInstance.removeAllListeners('getUserDataResponse')
-			}
 		}
 	}, [])
 
@@ -297,7 +266,7 @@ const App = (): JSX.Element => {
 		return () => {
 			window.removeEventListener('click', handleOutsideClick)
 		}
-	}, [showTooltip])	
+	}, [showTooltip])
 
 	/* CLIENT UI HELPER METHODS */
 
@@ -314,8 +283,14 @@ const App = (): JSX.Element => {
 		return pattern.test(email)
 	}
 
-	// method to validate that the user's Serato Live Playlist is public
-	// and can be accessed by npChatbot
+	// handle user input changes
+	const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+		const { name, value } = event.target
+		setFormData((prevFormData) => ({ ...prevFormData, [name]: value }))
+	}
+
+	// method to validate that the user's Serato Live Playlist
+	// is public and can be accessed by npChatbot
 	const validateLivePlaylistWrapper = async (
 		event: React.MouseEvent<HTMLButtonElement>
 	) => {
@@ -329,37 +304,17 @@ const App = (): JSX.Element => {
 	}
 
 	// handle npChatbot script connection
-	const handleConnect = async (event: React.MouseEvent<HTMLButtonElement>) => {
-		addMessageToQueue('Connecting to Twitch...')
-		console.log('*** sending startBotScript ***')
-		ipcRenderer.send('startBotScript', {
-			twitchChannelName: formData.twitchChannelName,
-			obsWebsocketAddress: formData.obsWebsocketAddress
-				? formData.obsWebsocketAddress
-				: '',
-			obsWebsocketPassword: formData.obsWebsocketPassword
-				? formData.obsWebsocketPassword
-				: '',
-			isObsResponseEnabled: formData.isObsResponseEnabled,
-			twitchRefreshToken: formData.twitchRefreshToken,
-			spotifyRefreshToken: formData.spotifyRefreshToken,
-			isSpotifyEnabled: formData.isSpotifyEnabled,
-			continueLastPlaylist: formData.continueLastPlaylist,
-			seratoDisplayName: formData.seratoDisplayName,
-		})
-		console.log('*** startBotScript sent; awaiting response ***')
-		ipcRenderer.on('startBotResponse', (response) => {
-			if (response && response.success) {
-				console.log('--- successfully startBotResponse ---')
-				addMessageToQueue(response.message)
-				setIsBotConnected(true)
-			} else if (response && response.error) {
-				console.error(response.error)
-				addMessageToQueue(response.error)
-			} else {
-				console.error('Unexpected response format from startBotResponse')
-			}
-		})
+	const handleConnectWrapper = async (
+		event: React.MouseEvent<HTMLButtonElement>
+	) => {
+		handleConnect(
+			event,
+			formData,
+			ipcRenderer,
+			addMessageToQueue,
+			setIsBotConnected,
+			setError
+		)
 	}
 
 	// handle npChatbot script disconnection
@@ -378,88 +333,31 @@ const App = (): JSX.Element => {
 		)
 	}
 
-	// handle user input changes
-	const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-		const { name, value } = event.target
-		setFormData((prevFormData) => ({ ...prevFormData, [name]: value }))
-	}
-
 	// handle user credentials and preferences submission
-	const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-		setError('')
-		event.preventDefault()
-		console.log('--- Form Data Submitted ---')
-		console.log(formData)
-		console.log('---------------------------')
-		if (
-			!formData.twitchChannelName ||
-			!formData.twitchChatbotName ||
-			!formData.seratoDisplayName
-		) {
-			setError('Please fill in all required fields before updating.')
-			setTimeout(() => {
-				setError('')
-			}, 3000)
-			return
-		}
-		addMessageToQueue('Updating...')
-		if (isReportEnabled && formData.userEmailAddress === '') {
-			setError('A valid email address is required for post-stream reporting.')
-			return
-		}
-		if (isReportEnabled && !isValidEmail(formData.userEmailAddress)) {
-			setError('Please enter a valid email address to enable this feature.')
-			return
-		}
-		if (isIntervalEnabled && formData.intervalMessageDuration === '') {
-			formData.intervalMessageDuration = '15'
-		}
-		if (isObsResponseEnabled && formData.obsClearDisplayTime === '') {
-			formData.obsClearDisplayTime = '5'
-		}
-
-		const submitData = {
-			...formData,
-			isObsResponseEnabled,
-			isIntervalEnabled,
+	const handleSubmitWrapper = async (
+		event: React.FormEvent<HTMLFormElement>
+	) => {
+		handleSubmit(
+			event,
+			formData,
+			ipcRenderer,
+			addMessageToQueue,
+			setCurrentMessage,
+			setError,
+			setFormData,
+			setInitialFormData,
+			setInitialPreferences,
+			setIsFormModified,
+			setIsConnectionReady,
 			isReportEnabled,
+			isIntervalEnabled,
+			isObsResponseEnabled,
 			isSpotifyEnabled,
 			isAutoIDEnabled,
 			isAutoIDCleanupEnabled,
 			continueLastPlaylist,
-		}
-
-		ipcRenderer.send('submitUserData', submitData)
-		ipcRenderer.once('userDataResponse', (response) => {
-			console.log(response)
-			if (response && response.success) {
-				addMessageToQueue(response.message)
-				setFormData(response.data)
-				setInitialFormData(response.data)
-				setInitialPreferences({
-					isObsResponseEnabled: response.data.isObsResponseEnabled,
-					isIntervalEnabled: response.data.isIntervalEnabled,
-					isReportEnabled: response.data.isReportEnabled,
-					isSpotifyEnabled: response.data.isSpotifyEnabled,
-					isAutoIDEnabled: response.data.isAutoIDEnabled,
-					isAutoIDCleanupEnabled: response.data.isAutoIDCleanupEnabled,
-					continueLastPlaylist: response.data.continueLastPlaylist,
-					obsClearDisplayTime: response.data.obsClearDisplayTime,
-					intervalMessageDuration: response.data.intervalMessageDuration,
-				})
-				setIsFormModified(false)
-				setIsConnectionReady(true)
-			} else if (response && response.error) {
-				console.log('Update error: ', response.error)
-				setCurrentMessage('')
-				setError(response.error)
-				setTimeout(() => {
-					setError('')
-				}, 5000)
-			} else {
-				console.log('Unexpected response when updating preferences')
-			}
-		})
+			isValidEmail
+		)
 	}
 
 	return (
@@ -500,7 +398,7 @@ const App = (): JSX.Element => {
 								handleInputChange={handleInputChange}
 								showTooltip={showTooltip}
 								setShowTooltip={setShowTooltip}
-								handleSubmit={handleSubmit}
+								handleSubmit={handleSubmitWrapper}
 								isBotConnected={isBotConnected}
 								isObsResponseEnabled={isObsResponseEnabled}
 								isTwitchAuthorized={isTwitchAuthorized}
@@ -532,7 +430,7 @@ const App = (): JSX.Element => {
 							/>
 						</div>
 						<SessionPanel
-							handleConnect={handleConnect}
+							handleConnect={handleConnectWrapper}
 							handleDisconnect={handleDisconnectWrapper}
 							isBotConnected={isBotConnected}
 							isTwitchAuthorized={isTwitchAuthorized}

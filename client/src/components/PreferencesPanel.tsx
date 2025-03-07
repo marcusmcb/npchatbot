@@ -1,6 +1,3 @@
-import '../App.css'
-import './styles/preferencespanel.css'
-
 /*
 
 add option in the preferences UI for the user to
@@ -12,6 +9,9 @@ add option to resume last Spotify playlist on startup
 - if npChatbot has been disconnected, restarted, crashed, etc
 
 */
+
+import '../App.css'
+import './styles/preferencespanel.css'
 
 type PreferencesPanelProps = {
 	formData: {

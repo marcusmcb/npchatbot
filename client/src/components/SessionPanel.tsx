@@ -1,10 +1,3 @@
-import React, { useState, useEffect } from 'react'
-// import ReactDOM from 'react-dom'
-import { ReportData, SessionPanelProps } from '../types'
-// import ReportViewer from './ReportViewer'
-import '../App.css'
-import './styles/sessionpanel.css'
-
 // add logic to handle any errors returned
 // during the Twitch IRC connection process
 // in the client UI
@@ -12,6 +5,13 @@ import './styles/sessionpanel.css'
 // add logic to handle any disconnection
 // events after initial connection
 // in the client UI
+
+// import ReportViewer from './ReportViewer'
+// import ReactDOM from 'react-dom'
+import React, { useState, useEffect } from 'react'
+import { ReportData, SessionPanelProps } from '../types'
+import '../App.css'
+import './styles/sessionpanel.css'
 
 const SessionPanel: React.FC<SessionPanelProps> = (props) => {
 	const [hours, setHours] = useState(0)

@@ -1,7 +1,7 @@
-import '../App.css'
 import SpotifyIcon from './icons/spotify/SpotifyIcon'
 import TwitchIcon from './icons/twitch/TwitchIcon'
 import { TitleBarProps } from '../types'
+import '../App.css'
 import './styles/titlebar.css'
 
 const ipcRenderer = window.electron.ipcRenderer
