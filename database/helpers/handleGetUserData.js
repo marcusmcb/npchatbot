@@ -18,6 +18,9 @@ const handleGetUserData = async (event, arg) => {
 			})
 
 			if (user) {
+				console.log("User Data Properties: ")
+				console.log(Object.keys(user))
+				console.log("-------------------------------")
 				const responseObject = {
 					success: true,
 					data: user,

@@ -19,7 +19,7 @@ const handleDisconnect = (
             console.log('Final Report Data: ', response.data)
             setReportData(response.data as ReportData)
             setIsReportReady(true)
-            addMessageToQueue('npChatbot has been disconnected')
+            addMessageToQueue('npChatbot has been disconnected from Twitch.')
             setIsBotConnected(false)
         } else if (response && response.error) {
             console.log('Disconnection error: ', response.error)

@@ -1,6 +1,6 @@
-import '../App.css'
 import tooltipTexts from './tooltips/tooltipTexts'
 import { MessagePanelProps } from '../types'
+import '../App.css'
 import './styles/messagepanel.css'
 
 const MessagePanel: React.FC<MessagePanelProps> = ({
