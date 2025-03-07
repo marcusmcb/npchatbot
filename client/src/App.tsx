@@ -197,7 +197,7 @@ const App = (): JSX.Element => {
 
 	// update hook and back end Electron handler
 	// to handle successful auth response from
-	// either Twitch or Spotify
+	// Twitch
 	useEffect(() => {
 		const handleAuthSuccess = (response: AuthSuccess) => {
 			console.log('Auth success:', response)
@@ -297,19 +297,7 @@ const App = (): JSX.Element => {
 		return () => {
 			window.removeEventListener('click', handleOutsideClick)
 		}
-	}, [showTooltip])
-
-	// FOR TESTING ONLY
-	// effect hook to check if auth code returned from Twitch in packaged version
-	// useEffect(() => {
-	// 	const handleAuthCode = (response: any) => {
-	// 		console.log('Auth code:', response)
-	// 	}
-	// 	window.electron.ipcRenderer.on('auth-code', handleAuthCode)
-	// 	return () => {
-	// 		window.electron.ipcRenderer.removeAllListeners('auth-code')
-	// 	}
-	// }, [])
+	}, [showTooltip])	
 
 	/* CLIENT UI HELPER METHODS */
 
