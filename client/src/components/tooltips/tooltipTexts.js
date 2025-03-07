@@ -9,7 +9,7 @@ const tooltipTexts = {
 	intervalMessageDuration:
 		"Enter the duration (in minutes) for automatic interval messages to appear.  More details about this feature can be found <a href='https://www.npchatbot.com/installation?tab=Preferences' rel='noreferrer' target='_blank'>here</a>.",
 	obsWebsocketAddress:
-		'Enter your local OBS web socket address here (optional) in the following format: 192.0.0.1:4455',
+		'Enter your local OBS web socket address here (optional) in the same format shown in the example.',
 	obsWebsocketPassword:
 		'If your web socket connection is secured within OBS, please enter the password here (optional)',
 	userEmailAddress:
