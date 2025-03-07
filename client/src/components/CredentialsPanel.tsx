@@ -96,7 +96,7 @@ const InputField: React.FC<{
 )
 
 const CredentialsPanel: React.FC<CredentialsPanelProps> = (props) => {
-	const [hideSensitiveFields, setHideSensitiveFields] = React.useState(false)
+	const [hideSensitiveFields, setHideSensitiveFields] = React.useState(true)
 
 	return (
 		<div className='app-container-column'>
@@ -135,7 +135,7 @@ const CredentialsPanel: React.FC<CredentialsPanelProps> = (props) => {
 						/>
 						<label
 							htmlFor='hideSensitiveFields'
-							className='toggle-text-label-color'
+							className='toggle-text-label-color sensitive-fields-text'
 						>
 							Hide Sensitive Fields
 						</label>
