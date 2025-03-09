@@ -1,3 +1,6 @@
+/* refactor to better organize properties and classes
+throughout the main app component */
+
 :root {
 	--main-bg-color: rgb(49, 49, 49);
 	--main-text-color: #fff;
