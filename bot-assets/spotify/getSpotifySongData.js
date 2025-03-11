@@ -64,8 +64,6 @@ const getSpotifySongData = async (songQuery) => {
 		return
 	}
 
-	// console.log('Updated Access Token: ', accessToken)
-	
 	try {
 		const url = `https://api.spotify.com/v1/search?q=${songQuery}&type=track&limit=3&market=USA`
 		const response = await axios.get(url, {
@@ -75,12 +73,12 @@ const getSpotifySongData = async (songQuery) => {
 			},
 		})
 		const tracks = response.data.tracks.items
-		console.log("")
-		console.log('-------------------')
+		console.log('')
 		console.log('Spotify Response for: ', songQuery)
 		console.log('-------------------')
 		for (let i = 0; i < tracks.length; i++) {
-			console.log('Track ', i + 1)
+			console.log('Result: ', i + 1)
+			console.log('-------------------')
 			console.log(tracks[i].name)
 			console.log(tracks[i].artists[0].name)
 			console.log('-------------------')
@@ -95,25 +93,6 @@ const getSpotifySongData = async (songQuery) => {
 		console.log('-------------------')
 
 		return firstTrack.uri
-
-		// const normalizedSongQuery = songQuery.toLowerCase().trim()
-		// const normalizedFirstTrack = firstTrackComparison.toLowerCase().trim()
-
-		// if (normalizedSongQuery === normalizedFirstTrack) {
-		// 	// console.log('Match found for song query.')
-		// 	// console.log('Normalized Song Query: ', normalizedSongQuery)
-		// 	// console.log('Normalized First Track: ', normalizedFirstTrack)
-		// 	// console.log('-------------------')
-		// 	return firstTrack.uri
-		// } else {
-		// 	console.log('* * * * * * * * * * * *')
-		// 	console.log('No match found for song query.')
-		// 	console.log('- - - - - - - - - - - - - - -')
-		// 	console.log('Normalized Song Query: ', normalizedSongQuery)
-		// 	console.log('Normalized First Track: ', normalizedFirstTrack)
-		// 	console.log('* * * * * * * * * * * *')
-		// 	return null
-		// }
 	} catch (error) {
 		// add error message to response and return it
 		console.error(
