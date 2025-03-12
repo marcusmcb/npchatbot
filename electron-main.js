@@ -57,7 +57,7 @@ const PORT = process.env.PORT || 5000
 server.use(bodyParser.json())
 server.use(cors())
 
-const isDev = false
+const isDev = true
 
 process.env.NODE_ENV = isDev ? 'development' : 'production'
 
@@ -71,7 +71,7 @@ const startServer = () => {
 	})
 }
 
-// Start a separate HTTP server to handle Spotify auth callback
+// http server and port for Spotify auth
 const HTTP_PORT = 5001
 const httpServer = http.createServer(async (req, res) => {
 	if (req.url.startsWith('/auth/spotify/callback')) {
