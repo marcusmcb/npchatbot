@@ -15,7 +15,7 @@ const TitleBar = ({
 		if (!isTwitchAuthorized) {
 			ipcRenderer.send('open-twitch-auth-url')
 		} else {
-			console.log('Already authorized')
+			console.log('Already authorized with Twitch')
 			// ipcRenderer.send('open-auth-settings', 'https://www.twitch.tv/settings/connections')
 			ipcRenderer.send('open-twitch-auth-url')
 		}
@@ -25,7 +25,7 @@ const TitleBar = ({
 		if (!isTwitchAuthorized) {
 			ipcRenderer.send('open-spotify-auth-url')
 		} else {
-			console.log('Already authorized')
+			console.log('Already authorized with Spotify')
 			// ipcRenderer.send('open-auth-settings', 'https://www.twitch.tv/settings/connections')
 			ipcRenderer.send('open-spotify-auth-url')
 		}

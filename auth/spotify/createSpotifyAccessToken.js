@@ -171,10 +171,7 @@ const initSpotifyAuthToken = async (code, wss, mainWindow) => {
 	}
 }
 
-const updateSpotifyUserToken = async (db, event, token) => {}
-
 module.exports = {
 	exchangeCodeForSpotifyToken,
 	initSpotifyAuthToken,
-	updateSpotifyUserToken,
 }

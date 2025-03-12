@@ -1,6 +1,7 @@
 const fs = require('fs')
 const path = require('path')
 const https = require('https')
+const http = require('http')
 const bodyParser = require('body-parser')
 const cors = require('cors')
 const dotenv = require('dotenv')
@@ -17,6 +18,10 @@ const logToFile = require('./scripts/logger')
 
 // auth handlers and user data methods
 const { handleSpotifyAuth } = require('./auth/spotify/handleSpotifyAuth')
+const {
+	initSpotifyAuthToken,
+} = require('./auth/spotify/createSpotifyAccessToken')
+const { setSpotifyUserId } = require('./auth/spotify/setSpotifyUserId')
 const { handleTwitchAuth } = require('./auth/twitch/handleTwitchAuth')
 const { handleGetUserData } = require('./database/helpers/handleGetUserData')
 const {
@@ -66,6 +71,55 @@ const startServer = () => {
 	})
 }
 
+// Start a separate HTTP server to handle Spotify auth callback
+const HTTP_PORT = 5001
+const httpServer = http.createServer(async (req, res) => {
+	if (req.url.startsWith('/auth/spotify/callback')) {
+		const urlObj = new URL(req.url, `http://127.0.0.1:${HTTP_PORT}`)
+		const code = urlObj.searchParams.get('code')
+		const error = urlObj.searchParams.get('error')
+		const state = urlObj.searchParams.get('state')
+
+		console.log('Received Spotify auth callback:', { code, error, state })
+
+		if (error) {
+			console.error('Spotify Auth Error:', error)
+			res.writeHead(400, { 'Content-Type': 'text/plain' })
+			res.end('Authorization failed. Please try again.')
+			return
+		}
+
+		if (!code) {
+			console.error('No authorization code received.')
+			res.writeHead(400, { 'Content-Type': 'text/plain' })
+			res.end('No authorization code received.')
+			return
+		}
+
+		console.log('Received authorization code:', code)
+
+		if (code) {
+			await initSpotifyAuthToken(code, wss, mainWindow)
+			setTimeout(async () => {
+				await setSpotifyUserId()
+			}, 100)
+		}
+
+		// ✅ Notify Electron to close the Spotify auth window
+		mainWindow.webContents.send('close-spotify-auth-window')
+
+		res.writeHead(200, { 'Content-Type': 'text/plain' })
+		res.end('Authorization successful! You may close this window.')
+	} else {
+		res.writeHead(404, { 'Content-Type': 'text/plain' })
+		res.end('Not Found')
+	}
+})
+
+httpServer.listen(HTTP_PORT, () => {
+	console.log(`Spotify auth callback HTTP server running on port ${HTTP_PORT}`)
+})
+
 server.get('/', (req, res) => {
 	res.send('NPChatbot is up and running')
 })
@@ -75,7 +129,9 @@ ipcMain.on('open-auth-settings', (event, url) => {
 })
 
 ipcMain.on('open-spotify-auth-url', async (event, arg) => {
-	handleSpotifyAuth(event, arg, mainWindow, wss)
+	const spotifyRedirectUri = `http://127.0.0.1:5001/auth/spotify/callback/`
+	console.log('Spotify Redirect URI: ', spotifyRedirectUri)
+	handleSpotifyAuth(event, arg, mainWindow, wss, spotifyRedirectUri)
 })
 
 ipcMain.on('open-twitch-auth-url', async (event, arg) => {
