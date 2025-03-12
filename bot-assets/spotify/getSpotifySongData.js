@@ -1,53 +1,5 @@
-/*
-
-This method requires additional logic to evaluate the songs returned from
-Spotify relative to what was searched.  This will require splitting the
-songQuery value at the hyphen to determine the artist and title values.
-
-The updated logic should evaluate the title and artist values relative
-to the top 3 results returned from Spotify.  The title and artist values 
-of each result can be parsed from the response data returned. 
-
-UPDATE:
-
-Currently, npChatbot returns the first result from the Spotify search
-as the result to add to the user's playlist. 
-
-Clean the tracks[i].name and tracks[i].artists[0].name values returned
-and create a string to compare to the songQuery string submitted.
-
-If the strings match, return the tracks[i].uri value to be added to the
-playlist.  
-
-UPDATE: 
-
-If no match is found, then the songQuery submitted may need
-to be sent as an object with separate artist and title values to
-evaluate against the Spotify results.  Alternately, the comparison
-can be submitted again using the 2nd and 3rd results returned.
-
-In the calling method, parse the scraped result from each Serato
-song entry as an object with artist and title key/value pairs.
-
-Pass the resulting queryObject into the getSpotifySongData method 
-to use in the comparison.  Apply the strict comparison as we are
-currently but add in a partial match methodology if the strict
-comparison fails.
-
-Apply the partial match logic to the normalized title and artist
-values against the normalized Spotify response values.  If a partial
-match is found between the combined comparison, then return the
-first track uri to use update the playlist.
-
-If the partial match logic fails on the first track returned, then
-apply the same logic cycle to the 2nd result returned (and the 3rd
-if necessary).  Update on the first strict comparison or partial match
-found if the first track result is not useable.
-
-
-*/
-
 const axios = require('axios')
+const { stringSimilarity } = require('string-similarity-js')
 const {
 	checkSpotifyAccessToken,
 } = require('../../auth/spotify/checkSpotifyAccessToken')
@@ -83,22 +35,40 @@ const getSpotifySongData = async (songQuery) => {
 			console.log(tracks[i].artists[0].name)
 			console.log('-------------------')
 		}
-		const firstTrack = tracks[0]
-		const firstTrackString = `${firstTrack.artists[0].name} - ${firstTrack.name}`
-		const firstTrackCleaned = cleanCurrentSongInfo(firstTrackString)
-		const firstTrackComparison = cleanQueryString(firstTrackCleaned)
 
-		console.log('Song Query: ', songQuery)
-		console.log('First Track Returned: ', firstTrackComparison)
-		console.log('-------------------')
+		for (let i = 0; i < tracks.length; i++) {
+			const track = tracks[i]
+			const trackString = `${track.artists[0].name} - ${track.name}`
+			const trackCleaned = cleanCurrentSongInfo(trackString)
+			const trackComparison = cleanQueryString(trackCleaned)
 
-		return firstTrack.uri
+			console.log('Song Query: ', songQuery)
+			console.log(`Track ${i + 1} Returned: `, trackComparison)
+			console.log('-------------------')
+
+			// Check for exact match
+			if (trackComparison === songQuery) {
+				return track.uri
+			}
+
+			// Check for partial match
+			const similarity = stringSimilarity(songQuery, trackComparison)
+			if (similarity > 0.5) {
+				// Adjust the threshold as needed
+				return track.uri
+			}
+		}
+
+		// If no match is found, return null or handle accordingly
+		console.log('No matching track found for:', songQuery)
+		return null
 	} catch (error) {
 		// add error message to response and return it
 		console.error(
 			`Error getting song data for "${songQuery}":`,
 			error.response?.data || error.message
 		)
+		return null
 	}
 }
 
