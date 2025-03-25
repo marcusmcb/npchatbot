@@ -140,6 +140,10 @@ const createLiveReport = async (url) => {
 			}
 		}
 
+		const uniqueTracks = new Set(trackLog.map((track) => track.trackId))
+		console.log('Unique Tracks: ', uniqueTracks.size)
+		console.log('Total Tracks: ', trackLog.length)
+
 		// format start time
 		if (starttime) {
 			const [time, period] = starttime.split(/(am|pm)/i)
@@ -175,7 +179,7 @@ const createLiveReport = async (url) => {
 				minutes,
 				seconds,
 			},
-			total_tracks_played: trackLog.length,
+			total_tracks_played: uniqueTracks.size,
 			average_track_length: averageTrackLength,
 			doubles_played: doublesPlayed,
 			playlist_date: playlistDate,
