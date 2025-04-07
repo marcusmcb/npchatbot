@@ -1,5 +1,6 @@
 const { FusesPlugin } = require("@electron-forge/plugin-fuses");
 const { FuseV1Options, FuseVersion } = require("@electron/fuses");
+const path = require("path");
 
 module.exports = {
   packagerConfig: {
@@ -7,10 +8,11 @@ module.exports = {
     name: "npchatbot", // Name of the application
     arch: "arm64", // Architecture of the application
     platform: "all", // Platforms to build for (all platforms)
-    dir: "./", // Directory containing the source code	
-	asar: {
-	  unpack: "**/users.db", // Files to unpack from the asar archive
-	},
+    dir: "./", // Directory containing the source code
+    icon: "./client/public/favicon/npicon.icns",
+    asar: {
+      unpack: "**/users.db", // Files to unpack from the asar archive
+    },
   },
   //   packagerConfig: {
   //     asar: {
@@ -55,13 +57,22 @@ module.exports = {
       platforms: ["darwin"],
       config: {
         name: "npchatbot",
-        icon: "./client/public/favicon/npchatbot_icon.icns",
-        background: "./client/public/npchatbot-tile-icon-only.png",
+        icon: path.resolve(__dirname, "./client/public/favicon/npicon.icns"),        
+        // background: "./client/public/gradient.png",
         overwrite: true,
         format: "ULFO",
+        window: {
+          width: 660,
+          height: 400,
+        },
         contents: [
-          { x: 130, y: 220, type: "file", path: "./out/npchatbot-darwin-arm64/npchatbot.app" },
-          { x: 410, y: 220, type: "link", path: "/Applications" },
+          {
+            x: 170,
+            y: 220,
+            type: "file",
+            path: "./out/npchatbot-darwin-arm64/npchatbot.app",
+          },
+          { x: 480, y: 220, type: "link", path: "/Applications" },
         ],
       },
     },
