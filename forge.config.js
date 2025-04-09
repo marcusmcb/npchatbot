@@ -4,16 +4,22 @@ const path = require("path");
 
 module.exports = {
   packagerConfig: {
-    out: "./out", // Output directory for built applications
-    name: "npchatbot", // Name of the application
-    arch: "arm64", // Architecture of the application
-    platform: "all", // Platforms to build for (all platforms)
-    dir: "./", // Directory containing the source code
-    icon: "./client/public/favicon/npicon.icns",
-    asar: {
-      unpack: "**/users.db", // Files to unpack from the asar archive
+    osxSign: false, // disable Forge's auto-signing
+    afterSign: async (config) => {
+      await require("./sign-deep")(config);
     },
+    asar: {
+      unpack: "**/users.db",
+      smartUnpack: false,
+    },
+    out: "./out",
+    name: "npchatbot",
+    arch: "arm64",
+    platform: "all",
+    dir: "./",
+    icon: "./client/public/favicon/npicon.icns",
   },
+
   //   packagerConfig: {
   //     asar: {
   //       unpack: "**/users.db",
@@ -57,7 +63,7 @@ module.exports = {
       platforms: ["darwin"],
       config: {
         name: "npchatbot",
-        icon: path.resolve(__dirname, "./client/public/favicon/npicon.icns"),        
+        icon: path.resolve(__dirname, "./client/public/favicon/npicon.icns"),
         // background: "./client/public/gradient.png",
         overwrite: true,
         format: "ULFO",
