@@ -86,6 +86,7 @@ typings/
 
 users.db
 preferences.db
+npchatbot.zip
 /out
 
 # parcel-bundler cache (https://parceljs.org/)
