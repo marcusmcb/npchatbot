@@ -88,7 +88,7 @@ users.db
 preferences.db
 npchatbot.zip
 /out
-/out-macOS/make
+/out-macOS/
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache
