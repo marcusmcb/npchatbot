@@ -4,35 +4,31 @@ const path = require("path");
 
 module.exports = {
   packagerConfig: {
-    osxSign: false, // disable Forge's auto-signing
-    afterSign: async (config) => {
-      await require("./sign-deep")(config);
-    },
+    // Prevent Forge from signing during packaging – we’ll sign manually
+    osxSign: false,
+
+    // Required by plugin-auto-unpack-natives
     asar: {
       unpack: "**/users.db",
       smartUnpack: false,
     },
+
+    // Set output directory + general packaging config
     out: "./out",
     name: "npchatbot",
     arch: "arm64",
-    platform: "all",
+    platform: "darwin", // Ensures only mac builds happen when you want to prep release
     dir: "./",
     icon: "./client/public/favicon/npicon.icns",
+
+    // ⚠ Prevent repackaging if you’re just re-making the DMG after signing
+    overwrite: false, // <--- disables app rebuild
   },
 
-  //   packagerConfig: {
-  //     asar: {
-  //       unpack: "**/users.db",
-  //     },
-  //     name: "npchatbot",
-  //     icon: "./client/public/favicon/favicon.ico",
-  //     arch: "x64",
-  //     platform: "all",
-  //     dir: "./",
-  //     out: "./dist",
-  //   },
   rebuildConfig: {},
+
   makers: [
+    // Windows installer – retain for future packaging
     // {
     //   name: "@electron-forge/maker-squirrel",
     //   platforms: ["win32"],
@@ -46,6 +42,7 @@ module.exports = {
     //     loadingGif: "./client/public/spinner.gif",
     //   },
     // },
+
     {
       name: "@electron-forge/maker-zip",
       platforms: ["darwin"],
@@ -76,6 +73,7 @@ module.exports = {
             x: 170,
             y: 220,
             type: "file",
+            // This MUST point to the notarized, stapled .app that already exists
             path: "./out/npchatbot-darwin-arm64/npchatbot.app",
           },
           { x: 480, y: 220, type: "link", path: "/Applications" },
@@ -83,6 +81,7 @@ module.exports = {
       },
     },
   ],
+
   plugins: [
     {
       name: "@electron-forge/plugin-auto-unpack-natives",
