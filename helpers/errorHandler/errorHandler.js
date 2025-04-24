@@ -12,7 +12,9 @@ const errorHandler = (error) => {
 	console.log("Error Handler: ", error)
 	let errorResponse
 	const errorMessage = error.toString()
-	console.error('Failed to connect to OBS: ', errorMessage)
+	console.log("----------------------------------")	
+	console.log("Root Error Message: ", errorMessage)
+	console.log("----------------------------------")
 	switch (true) {
 		case errorMessage.includes('authentication is required'):
 			errorResponse = OBS_AUTH_ERROR

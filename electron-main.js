@@ -10,6 +10,7 @@ const express = require('express')
 const { app, BrowserWindow, ipcMain, shell, dialog } = require('electron')
 
 // db, bot config/initialization, and utility methods
+const db = require('./database/database')
 const loadConfigurations = require('./config')
 const initializeBot = require('./index')
 const { handleStartBotScript } = require('./bot-scripts/handleStartBotScript')
@@ -58,7 +59,7 @@ const PORT = process.env.PORT || 5002
 server.use(bodyParser.json())
 server.use(cors())
 
-const isDev = false
+const isDev = true
 
 process.env.NODE_ENV = isDev ? 'development' : 'production'
 
@@ -105,7 +106,7 @@ const httpServer = http.createServer(async (req, res) => {
 				await setSpotifyUserId()
 			}, 100)
 		}
-		
+
 		mainWindow.webContents.send('close-spotify-auth-window')
 
 		res.writeHead(200, { 'Content-Type': 'text/plain' })
@@ -162,15 +163,19 @@ ipcMain.on('submitUserData', async (event, arg) => {
 })
 
 ipcMain.on('stopBotScript', async (event, arg) => {
-	handleStopBotScript(event, arg, tmiInstance)
+	handleStopBotScript(event, arg, tmiInstance)	
 	tmiInstance = null
 	botProcess = false
+	isConnected = false
 	console.log('npChatbot successfully disconnected from Twitch')
 	console.log('--------------------------------------')
 })
 
 ipcMain.on('startBotScript', async (event, arg) => {
-	await handleStartBotScript(event, arg, botProcess)
+	const validStartResponse = await handleStartBotScript(event, arg, botProcess)
+	if (validStartResponse === false) {
+		return
+	}
 	// load configurations and initialize chatbot script
 	setTimeout(() => {
 		loadConfigurations()

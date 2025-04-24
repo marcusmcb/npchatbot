@@ -28,7 +28,7 @@ const INVALID_TWITCH_CHATBOT_URL = "The Twitch chatbot profile name given is inv
 
 const INVALID_SERATO_DISPLAY_NAME = "The Serato profile name given is invalid"
 
-const INVALID_REFRESH_TOKEN = 'Unable to refresh authorization token'
+const INVALID_REFRESH_TOKEN = 'npChatbot was unable to connect to Twitch. Please click the Twitch icon on the left to reauthorize npChatbot.'
 
 module.exports = {
   NO_LIVE_DATA_MESSAGE,

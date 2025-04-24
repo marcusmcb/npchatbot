@@ -34,7 +34,42 @@ const handleStartBotScript = async (event, arg, botProcess) => {
 			success: false,
 			error: 'Bot is already running.',
 		})
-		return
+		return false
+	}
+
+	const user = await new Promise((resolve, reject) => {
+		db.users.findOne({}, (err, doc) => {
+			if (err) reject(err)
+			else resolve(doc)
+		})
+	})	
+
+	try {
+		// get a fresh access token and update the user.db file
+		const currentAccessToken = await getTwitchRefreshToken(
+			user.twitchRefreshToken
+		)
+		if (currentAccessToken.status === 400) {
+			const errorResponse = {
+				success: false,
+				error: errorHandler(currentAccessToken.message),
+			}
+			event.reply('startBotResponse', errorResponse)
+			return false
+		} else {
+			await updateUserToken(db, event, currentAccessToken)
+			console.log('User token successfully updated')
+			console.log('--------------------------------------')
+			logToFile('User token successfully updated')
+			logToFile('*******************************')
+		}
+	} catch (error) {
+		const errorResponse = {
+			success: false,
+			error: 'Failed to update user token.',
+		}
+		event.reply('startBotResponse', errorResponse)
+		return false
 	}
 
 	// validate local OBS connection if OBS responses are enabled
@@ -50,7 +85,7 @@ const handleStartBotScript = async (event, arg, botProcess) => {
 		} catch (error) {
 			errorResponse.error = errorHandler(error)
 			event.reply('startBotResponse', errorResponse)
-			return
+			return false
 		}
 	}
 
@@ -102,34 +137,6 @@ const handleStartBotScript = async (event, arg, botProcess) => {
 		}
 	} else {
 		console.log('Spotify is not enabled')
-	}
-
-	try {
-		// get a fresh access token and update the user.db file
-		const currentAccessToken = await getTwitchRefreshToken(
-			arg.twitchRefreshToken
-		)
-		if (currentAccessToken.status === 400) {
-			const errorResponse = {
-				success: false,
-				error: errorHandler(currentAccessToken.message),
-			}
-			event.reply('startBotResponse', errorResponse)
-			return
-		} else {
-			await updateUserToken(db, event, currentAccessToken)
-			console.log('User token successfully updated')
-			console.log('--------------------------------------')
-			logToFile('User token successfully updated')
-			logToFile('*******************************')
-		}
-	} catch (error) {
-		const errorResponse = {
-			success: false,
-			error: 'Failed to update user token.',
-		}
-		event.reply('startBotResponse', errorResponse)
-		return
 	}
 }
 
