@@ -58,7 +58,7 @@ const PORT = process.env.PORT || 5002
 server.use(bodyParser.json())
 server.use(cors())
 
-const isDev = true
+const isDev = false
 
 process.env.NODE_ENV = isDev ? 'development' : 'production'
 
@@ -105,8 +105,7 @@ const httpServer = http.createServer(async (req, res) => {
 				await setSpotifyUserId()
 			}, 100)
 		}
-
-		// ✅ Notify Electron to close the Spotify auth window
+		
 		mainWindow.webContents.send('close-spotify-auth-window')
 
 		res.writeHead(200, { 'Content-Type': 'text/plain' })
@@ -170,7 +169,6 @@ ipcMain.on('stopBotScript', async (event, arg) => {
 	console.log('--------------------------------------')
 })
 
-// ipc method to connect the npChatbot script to Twitch
 ipcMain.on('startBotScript', async (event, arg) => {
 	await handleStartBotScript(event, arg, botProcess)
 	// load configurations and initialize chatbot script
