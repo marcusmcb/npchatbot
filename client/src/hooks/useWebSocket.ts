@@ -13,7 +13,7 @@ const useWebSocket = (
 		socketRef.current = socket
 
 		socket.addEventListener('open', () => {
-			console.log(`WebSocket is open now: ${url}`)
+			// console.log(`WebSocket is open now: ${url}`)
 			if (onOpen) onOpen()
 		})
 

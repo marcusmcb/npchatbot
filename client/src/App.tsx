@@ -126,7 +126,7 @@ const App = (): JSX.Element => {
 			}
 		},
 		() => {
-			console.log('WebSocket is open now.')
+			// console.log('WebSocket is open now.')
 		},
 		(event) => {
 			console.error('WebSocket error:', event)
@@ -141,7 +141,7 @@ const App = (): JSX.Element => {
 			addMessageToQueue(event.data)
 		},
 		() => {
-			console.log('Spotify WebSocket is open now.')
+			// console.log('Spotify WebSocket is open now.')
 		},
 		(event) => {
 			console.error('Spotify WebSocket error:', event)

@@ -21,7 +21,7 @@ const useGetUserData = (
 		if (ipcRendererInstance) {
 			ipcRendererInstance.send('getUserData', {})
 			const handleGetUserDataResponse = (response: any) => {
-				console.log('Response: ', response.error)
+				// console.log('Response: ', response.error)
 				if (response.error) {
 					addMessageToQueue(
 						'To get started, click the Twitch icon to authorize npChatbot.'

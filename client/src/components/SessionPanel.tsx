@@ -13,6 +13,8 @@ import { ReportData, SessionPanelProps } from '../types'
 import '../App.css'
 import './styles/sessionpanel.css'
 
+const ipcRenderer = window.electron.ipcRenderer
+
 const SessionPanel: React.FC<SessionPanelProps> = (props) => {
 	const [hours, setHours] = useState(0)
 	const [minutes, setMinutes] = useState(0)
@@ -34,6 +36,7 @@ const SessionPanel: React.FC<SessionPanelProps> = (props) => {
 		let interval: NodeJS.Timeout
 
 		if (props.isBotConnected) {
+			ipcRenderer.send('update-connection-state', true)
 			interval = setInterval(() => {
 				setSeconds((prevSeconds) => {
 					if (prevSeconds === 59) {
@@ -49,6 +52,8 @@ const SessionPanel: React.FC<SessionPanelProps> = (props) => {
 					return prevSeconds + 1
 				})
 			}, 1000)
+		} else {
+			ipcRenderer.send('update-connection-status', false)
 		}
 
 		// Cleanup interval on unmount or when bot disconnects
