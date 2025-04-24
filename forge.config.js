@@ -3,21 +3,19 @@ const { FuseV1Options, FuseVersion } = require("@electron/fuses");
 const path = require("path");
 
 module.exports = {
-  packagerConfig: {
-    // Prevent Forge from signing during packaging – we’ll sign manually
-    osxSign: false,
+  /* packagerConfig for MacOS dmg installer */
 
-    // Required by plugin-auto-unpack-natives
+  packagerConfig: {    
+    osxSign: false,
+    // required by plugin-auto-unpack-natives
     asar: {
       unpack: "**/users.db",
       smartUnpack: false,
-    },
-
-    // Set output directory + general packaging config
+    },    
     out: "./out",
     name: "npchatbot",
     arch: "arm64",
-    platform: "darwin", // Ensures only mac builds happen when you want to prep release
+    platform: "darwin",
     dir: "./",
     icon: "./client/public/favicon/npicon.icns",
 
@@ -25,10 +23,25 @@ module.exports = {
     overwrite: false, // <--- disables app rebuild
   },
 
+  /* packagerConfig for PC/Windows executable */
+
+  // packagerConfig: {
+	// 	asar: {
+	// 		unpack: '**/users.db',
+	// 	},
+	// 	name: 'npchatbot',
+	// 	icon: './client/public/favicon/favicon.ico',
+	// 	arch: 'x64',
+	// 	platform: 'all',
+	// 	dir: './',
+	// 	out: './dist',
+	// },
+
   rebuildConfig: {},
 
   makers: [
-    // Windows installer – retain for future packaging
+    /* maker config for PC/Windows executable */
+
     // {
     //   name: "@electron-forge/maker-squirrel",
     //   platforms: ["win32"],
@@ -55,6 +68,9 @@ module.exports = {
       name: "@electron-forge/maker-rpm",
       config: {},
     },
+
+    /* maker config for MacOS DMG installer */
+    
     {
       name: "@electron-forge/maker-dmg",
       platforms: ["darwin"],
