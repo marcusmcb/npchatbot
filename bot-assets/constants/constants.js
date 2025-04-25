@@ -30,6 +30,8 @@ const INVALID_SERATO_DISPLAY_NAME = "The Serato profile name given is invalid"
 
 const INVALID_REFRESH_TOKEN = 'npChatbot was unable to connect to Twitch. Please click the Twitch icon on the left to reauthorize npChatbot.'
 
+const INVALID_SPOTIFY_REFRESH_TOKEN = 'npChatbot was unable to create or update your Spotify playlist. Please click the Spotify icon on the left to reauthorize npChatbot or disable the Spotify feature and click Update to continue.' 
+
 module.exports = {
   NO_LIVE_DATA_MESSAGE,
   ERROR_MESSAGE,
@@ -42,6 +44,7 @@ module.exports = {
   INVALID_REFRESH_TOKEN,
   INVALID_TWITCH_CHATBOT_URL,
   INVALID_TWITCH_URL,
-  INVALID_SERATO_DISPLAY_NAME
+  INVALID_SERATO_DISPLAY_NAME,
+  INVALID_SPOTIFY_REFRESH_TOKEN,
 }
 

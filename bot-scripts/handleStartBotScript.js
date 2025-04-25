@@ -23,6 +23,8 @@ const handleStartBotScript = async (event, arg, botProcess) => {
 	logToFile('startBotScript CALLED')
 	logToFile('*******************************')
 
+	const user = await getUserData(db)
+
 	let errorResponse = {
 		success: false,
 		error: null,
@@ -37,12 +39,12 @@ const handleStartBotScript = async (event, arg, botProcess) => {
 		return false
 	}
 
-	const user = await new Promise((resolve, reject) => {
-		db.users.findOne({}, (err, doc) => {
-			if (err) reject(err)
-			else resolve(doc)
-		})
-	})	
+	// const user = await new Promise((resolve, reject) => {
+	// 	db.users.findOne({}, (err, doc) => {
+	// 		if (err) reject(err)
+	// 		else resolve(doc)
+	// 	})
+	// })
 
 	try {
 		// get a fresh access token and update the user.db file
@@ -91,47 +93,63 @@ const handleStartBotScript = async (event, arg, botProcess) => {
 
 	// if Spotify is enabled, get a fresh access token
 	if (arg.isSpotifyEnabled === true) {
-		await getSpotifyAccessToken()
-		// if Continue Last Playlist is not enabled, create a new Spotify playlist
-		if (!arg.continueLastPlaylist === true) {
-			console.log('Creating new Spotify playlist')
-			console.log('-------------------------')
-			let response = await createSpotifyPlaylist()
-			if (response) {
-				event.reply('startBotResponse', response)
-			}
-		} else {
-			// get the currentSpotifyPlaylistId from the user.db file
-			console.log('Continuing last Spotify playlist')
-			console.log('-------------------------')
+		const currentSpotifyAccessToken = await getSpotifyAccessToken()
 
-			const user = await getUserData(db)
-			if (
-				user.currentSpotifyPlaylistId !== null ||
-				user.currentSpotifyPlaylistId !== undefined
-			) {
-				const spotifyPlaylistData = await getSpotifyPlaylistData(
-					user.currentSpotifyPlaylistId
-				)
-				// check that the currentSpotifyPlaylistId is still valid
-				// if not, create a new playlist
-				if (spotifyPlaylistData === null || spotifyPlaylistData === undefined) {
-					console.log(
-						'Existing Spotify playlist data not found, creating a new one...'
-					)
-					console.log('-------------------------')
-					// send message to the client UI when this occurs
-					let response = await createSpotifyPlaylist()
-					if (response) {
-						event.reply('startBotResponse', response)
-					}
-				}
-			} else {
-				console.log('No stored Spotify playlist found, creating a new one')
+		if (currentSpotifyAccessToken.status === 400) {
+			console.log('Spotify access token is invalid')
+			const errorResponse = {
+				success: false,
+				error: errorHandler('Spotify token is invalid'),
+			}
+			// console.log('--------------------------------------')
+			// console.log('Error: ', errorResponse.error)
+			// console.log('--------------------------------------')
+			event.reply('startBotResponse', errorResponse)
+			return false
+		} else {
+			// if continue Last playlist is not enabled, create a new Spotify playlist
+			if (!arg.continueLastPlaylist === true) {
+				console.log('Creating new Spotify playlist')
 				console.log('-------------------------')
 				let response = await createSpotifyPlaylist()
 				if (response) {
 					event.reply('startBotResponse', response)
+				}
+			} else {
+				// get the currentSpotifyPlaylistId from the user.db file
+				console.log('Continuing last Spotify playlist')
+				console.log('-------------------------')				
+				if (
+					user.currentSpotifyPlaylistId !== null ||
+					user.currentSpotifyPlaylistId !== undefined
+				) {
+					const spotifyPlaylistData = await getSpotifyPlaylistData(
+						user.currentSpotifyPlaylistId
+					)
+					
+					// check that the currentSpotifyPlaylistId is still valid
+					// if not, create a new playlist
+					if (
+						spotifyPlaylistData === null ||
+						spotifyPlaylistData === undefined || spotifyPlaylistData === 0
+					) {
+						console.log(
+							'Existing Spotify playlist was empty or data was not found, creating a new one...'
+						)
+						console.log('-------------------------')
+						// send message to the client UI when this occurs
+						let response = await createSpotifyPlaylist()
+						if (response) {
+							event.reply('startBotResponse', response)
+						}
+					}
+				} else {
+					console.log('No stored Spotify playlist found, creating a new one')
+					console.log('-------------------------')
+					let response = await createSpotifyPlaylist()
+					if (response) {
+						event.reply('startBotResponse', response)
+					}
 				}
 			}
 		}

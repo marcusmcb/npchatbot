@@ -9,7 +9,7 @@ const getSpotifyAccessToken = async () => {
 	try {
 		const user = await getUserData(db)
 		if (!user || !user.spotifyRefreshToken) {
-			throw new Error('No stored refresh token found')
+			throw new Error('No stored Spotify refresh token found')
 		} else {
 			logToFile(`SPOTIFY TOKEN UPDATE - User found: ${JSON.stringify(user)}`)
 			logToFile('-------------------------')
@@ -65,11 +65,16 @@ const getSpotifyAccessToken = async () => {
 
 		return newAccessToken
 	} catch (error) {
-		logToFile(`Error refreshing access token: ${JSON.stringify(error)}`)
+		console.log('Spotify Token Error: ')
+		console.log(error.response.status)
+		console.log('-------------------------')
+		logToFile(`Error refreshing Spotify access token: ${JSON.stringify(error)}`)
 		logToFile('-------------------------')
-		console.error('Error refreshing access token:', error.message)
-		// add error message response to return
-		return null
+		console.error('Error refreshing Spotify access token:', error.message)
+
+		return {
+			status: error.response.status,
+		}
 	}
 }
 

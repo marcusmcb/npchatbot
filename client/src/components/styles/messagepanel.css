@@ -26,5 +26,5 @@
 .error-message {
 	color: var(--error-color);
 	font-family: var(--dm-sans);
-	font-size: 20px;
+	font-size: 18px;
 }

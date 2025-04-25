@@ -5,7 +5,8 @@ const {
 	OBS_SOCKET_ERROR,
 	OBS_DEFAULT_ERROR,
 	OBS_NOT_FOUND_ERROR,
-	INVALID_REFRESH_TOKEN
+	INVALID_REFRESH_TOKEN,
+	INVALID_SPOTIFY_REFRESH_TOKEN,
 } = require('../../bot-assets/constants/constants')
 
 const errorHandler = (error) => {
@@ -33,6 +34,9 @@ const errorHandler = (error) => {
 			break
 		case errorMessage.includes('Invalid refresh token'):
 			errorResponse = INVALID_REFRESH_TOKEN
+			break
+		case errorMessage.includes('Spotify token is invalid'):
+			errorResponse = INVALID_SPOTIFY_REFRESH_TOKEN
 			break
 		default:
 			errorResponse = OBS_DEFAULT_ERROR

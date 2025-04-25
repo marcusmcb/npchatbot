@@ -35,7 +35,7 @@ const handleConnect = async (
 			setError(response.error)
 			setTimeout(() => {
 				setError('')
-			}, 5000)
+			}, 10000)
 			return
 			//   addMessageToQueue(response.error)
 		} else {

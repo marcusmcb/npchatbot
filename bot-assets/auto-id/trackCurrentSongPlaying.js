@@ -26,7 +26,11 @@ let currentSong = null
 let trackingInterval = null
 let songsPlayed = []
 
-const prepSongForSpotifyPlaylist = async (spotifyPlaylistId, currentSong, wss) => {
+const prepSongForSpotifyPlaylist = async (
+	spotifyPlaylistId,
+	currentSong,
+	wss
+) => {
 	let uri = []
 	let spotifySongUri = null
 	const songQuery = cleanCurrentSongInfo(currentSong)
@@ -39,7 +43,7 @@ const prepSongForSpotifyPlaylist = async (spotifyPlaylistId, currentSong, wss) =
 		spotifySongUri = await getSpotifySongData(spotifyQuery)
 		uri.push(spotifySongUri)
 	}
-	if (spotifySongUri !== null) {		
+	if (spotifySongUri !== null) {
 		await addTracksToSpotifyPlaylist(spotifyPlaylistId, uri, wss)
 	}
 }
@@ -64,7 +68,7 @@ const resumeSpotifyPlaylist = async (
 	// add any missing songs to the Spotify playlist
 
 	// update this logic to accurately compare the results of the two playlists
-	
+
 	const seratoPlaylistLength = results.length
 	const spotifyPlaylistLength = await getSpotifyPlaylistData(spotifyPlaylistId)
 
@@ -77,10 +81,15 @@ const resumeSpotifyPlaylist = async (
 	// }
 	// console.log("-------------------------------")
 
-	// console.log("Serato Playlist Length: ", seratoPlaylistLength)
-	// console.log("Spotify Playlist Length: ", spotifyPlaylistLength)	
+	console.log('Serato Playlist Length: ', seratoPlaylistLength)
+	console.log('Spotify Playlist Length: ', spotifyPlaylistLength)
 
 	if (spotifyPlaylistLength === seratoPlaylistLength) {
+		if (spotifyPlaylistLength === 0 && seratoPlaylistLength === 0) {
+			console.log('No songs found in either playlist.')
+			console.log('--------------------')
+			return
+		}
 		console.log('Spotify playlist is up to date with Serato playlist.')
 		console.log('--------------------')
 		currentSong = results[0].children[0].data.trim()
@@ -186,7 +195,7 @@ const trackCurrentSongPlaying = async (config, url, twitchClient, wss) => {
 				await resumeSpotifyPlaylist(
 					spotifyPlaylistId,
 					url,
-					isAutoIDCleanupEnabled, 
+					isAutoIDCleanupEnabled,
 					wss
 				)
 			} else {
