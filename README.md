@@ -124,7 +124,7 @@ The cleaner your audio file tags are, the better. However the text appears in yo
 
 ### Testing:
 
-Tested and verified working using Serato DJ Pro (versions 3.0.1 -> 3.2.4) and OBS Studio (versions 29.0.2 -> 31.0.0) (64-bit) on Windows 10/11.
+Tested and verified working using Serato DJ Pro (versions 3.0.1 -> 3.2.4) and OBS Studio (versions 29.0.2 -> 31.0.0) (64-bit) on Windows 10/11 and Mac (Sequoia).
 
 <hr>
 
