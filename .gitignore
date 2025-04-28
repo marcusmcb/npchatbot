@@ -88,6 +88,7 @@ users.db
 preferences.db
 npchatbot.zip
 /out
+/_out
 /out-macOS/
 /npchatbot-app.zip
 /npchatbot-export.p12
