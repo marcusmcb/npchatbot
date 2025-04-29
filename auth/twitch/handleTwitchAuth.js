@@ -1,6 +1,7 @@
 const { BrowserWindow } = require('electron')
 const { URL } = require('url')
 const { initTwitchAuthToken } = require('./createTwitchAccessToken')
+const WebSocket = require('ws')
 
 let authWindow
 let authCode
