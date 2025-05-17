@@ -167,6 +167,11 @@ ipcMain.on('stopBotScript', async (event, arg) => {
 	tmiInstance = null
 	botProcess = false
 	isConnected = false
+	
+	// logic check to see if user has report enabled
+	// if so, scrape the user's live playlist on final time
+	// here and send to client for display
+
 	console.log('npChatbot successfully disconnected from Twitch')
 	console.log('--------------------------------------')
 })

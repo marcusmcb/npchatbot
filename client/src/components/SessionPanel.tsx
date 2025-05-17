@@ -103,7 +103,7 @@ const SessionPanel: React.FC<SessionPanelProps> = (props) => {
 				>
 					Playlist Status
 				</button>
-				{/* {props.isReportReady && (
+				{props.isReportReady && (
 					<button
 						className='bot-control-button default-button'
 						onClick={() => {
@@ -112,7 +112,7 @@ const SessionPanel: React.FC<SessionPanelProps> = (props) => {
 					>
 						Summary
 					</button>
-				)} */}
+				)}
 			</div>
 			<div className='app-form-title session-info'>Session Info:</div>
 			<div className='session-info-label'>
