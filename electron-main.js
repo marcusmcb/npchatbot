@@ -35,7 +35,7 @@ const {
 
 // playlist summary handlers
 const { createPlaylistSummary } = require('./bot-assets/summary/createPlaylistSummary')
-const { currentPlaylistSummary } = require('./bot-assets/command-use/commandUse')
+const { getCurrentPlaylistSummary } = require('./bot-assets/command-use/commandUse')
 
 if (require('electron-squirrel-startup')) app.quit()
 
@@ -166,17 +166,17 @@ ipcMain.on('submitUserData', async (event, arg) => {
 })
 
 ipcMain.on('stopBotScript', async (event, arg) => {
-	handleStopBotScript(event, arg, tmiInstance)	
-	console.log('------------------')
-	console.log("Main Playlist Data: ")
-	console.log('------------------')
-	console.log(currentPlaylistSummary)
-	console.log('------------------')	
+	const playlistData = await getCurrentPlaylistSummary()
+	const playlistSummary = await createPlaylistSummary(playlistData)
+	console.log('End Of Stream Playlist Summary: ')
+	console.log(playlistSummary)
+	console.log('--------------------------------------')
+
+	await handleStopBotScript(event, arg, tmiInstance, playlistSummary)		
+	console.log("----- STOPPING BOT SCRIPT -----")	
 	tmiInstance = null
 	botProcess = false
 	isConnected = false	
-	// createPlaylistSummary()
-
 	console.log('npChatbot successfully disconnected from Twitch')
 	console.log('--------------------------------------')
 })

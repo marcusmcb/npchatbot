@@ -22,7 +22,7 @@ const {
 	checkCurrentSong,
 } = require('./helpers/autoIdHelpers')
 
-let { mainPlaylistData } = require('../command-use/commandUse')
+let { setCurrentPlaylistSummary } = require('../command-use/commandUse')
 
 /* GLOBAL VALUES */
 
@@ -62,8 +62,8 @@ const resumeSpotifyPlaylist = async (
 ) => {
 	// add played songs to current session summary
 	const reportData = await createLiveReport(url)
-	mainPlaylistData = reportData
-	
+	setCurrentPlaylistSummary(reportData)
+
 	// create songsPlayed array for tracking
 	const results = await getSeratoPlaylistData(url)
 	for (let i = 0; i < results.length; i++) {
@@ -153,7 +153,7 @@ const initSpotifyPlaylist = async (
 
 	// add played songs to current session summary
 	const reportData = await createLiveReport(url)
-	mainPlaylistData = reportData
+	setCurrentPlaylistSummary(reportData)
 
 	const results = await getSeratoPlaylistData(url)
 	if (!results || results.length === 0) {
@@ -247,7 +247,7 @@ const trackCurrentSongPlaying = async (config, url, twitchClient, wss) => {
 			currentSong = newCurrentSong
 
 			const reportData = await createLiveReport(url)
-			mainPlaylistData = reportData
+			setCurrentPlaylistSummary(reportData)
 
 			// return the current song playing if the Auto ID feature is enabled
 			if (isAutoIDEnabled === true) {
@@ -262,11 +262,7 @@ const trackCurrentSongPlaying = async (config, url, twitchClient, wss) => {
 }
 
 const endTrackCurrentSongPlaying = () => {
-	if (trackingInterval) {
-		console.log('Main Playlist Data: ')
-		console.log('-------------------------------')
-		console.log(mainPlaylistData)
-		console.log('-------------------------------')
+	if (trackingInterval) {		
 		clearInterval(trackingInterval)
 		trackingInterval = null
 		currentSong = null
