@@ -22,7 +22,8 @@ const TitleBar = ({
 	}
 
 	const handleSpotifyAuthClick = () => {
-		if (!isTwitchAuthorized) {
+		// additional logic for Twitch authorization needed here?
+		if (!isSpotifyAuthorized) {
 			ipcRenderer.send('open-spotify-auth-url')
 		} else {
 			console.log('Already authorized with Spotify')

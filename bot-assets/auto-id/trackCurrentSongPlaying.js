@@ -14,11 +14,15 @@ const {
 	getSeratoPlaylistData,
 } = require('../spotify/helpers/spotifyPlaylistHelpers')
 
+const createLiveReport = require('../commands/create-serato-report/createLiveReport')
+
 const {
 	getUniqueSongs,
 	hasSongBeenPlayed,
 	checkCurrentSong,
 } = require('./helpers/autoIdHelpers')
+
+let { mainPlaylistData } = require('../command-use/commandUse')
 
 /* GLOBAL VALUES */
 
@@ -56,6 +60,10 @@ const resumeSpotifyPlaylist = async (
 	isAutoIDCleanupEnabled,
 	wss
 ) => {
+	// add played songs to current session summary
+	const reportData = await createLiveReport(url)
+	mainPlaylistData = reportData
+	
 	// create songsPlayed array for tracking
 	const results = await getSeratoPlaylistData(url)
 	for (let i = 0; i < results.length; i++) {
@@ -142,6 +150,11 @@ const initSpotifyPlaylist = async (
 		'Adding all songs from Serato Live Playlist scrape to Spotify playlist...'
 	)
 	console.log('--------------------')
+
+	// add played songs to current session summary
+	const reportData = await createLiveReport(url)
+	mainPlaylistData = reportData
+
 	const results = await getSeratoPlaylistData(url)
 	if (!results || results.length === 0) {
 		console.log('No songs found in Serato Live Playlist scrape.')
@@ -153,7 +166,6 @@ const initSpotifyPlaylist = async (
 			const songQuery = cleanCurrentSongInfo(results[i].children[0].data.trim())
 			const query = cleanQueryString(songQuery)
 			songsPlayed.push(query)
-
 			const spotifySongUri = await getSpotifySongData(query)
 			if (spotifySongUri !== null) {
 				songUris.push(spotifySongUri)
@@ -219,18 +231,24 @@ const trackCurrentSongPlaying = async (config, url, twitchClient, wss) => {
 
 	trackingInterval = setInterval(async () => {
 		let newCurrentSong = await checkCurrentSong(url)
+
 		if (newCurrentSong === null) {
 			console.log(
 				'No song currently playing.  Please check that your Serato Live Playlist is active and public.'
 			)
 			return
 		}
+
 		if (isAutoIDCleanupEnabled === true) {
 			newCurrentSong = cleanCurrentSongInfo(newCurrentSong)
 		}
 
 		if (newCurrentSong !== currentSong) {
 			currentSong = newCurrentSong
+
+			const reportData = await createLiveReport(url)
+			mainPlaylistData = reportData
+
 			// return the current song playing if the Auto ID feature is enabled
 			if (isAutoIDEnabled === true) {
 				twitchClient.say(channel, `Now playing: ${currentSong}`)
@@ -245,6 +263,10 @@ const trackCurrentSongPlaying = async (config, url, twitchClient, wss) => {
 
 const endTrackCurrentSongPlaying = () => {
 	if (trackingInterval) {
+		console.log('Main Playlist Data: ')
+		console.log('-------------------------------')
+		console.log(mainPlaylistData)
+		console.log('-------------------------------')
 		clearInterval(trackingInterval)
 		trackingInterval = null
 		currentSong = null

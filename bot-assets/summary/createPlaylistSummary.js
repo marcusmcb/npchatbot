@@ -7,7 +7,11 @@ const {
 	dypSearchTerms,
 } = require('../command-use/commandUse')
 
+const db = require('../../database/database')
+const { getUserData } = require('../../database/helpers/getUserData')
+
 const createPlaylistSummary = async (displayName) => {
+	const user = await getUserData(db)
 	const seratoDisplayName = displayName.replaceAll(' ', '_')
 	const url = `https://serato.com/playlists/${seratoDisplayName}/live`
 	const reportData = await createLiveReport(url)

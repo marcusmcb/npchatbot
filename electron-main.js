@@ -9,8 +9,7 @@ const WebSocket = require('ws')
 const express = require('express')
 const { app, BrowserWindow, ipcMain, shell, dialog } = require('electron')
 
-// db, bot config/initialization, and utility methods
-const db = require('./database/database')
+// bot config/initialization, and utility methods
 const loadConfigurations = require('./config')
 const initializeBot = require('./index')
 const { handleStartBotScript } = require('./bot-scripts/handleStartBotScript')
@@ -33,6 +32,10 @@ const {
 const {
 	validateLivePlaylist,
 } = require('./helpers/validations/validateLivePlaylist')
+
+// playlist summary handlers
+const { createPlaylistSummary } = require('./bot-assets/summary/createPlaylistSummary')
+const { currentPlaylistSummary } = require('./bot-assets/command-use/commandUse')
 
 if (require('electron-squirrel-startup')) app.quit()
 
@@ -164,13 +167,15 @@ ipcMain.on('submitUserData', async (event, arg) => {
 
 ipcMain.on('stopBotScript', async (event, arg) => {
 	handleStopBotScript(event, arg, tmiInstance)	
+	console.log('------------------')
+	console.log("Main Playlist Data: ")
+	console.log('------------------')
+	console.log(currentPlaylistSummary)
+	console.log('------------------')	
 	tmiInstance = null
 	botProcess = false
-	isConnected = false
-	
-	// logic check to see if user has report enabled
-	// if so, scrape the user's live playlist on final time
-	// here and send to client for display
+	isConnected = false	
+	// createPlaylistSummary()
 
 	console.log('npChatbot successfully disconnected from Twitch')
 	console.log('--------------------------------------')
