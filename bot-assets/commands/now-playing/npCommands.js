@@ -55,7 +55,7 @@ const handleDefault = (
 	twitchClient.say(channel, message)
 	updateOBSWithText(
 		obs,
-		`Now playing:\n${currentTrackPlaying}`,
+		`Now playing: ${currentTrackPlaying}`,
 		obsClearDisplayTime,
 		config
 	)

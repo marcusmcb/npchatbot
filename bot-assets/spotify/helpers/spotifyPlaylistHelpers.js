@@ -24,7 +24,7 @@ const getCurrentDate = () => {
 }
 
 const cleanCurrentSongInfo = (songInfo) => {
-	const cleaned = songInfo.replace(/\s*[\(\[].*?[\)\]]\s*/g, '').trim()
+	const cleaned = songInfo.replace(/\s*[\(\[].*?[\)\]]/g, '').trim()
 	return cleaned.replace(/\s+/g, ' ')
 }
 

@@ -212,6 +212,8 @@ const createLiveReport = async (url) => {
 		console.log('Shortest Track: ', seratoLiveReport.shortest_track)
 		console.log('Longest Track: ', seratoLiveReport.longest_track)
 		console.log('Track Array Sample: ', seratoLiveReport.track_log[10])
+		console.log('Tracks Played: ')
+		console.log(seratoLiveReport.track_log)
 		console.log('----------------------')
 		return seratoLiveReport
 	} catch (err) {
