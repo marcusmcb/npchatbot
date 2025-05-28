@@ -7,7 +7,7 @@ const handleConnect = async (
 	setError: (error: string) => void
 ) => {
 	addMessageToQueue('Connecting to Twitch...')
-	console.log('*** sending startBotScript ***')
+	console.log('*** sending request to start npChatbot script ***')
 	ipcRenderer.send('startBotScript', {
 		twitchChannelName: formData.twitchChannelName,
 		obsWebsocketAddress: formData.obsWebsocketAddress
@@ -23,10 +23,10 @@ const handleConnect = async (
 		continueLastPlaylist: formData.continueLastPlaylist,
 		seratoDisplayName: formData.seratoDisplayName,
 	})
-	console.log('*** startBotScript sent; awaiting response ***')
+	console.log('*** start request sent, awaiting response ***')
 	ipcRenderer.on('startBotResponse', (response: any) => {
 		if (response && response.success) {
-			console.log('--- successfully startBotResponse ---')
+			console.log('--- npChatbot has been successfully started ---')
 			addMessageToQueue(response.message)
 			setIsBotConnected(true)
 		} else if (response && response.error) {
@@ -39,7 +39,7 @@ const handleConnect = async (
 			return
 			//   addMessageToQueue(response.error)
 		} else {
-			console.error('Unexpected response format from startBotResponse')
+			console.error('Unexpected response format from startBotResponse when starting npChatbot')
 		}
 	})
 }

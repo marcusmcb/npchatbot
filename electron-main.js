@@ -10,6 +10,7 @@ const express = require('express')
 const { app, BrowserWindow, ipcMain, shell, dialog } = require('electron')
 
 // bot config/initialization, and utility methods
+const db = require('./database/database')
 const loadConfigurations = require('./config')
 const initializeBot = require('./index')
 const { handleStartBotScript } = require('./bot-scripts/handleStartBotScript')
@@ -34,9 +35,18 @@ const {
 } = require('./helpers/validations/validateLivePlaylist')
 
 // playlist summary handlers
-const { createPlaylistSummary } = require('./bot-assets/summary/createPlaylistSummary')
-const { getCurrentPlaylistSummary } = require('./bot-assets/command-use/commandUse')
+const {
+	createPlaylistSummary,
+} = require('./bot-assets/summary/createPlaylistSummary')
+const {
+	getCurrentPlaylistSummary,
+} = require('./bot-assets/command-use/commandUse')
 
+const {
+	getPlaylistSummaries,
+} = require('./database/helpers/getPlaylistSummaries')
+
+// check if the app is started by Squirrel.Windows
 if (require('electron-squirrel-startup')) app.quit()
 
 // https cert options, used during twitch & spotify auth processes
@@ -165,18 +175,79 @@ ipcMain.on('submitUserData', async (event, arg) => {
 	handleSubmitUserData(event, arg, mainWindow)
 })
 
-ipcMain.on('stopBotScript', async (event, arg) => {
-	const playlistData = await getCurrentPlaylistSummary()
-	const playlistSummary = await createPlaylistSummary(playlistData)
-	console.log('End Of Stream Playlist Summary: ')
-	console.log(playlistSummary)
-	console.log('--------------------------------------')
+ipcMain.on('getPlaylistSummaries', async (event, arg) => {
+	console.log('----- GETTING PLAYLIST SUMMARIES -----')
 
-	await handleStopBotScript(event, arg, tmiInstance, playlistSummary)		
-	console.log("----- STOPPING BOT SCRIPT -----")	
+	const playlistSummaries = await getPlaylistSummaries()
+	if (playlistSummaries && playlistSummaries.length > 0) {
+		console.log('Playlist summaries retrieved successfully')
+		console.log('Number of playlists found:', playlistSummaries.length)
+		console.log('--------------------------------------')
+		console.log(`Last playlist summary:`)
+		console.log(playlistSummaries[0])		
+		event.reply('getPlaylistSummariesResponse', playlistSummaries[0])
+	} else {
+		console.log('No playlist summaries found.')
+	}
+	// const currentPlaylistSummary = playlistSummaries[0] || null
+	// if (currentPlaylistSummary) {
+
+	// 	event.reply('getPlaylistSummariesResponse', currentPlaylistSummary)
+	// } else {
+	// 	console.log('No playlist summaries found.')
+	// 	event.reply('getPlaylistSummariesResponse', [])
+	// }
+	// db.playlists
+	// 	.find({})
+	// 	.sort({ session_date: -1 })
+	// 	.exec((err, docs) => {
+	// 		if (err) {
+	// 			console.log('Error retrieving playlist summaries:', err)
+	// 			event.reply('getPlaylistSummariesResponse', [])
+	// 		} else {
+	// 			console.log('Playlist summaries retrieved successfully')
+	// 			console.log('Number of playlists found:', docs.length)
+	// 			console.log('--------------------------------------')
+	// 			// console.log(`Last playlist summary:`)
+	// 			// console.log(docs[0])
+	// 			const currentPlaylistSummary = docs[0]
+	// 			event.reply('getPlaylistSummariesResponse', currentPlaylistSummary)
+	// 		}
+	// 	})
+})
+
+ipcMain.on('stopBotScript', async (event, arg) => {
+	console.log('----- GET CURRENT PLAY SUMMARY? -----')
+	const playlistData = await getCurrentPlaylistSummary()
+	if (playlistData) {
+		playlistData.session_date = new Date()
+		console.log('Playlist data to be inserted into database:')
+		// console.log(playlistData)
+		console.log('--------------------------------------')
+
+		db.playlists.insert(playlistData, (err, newDoc) => {
+			if (err) {
+				logToFile('Error inserting playlist data:', err)
+				console.error('Error inserting playlist data:', err)
+			} else {
+				logToFile('Playlist data successfully inserted into database')
+				console.log('Playlist data successfully inserted into database')
+				// console.log(newDoc)
+			}
+		})
+	} else {
+		console.log('No playlist data found to insert into database.')
+	}
+	// // const playlistSummary = await createPlaylistSummary(playlistData)
+	// console.log('End Of Stream Playlist Summary: ')
+	// console.log(playlistSummary)
+	// console.log('--------------------------------------')
+
+	await handleStopBotScript(event, arg, tmiInstance)
+	console.log('----- STOPPING BOT SCRIPT -----')
 	tmiInstance = null
 	botProcess = false
-	isConnected = false	
+	isConnected = false
 	console.log('npChatbot successfully disconnected from Twitch')
 	console.log('--------------------------------------')
 })

@@ -247,6 +247,7 @@ const trackCurrentSongPlaying = async (config, url, twitchClient, wss) => {
 			currentSong = newCurrentSong
 
 			const reportData = await createLiveReport(url)
+			console.log('---- Report Data Created ----')
 			setCurrentPlaylistSummary(reportData)
 
 			// return the current song playing if the Auto ID feature is enabled
