@@ -185,9 +185,10 @@ ipcMain.on('getPlaylistSummaries', async (event, arg) => {
 		console.log('--------------------------------------')
 		console.log(`Last playlist summary:`)
 		console.log(playlistSummaries[0])		
-		event.reply('getPlaylistSummariesResponse', playlistSummaries[0])
+		event.reply('playlistSummariesResponse', playlistSummaries)
 	} else {
 		console.log('No playlist summaries found.')
+		event.reply('playlistSummariesResponse', [])
 	}
 	// const currentPlaylistSummary = playlistSummaries[0] || null
 	// if (currentPlaylistSummary) {
