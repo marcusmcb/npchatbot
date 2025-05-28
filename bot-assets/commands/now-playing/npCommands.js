@@ -49,7 +49,7 @@ const handleDefault = (
 	obsClearDisplayTime,
 	config
 ) => {
-	const currentTrackPlaying = reportData.track_log[0].trackId
+	const currentTrackPlaying = reportData.track_log[0].track_id
 	const message = `Now playing: ${currentTrackPlaying}`
 	npSongsQueried.push({ name: currentTrackPlaying })
 	twitchClient.say(channel, message)
@@ -70,7 +70,7 @@ const handlePrevious = (
 	obsClearDisplayTime,
 	config
 ) => {
-	const previousTrackPlayed = reportData.track_log[1].trackId
+	const previousTrackPlayed = reportData.track_log[1].track_id
 	const message = `Previous song: ${previousTrackPlayed}`
 	npSongsQueried.push({ name: previousTrackPlayed })
 	twitchClient.say(channel, message)
@@ -93,7 +93,7 @@ const handleStart = (
 	tags
 ) => {
 	const firstTrackPlayed =
-		reportData.track_log[reportData.track_log.length - 1].trackId
+		reportData.track_log[reportData.track_log.length - 1].track_id
 	const message = `${config.twitchChannelName} kicked off this stream with ${firstTrackPlayed}`
 	twitchClient.say(channel, message)
 	updateOBSWithText(
@@ -115,11 +115,11 @@ const handleVibeCheck = (
 	tags
 ) => {
 	const vibeCheckSelection = vibeCheckSelector(reportData.track_log)
-	const message = `${config.twitchChannelName} played "${vibeCheckSelection.trackId}" ${vibeCheckSelection.timePlayed} in this stream.`
+	const message = `${config.twitchChannelName} played "${vibeCheckSelection.track_id}" ${vibeCheckSelection.timePlayed} in this stream.`
 	twitchClient.say(channel, message)
 	updateOBSWithText(
 		obs,
-		`vibe check:\n\n${config.twitchChannelName} played\n"${vibeCheckSelection.trackId}"\n${vibeCheckSelection.timePlayed} in this stream.`,
+		`vibe check:\n\n${config.twitchChannelName} played\n"${vibeCheckSelection.track_id}"\n${vibeCheckSelection.timePlayed} in this stream.`,
 		obsClearDisplayTime,
 		config
 	)
@@ -135,7 +135,7 @@ const handleShortest = (
 	config,
 	tags
 ) => {
-	const shortestTrack = reportData.shortest_track.trackId
+	const shortestTrack = reportData.shortest_track.track_id
 	const shortestTrackLength = reportData.shortest_track['length']
 	const message = `The shortest song that ${config.twitchChannelName} has played in the last hour was ${shortestTrack} (${shortestTrackLength}).`
 	twitchClient.say(channel, message)
@@ -157,7 +157,7 @@ const handleLongest = (
 	config,
 	tags
 ) => {
-	const longestTrack = reportData.longest_track.trackId
+	const longestTrack = reportData.longest_track.track_id
 	const longestTrackLength = reportData.longest_track['length']
 	const message = `The longest song that ${config.twitchChannelName} has played in the last hour was ${longestTrack} (${longestTrackLength}).`
 	twitchClient.say(channel, message)
@@ -185,11 +185,11 @@ const handleDoubles = (
 		updateOBSWithText(obs, message, obsClearDisplayTime, config)
 	} else {
 		const timesDoublesPlayed = reportData.doubles_played.length
-		const message = `${config.twitchChannelName} has played doubles ${timesDoublesPlayed} time(s) in this set.  The last song they played doubles with was "${reportData.doubles_played[0].trackId}", ${reportData.doubles_played[0].timePlayed}.`
+		const message = `${config.twitchChannelName} has played doubles ${timesDoublesPlayed} time(s) in this set.  The last song they played doubles with was "${reportData.doubles_played[0].track_id}", ${reportData.doubles_played[0].timePlayed}.`
 		twitchClient.say(channel, message)
 		updateOBSWithText(
 			obs,
-			`${config.twitchChannelName} has played doubles ${timesDoublesPlayed} times so far in this set.\n\nThe last song they played doubles with was:\n"${reportData.doubles_played[0].trackId}"\n${reportData.doubles_played[0].timePlayed}.`,
+			`${config.twitchChannelName} has played doubles ${timesDoublesPlayed} times so far in this set.\n\nThe last song they played doubles with was:\n"${reportData.doubles_played[0].track_id}"\n${reportData.doubles_played[0].timePlayed}.`,
 			obsClearDisplayTime,
 			config
 		)

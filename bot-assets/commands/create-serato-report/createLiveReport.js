@@ -90,10 +90,10 @@ const createLiveReport = async (url) => {
 			const lengthMs = timeDiffs[index]
 
 			return {
-				trackNumber: tracksPlayed.length - index,
-				trackId,
+				track_number: tracksPlayed.length - index,
+				track_id: trackId,
 				timestamp: timestamp ? timestamp.toISOString() : 'N/A',
-				timePlayed: transformTimePlayed(
+				time_played: transformTimePlayed(
 					timestamps[index]?.children?.[0]?.data?.trim()?.replace(/^0+/, '')
 				),
 				length:
@@ -132,15 +132,15 @@ const createLiveReport = async (url) => {
 		// identify when doubles have occurred
 		const doublesPlayed = []
 		for (let i = 0; i < trackLog.length - 1; i++) {
-			if (trackLog[i].trackId === trackLog[i + 1].trackId) {
+			if (trackLog[i].track_id === trackLog[i + 1].track_id) {
 				doublesPlayed.push({
-					trackId: trackLog[i].trackId,
-					timePlayed: trackLog[i].timePlayed,
+					track_id: trackLog[i].track_id,
+					time_played: trackLog[i].time_played,
 				})
 			}
 		}
 
-		const uniqueTracks = new Set(trackLog.map((track) => track.trackId))
+		const uniqueTracks = new Set(trackLog.map((track) => track.track_id))
 		console.log('Unique Tracks: ', uniqueTracks.size)
 		console.log('Total Tracks: ', trackLog.length)
 
@@ -185,16 +185,16 @@ const createLiveReport = async (url) => {
 			playlist_date: playlistDate,
 			shortest_track: shortestSong
 				? {
-						trackId: shortestSong.trackId,
+						track_id: shortestSong.track_id,
 						length: shortestSong.length,
-						timePlayed: shortestSong.timePlayed,
+						time_played: shortestSong.time_played,
 				  }
 				: null,
 			longest_track: longestSong
 				? {
-						trackId: longestSong.trackId,
+						track_id: longestSong.track_id,
 						length: longestSong.length,
-						timePlayed: longestSong.timePlayed,
+						time_played: longestSong.time_played,
 				  }
 				: null,
 			track_log: trackLog,

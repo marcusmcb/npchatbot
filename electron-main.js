@@ -183,8 +183,8 @@ ipcMain.on('getPlaylistSummaries', async (event, arg) => {
 		console.log('Playlist summaries retrieved successfully')
 		console.log('Number of playlists found:', playlistSummaries.length)
 		console.log('--------------------------------------')
-		console.log(`Last playlist summary:`)
-		console.log(playlistSummaries[0])		
+		// console.log(`Last playlist summary:`)
+		// console.log(playlistSummaries[0])		
 		event.reply('playlistSummariesResponse', playlistSummaries)
 	} else {
 		console.log('No playlist summaries found.')
@@ -221,19 +221,21 @@ ipcMain.on('stopBotScript', async (event, arg) => {
 	console.log('----- GET CURRENT PLAY SUMMARY? -----')
 	const playlistData = await getCurrentPlaylistSummary()
 	if (playlistData) {
-		playlistData.session_date = new Date()
+		const finalPlaylistData = await createPlaylistSummary(playlistData)
 		console.log('Playlist data to be inserted into database:')
-		// console.log(playlistData)
+		console.log(finalPlaylistData)
 		console.log('--------------------------------------')
 
-		db.playlists.insert(playlistData, (err, newDoc) => {
+		db.playlists.insert(finalPlaylistData, (err, newDoc) => {
 			if (err) {
 				logToFile('Error inserting playlist data:', err)
 				console.error('Error inserting playlist data:', err)
 			} else {
 				logToFile('Playlist data successfully inserted into database')
 				console.log('Playlist data successfully inserted into database')
-				// console.log(newDoc)
+				console.log('--------------------------------------')
+				console.log(newDoc)
+				console.log('--------------------------------------')
 			}
 		})
 	} else {

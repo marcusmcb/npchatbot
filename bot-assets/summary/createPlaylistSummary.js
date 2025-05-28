@@ -6,7 +6,11 @@ const {
 // add most played artists to the playlist summary
 
 const createPlaylistSummary = async (summaryData) => {		
+
+	const sessionDate = new Date()
+
 	const finalSummaryData = {
+		session_date: sessionDate,
 		dj_name: summaryData.dj_name,
 		set_start_time: summaryData.set_start_time,
 		playlist_date: summaryData.playlist_date,
@@ -30,6 +34,7 @@ const createPlaylistSummary = async (summaryData) => {
 		// top_three_shortest: summaryData.top_three_shortest,
 		np_songs_queried: npSongsQueried,
 		dyp_search_terms: dypSearchTerms,
+		track_log: summaryData.track_log
 	}
 
 	console.log('--------------------------------------')

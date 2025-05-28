@@ -33,7 +33,7 @@ const dypCommand = async (channel, tags, args, twitchClient, obs, url, config) =
 				dypSearchTerms.push({ name: searchTerm})
 				for (let i = 0; i < reportData.track_log.length; i++) {
 					if (
-						reportData.track_log[i].trackId
+						reportData.track_log[i].track_id
 							.toLowerCase()
 							.includes(searchTerm.toLowerCase())
 					) {
@@ -57,7 +57,7 @@ const dypCommand = async (channel, tags, args, twitchClient, obs, url, config) =
 						clearOBSResponse(obs, obsClearDisplayTime)
 					}
 				} else {					
-					const lastSongPlayed = searchResults[0].trackId
+					const lastSongPlayed = searchResults[0].track_id
 					const lastSongPlayedTime = searchResults[0].timePlayed
 					const message = `${config.twitchChannelName} has played '${searchItem}' ${searchResults.length} time(s) so far in this stream. Their last song played was "${lastSongPlayed}", played ${lastSongPlayedTime}.`	
 					twitchClient.say(channel, message)
