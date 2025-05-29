@@ -1,3 +1,6 @@
+// utility method run manually to sign the dev dependencies
+// in the Electron app for macOS distribution
+
 const { execSync } = require("child_process");
 const path = require("path");
 const fs = require("fs");

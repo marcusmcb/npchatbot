@@ -175,46 +175,15 @@ ipcMain.on('submitUserData', async (event, arg) => {
 	handleSubmitUserData(event, arg, mainWindow)
 })
 
-ipcMain.on('getPlaylistSummaries', async (event, arg) => {
-	console.log('----- GETTING PLAYLIST SUMMARIES -----')
-
+ipcMain.on('getPlaylistSummaries', async (event, arg) => {	
 	const playlistSummaries = await getPlaylistSummaries()
 	if (playlistSummaries && playlistSummaries.length > 0) {
 		console.log('Playlist summaries retrieved successfully')
-		console.log('Number of playlists found:', playlistSummaries.length)
-		console.log('--------------------------------------')
-		// console.log(`Last playlist summary:`)
-		// console.log(playlistSummaries[0])		
 		event.reply('playlistSummariesResponse', playlistSummaries)
 	} else {
 		console.log('No playlist summaries found.')
 		event.reply('playlistSummariesResponse', [])
 	}
-	// const currentPlaylistSummary = playlistSummaries[0] || null
-	// if (currentPlaylistSummary) {
-
-	// 	event.reply('getPlaylistSummariesResponse', currentPlaylistSummary)
-	// } else {
-	// 	console.log('No playlist summaries found.')
-	// 	event.reply('getPlaylistSummariesResponse', [])
-	// }
-	// db.playlists
-	// 	.find({})
-	// 	.sort({ session_date: -1 })
-	// 	.exec((err, docs) => {
-	// 		if (err) {
-	// 			console.log('Error retrieving playlist summaries:', err)
-	// 			event.reply('getPlaylistSummariesResponse', [])
-	// 		} else {
-	// 			console.log('Playlist summaries retrieved successfully')
-	// 			console.log('Number of playlists found:', docs.length)
-	// 			console.log('--------------------------------------')
-	// 			// console.log(`Last playlist summary:`)
-	// 			// console.log(docs[0])
-	// 			const currentPlaylistSummary = docs[0]
-	// 			event.reply('getPlaylistSummariesResponse', currentPlaylistSummary)
-	// 		}
-	// 	})
 })
 
 ipcMain.on('stopBotScript', async (event, arg) => {
@@ -241,11 +210,7 @@ ipcMain.on('stopBotScript', async (event, arg) => {
 	} else {
 		console.log('No playlist data found to insert into database.')
 	}
-	// // const playlistSummary = await createPlaylistSummary(playlistData)
-	// console.log('End Of Stream Playlist Summary: ')
-	// console.log(playlistSummary)
-	// console.log('--------------------------------------')
-
+	
 	await handleStopBotScript(event, arg, tmiInstance)
 	console.log('----- STOPPING BOT SCRIPT -----')
 	tmiInstance = null
