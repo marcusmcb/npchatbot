@@ -17,6 +17,7 @@ import useMessageQueue from './hooks/useMessageQueue'
 import useTooltipVisibility from './hooks/useTooltipVisibility'
 import useFormModified from './hooks/useFormModified'
 import './App.css'
+import fetchPlaylistSummaries from './utils/fetchPlaylistSummaries'
 
 const App = (): JSX.Element => {
 	/* TYPES */
@@ -191,6 +192,29 @@ const App = (): JSX.Element => {
 		setIsConnectionReady,
 		addMessageToQueue
 	)
+
+	// hook to fetch user playlist summary data
+	useEffect(() => {
+		const fetchPlaylistData = async () => {
+			try {
+				const playlistSummary = await fetchPlaylistSummaries(ipcRenderer)
+				if (playlistSummary && playlistSummary.length > 0) {
+					console.log('Current Playlist Summary: ', playlistSummary[0])
+					setReportData(playlistSummary[0] as ReportData)
+					setIsReportReady(true)
+				} else {					
+					console.error('No playlist summary data received.')
+					setReportData(null)
+					setIsReportReady(false)
+				}
+			} catch (error) {
+				console.error('Error fetching playlist summaries:', error)
+				setReportData(null)
+				setIsReportReady(false)
+			}
+		}
+		fetchPlaylistData()
+	}, [])
 
 	// hook to initially set user id in state
 	// once the app has been authorized via Twitch
