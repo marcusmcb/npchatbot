@@ -22,8 +22,9 @@
 .report-subtitle {
 	font-family: var(--fira-sans);
 	font-weight: bold;
-	margin-top: 5px;
-	margin-bottom: 20px;
+	margin-top: 10px;
+	margin-bottom: 10px;
+	/* color: var(--session-info-label-color) */
 }
 
 .report-close-button {
@@ -58,6 +59,33 @@
 	margin-top: 10px;
 	/* color: var(--session-info-label-color); */
 	font-size: 1.2em;
+}
+
+.report-date-selector {
+	display: flex;
+	flex-direction: row;	
+}
+
+.report-date-selector-arrow {
+  margin: 5px 6px 0px 6px;
+  cursor: pointer;
+  /* font-size: 2em; */
+  /* color: var(--highlight-color); */
+  user-select: none;
+  pointer-events: auto;
+  background: none;
+  border: none;
+  outline: none;
+  padding: 0;
+  /* display: flex;
+  align-items: center; */
+  transition: color 0.2s, font-weight 0.2s;
+}
+
+.report-date-selector-arrow:hover,
+.report-date-selector-arrow:focus {
+  /* color: var(--success-color); */
+  font-weight: bold; 
 }
 
 .foo {

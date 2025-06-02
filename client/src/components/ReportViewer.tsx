@@ -1,4 +1,5 @@
 import React, { Fragment } from 'react'
+import { MdArrowBack, MdArrowForward } from 'react-icons/md'
 import { ReportData, ReportDataProps } from '../types'
 import './styles/reportviewer.css'
 
@@ -13,6 +14,16 @@ const formatSetLength = (hours: number, minutes: number): string => {
 	}
 
 	return parts.length > 0 ? parts.join(', ') : '0 seconds'
+}
+
+const handleLeftArrowClick = () => {
+	// Logic to handle left arrow click, e.g., load previous report
+	console.log('Left arrow clicked')
+}
+
+const handleRightArrowClick = () => {
+	// Logic to handle right arrow click, e.g., load next report
+	console.log('Right arrow clicked')
 }
 
 const ReportViewer: React.FC<ReportDataProps> = ({
@@ -35,7 +46,30 @@ const ReportViewer: React.FC<ReportDataProps> = ({
 						npChatbot Stats for{' '}
 						<span className='report-dj-name'>{reportData?.dj_name}</span>
 					</div>
-					<div className='report-subtitle'>{reportData?.playlist_date}</div>
+					<div className='report-date-selector'>
+						<button
+							className='report-date-selector-arrow'
+							onClick={handleLeftArrowClick}
+							aria-label='Previous report'
+							type='button'
+						>
+							<MdArrowBack size={16} />
+						</button>
+						<div className='report-subtitle'>{reportData?.playlist_date}</div>
+						<button
+							className='report-date-selector-arrow'
+							onClick={handleRightArrowClick}
+							aria-label='Next report'
+							type='button'
+						>
+							<MdArrowForward size={16} />
+						</button>
+					</div>
+					<hr
+						style={{
+							marginRight: '10%',
+						}}
+					/>
 					<div className='report-panel-item-row'>
 						<div className='report-panel-item'>Set Start Time:</div>
 						<div className='report-panel-item'>
@@ -63,13 +97,7 @@ const ReportViewer: React.FC<ReportDataProps> = ({
 							</span>
 						</div>
 					</div>
-					<hr
-						style={{
-							marginRight: '10%',
-							marginTop: '20px',
-							marginBottom: '10px',
-						}}
-					/>
+
 					<div className='report-panel-group-left'>
 						<div className='report-panel-group'>
 							{/* <div className='reportpanel-item-header'>
