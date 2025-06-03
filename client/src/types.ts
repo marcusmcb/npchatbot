@@ -1,12 +1,12 @@
 export interface BotProcessResponse {
-  success: boolean
-  message?: any
-  error?: string
+	success: boolean
+	message?: any
+	error?: string
 }
 
 export interface AuthSuccess {
-  _id: string
-  twitchRefreshToken: string
+	_id: string
+	twitchRefreshToken: string
 }
 
 export interface MessagePanelProps {
@@ -17,7 +17,7 @@ export interface MessagePanelProps {
 
 export interface TitleBarProps {
 	isTwitchAuthorized: boolean
-  isSpotifyAuthorized: boolean
+	isSpotifyAuthorized: boolean
 	isBotConnected: boolean
 }
 
@@ -43,69 +43,72 @@ export type CredentialsPanelProps = {
 	isBotConnected: boolean
 	isObsResponseEnabled: boolean
 	isTwitchAuthorized: boolean
-  isSpotifyAuthorized: boolean
+	isSpotifyAuthorized: boolean
 	isFormModified: boolean
 }
 
 export interface SessionPanelProps {
-  handleConnect: (event: React.MouseEvent<HTMLButtonElement>) => void
-  handleDisconnect: (event: React.MouseEvent<HTMLButtonElement>) => void	
-  validateLivePlaylist: (event: React.MouseEvent<HTMLButtonElement>) => void
-  setReportView: (value: boolean) => void
-  reportView: boolean
-  isBotConnected: boolean
-  isTwitchAuthorized: boolean
-  isConnectionReady: boolean
-  isReportReady: boolean
-  reportData: ReportData | null	
+	handleConnect: (event: React.MouseEvent<HTMLButtonElement>) => void
+	handleDisconnect: (event: React.MouseEvent<HTMLButtonElement>) => void
+	validateLivePlaylist: (event: React.MouseEvent<HTMLButtonElement>) => void
+	setReportView: (value: boolean) => void
+	reportView: boolean
+	isBotConnected: boolean
+	isTwitchAuthorized: boolean
+	isConnectionReady: boolean
+	isReportReady: boolean
+	reportData: ReportData | null
+	playlistSummaries: ReportData[]
+	currentReportIndex: number
+	setCurrentReportIndex: (idx: number) => void
 }
 
 export interface DoublePlayed {
-  name: string;  
+	name: string
 }
 
 export interface LongSongPlayed {
-  name: string;
-  length: string;
+	name: string
+	length: string
 }
 
 export interface ShortSongPlayed {
-  name: string;
-  length: string;
+	name: string
+	length: string
 }
 
 export interface npSongQueried {
-  name: string;
+	name: string
 }
 
 export interface dypSearchTerm {
-  name: string;
+	name: string
 }
 
 export interface ReportData {
-  dj_name: string;
-  set_start_time: string;
-  playlist_date: string;
-  set_length: string;
-  set_length_hours: number;
-  set_length_minutes: number;
-  set_length_seconds: number;
-  average_track_length_minutes: string;
-  average_track_length_seconds: string;
-  // shortest_track_name: string;
-  // shortest_track_length: string;
-  // shortest_track_minutes: number;
-  // shortest_track_seconds: number;
-  // longest_track_name: string;
-  // longest_track_length: string;
-  // longest_track_minutes: number;
-  // longest_track_seconds: number;
-  total_tracks_played: number;
-  doubles_played: DoublePlayed[];
-  // top_three_longest: LongSongPlayed[];
-  // top_three_shortest: ShortSongPlayed[]; 
-  np_songs_queried: npSongQueried[];
-  dyp_search_terms: dypSearchTerm[];
+	dj_name: string
+	set_start_time: string
+	playlist_date: string
+	set_length: string
+	set_length_hours: number
+	set_length_minutes: number
+	set_length_seconds: number
+	average_track_length_minutes: string
+	average_track_length_seconds: string
+	// shortest_track_name: string;
+	// shortest_track_length: string;
+	// shortest_track_minutes: number;
+	// shortest_track_seconds: number;
+	// longest_track_name: string;
+	// longest_track_length: string;
+	// longest_track_minutes: number;
+	// longest_track_seconds: number;
+	total_tracks_played: number
+	doubles_played: DoublePlayed[]
+	// top_three_longest: LongSongPlayed[];
+	// top_three_shortest: ShortSongPlayed[];
+	np_songs_queried: npSongQueried[]
+	dyp_search_terms: dypSearchTerm[]
 }
 
 export interface ReportDataProps {

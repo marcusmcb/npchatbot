@@ -82,6 +82,9 @@ const App = (): JSX.Element => {
 		intervalMessageDuration: formData.intervalMessageDuration,
 	})
 
+	const [playlistSummaries, setPlaylistSummaries] = useState<ReportData[]>([])
+	const [currentReportIndex, setCurrentReportIndex] = useState(0)
+
 	const ipcRenderer = window.electron.ipcRenderer
 
 	/* CLIENT UI HELPER METHODS */
@@ -199,22 +202,35 @@ const App = (): JSX.Element => {
 			try {
 				const playlistSummary = await fetchPlaylistSummaries(ipcRenderer)
 				if (playlistSummary && playlistSummary.length > 0) {
-					console.log('Current Playlist Summary: ', playlistSummary[0])
+					setPlaylistSummaries(playlistSummary as ReportData[])
+					if (currentReportIndex !== 0) {
+						setCurrentReportIndex(currentReportIndex)
+					} else {
+						setCurrentReportIndex(0)
+					}					
 					setReportData(playlistSummary[0] as ReportData)
 					setIsReportReady(true)
-				} else {					
-					console.error('No playlist summary data received.')
+				} else {
+					setPlaylistSummaries([])
+					setCurrentReportIndex(0)
 					setReportData(null)
 					setIsReportReady(false)
 				}
 			} catch (error) {
-				console.error('Error fetching playlist summaries:', error)
+				setPlaylistSummaries([])
+				setCurrentReportIndex(0)
 				setReportData(null)
 				setIsReportReady(false)
 			}
 		}
 		fetchPlaylistData()
 	}, [])
+
+	useEffect(() => {
+		if (playlistSummaries.length > 0) {
+			setReportData(playlistSummaries[currentReportIndex])
+		}
+	}, [currentReportIndex, playlistSummaries])
 
 	// hook to initially set user id in state
 	// once the app has been authorized via Twitch
@@ -343,6 +359,9 @@ const App = (): JSX.Element => {
 							<ReportViewer
 								reportData={reportData}
 								setReportView={setReportView}
+								playlistSummaries={playlistSummaries}
+								currentReportIndex={currentReportIndex}
+								setCurrentReportIndex={setCurrentReportIndex}
 							/>
 						</div>
 					</div>
@@ -396,6 +415,9 @@ const App = (): JSX.Element => {
 							setReportView={setReportView}
 							reportView={reportView}
 							validateLivePlaylist={validateLivePlaylistWrapper}
+							playlistSummaries={playlistSummaries}
+							currentReportIndex={currentReportIndex}
+							setCurrentReportIndex={setCurrentReportIndex}
 						/>
 					</div>
 				)}

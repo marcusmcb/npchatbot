@@ -7,6 +7,12 @@ import './styles/reportviewer.css'
 // the user has the application installed but has yet to generate
 // any play histories
 
+interface ReportViewerProps extends ReportDataProps {
+	playlistSummaries: ReportData[]
+	currentReportIndex: number
+	setCurrentReportIndex: (idx: number) => void
+}
+
 // helper method to format the set length string
 const formatSetLength = (hours: number, minutes: number): string => {
 	const parts: string[] = []
@@ -20,19 +26,12 @@ const formatSetLength = (hours: number, minutes: number): string => {
 	return parts.length > 0 ? parts.join(', ') : '0 seconds'
 }
 
-const handleLeftArrowClick = () => {
-	// Logic to handle left arrow click, e.g., load previous report
-	console.log('Left arrow clicked')
-}
-
-const handleRightArrowClick = () => {
-	// Logic to handle right arrow click, e.g., load next report
-	console.log('Right arrow clicked')
-}
-
-const ReportViewer: React.FC<ReportDataProps> = ({
+const ReportViewer: React.FC<ReportViewerProps> = ({
 	reportData,
 	setReportView,
+	playlistSummaries,
+	currentReportIndex,
+	setCurrentReportIndex,
 }): JSX.Element => {
 	const formattedSetLength = reportData
 		? formatSetLength(
@@ -40,6 +39,20 @@ const ReportViewer: React.FC<ReportDataProps> = ({
 				reportData.set_length_minutes
 		  )
 		: ''
+
+	const handleLeftArrowClick = () => {
+		console.log('Left arrow clicked')
+		if (currentReportIndex < playlistSummaries.length - 1) {
+			setCurrentReportIndex(currentReportIndex + 1)
+		}
+	}
+
+	const handleRightArrowClick = () => {
+		console.log('Right arrow clicked')
+		if (currentReportIndex > 0) {
+			setCurrentReportIndex(currentReportIndex - 1)
+		}
+	}
 
 	return (
 		<Fragment>
