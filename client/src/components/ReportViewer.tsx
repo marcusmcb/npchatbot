@@ -3,6 +3,10 @@ import { MdArrowBack, MdArrowForward } from 'react-icons/md'
 import { ReportData, ReportDataProps } from '../types'
 import './styles/reportviewer.css'
 
+// add logic in the return to account for the first use case where
+// the user has the application installed but has yet to generate
+// any play histories
+
 // helper method to format the set length string
 const formatSetLength = (hours: number, minutes: number): string => {
 	const parts: string[] = []
