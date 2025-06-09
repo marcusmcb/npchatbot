@@ -60,7 +60,7 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
 				{/* REPORT PANEL LEFT */}
 				<div className='report-panel-left'>
 					<div className='report-title'>
-						npChatbot Stats for{' '}
+						npChatbot Summary for{' '}
 						<span className='report-dj-name'>{reportData?.dj_name}</span>
 					</div>
 					<div className='report-date-selector'>
