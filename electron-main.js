@@ -44,6 +44,9 @@ const {
 const {
 	getPlaylistSummaries,
 } = require('./database/helpers/getPlaylistSummaries')
+const {
+	getPlaylistSummaryData
+} = require('./database/helpers/getPlaylistSummaryData')
 
 // check if the app is started by Squirrel.Windows
 if (require('electron-squirrel-startup')) app.quit()
@@ -175,10 +178,11 @@ ipcMain.on('submitUserData', async (event, arg) => {
 	handleSubmitUserData(event, arg, mainWindow)
 })
 
-ipcMain.on('getPlaylistSummaries', async (event, arg) => {	
+ipcMain.on('getPlaylistSummaries', async (event, arg) => {		
 	const playlistSummaries = await getPlaylistSummaries()
 	if (playlistSummaries && playlistSummaries.length > 0) {
 		console.log('Playlist summaries retrieved successfully')
+		const playlistSummaryData = await getPlaylistSummaryData()
 		event.reply('playlistSummariesResponse', playlistSummaries)
 	} else {
 		console.log('No playlist summaries found.')
