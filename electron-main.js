@@ -41,7 +41,6 @@ const {
 const {
 	getCurrentPlaylistSummary,
 } = require('./bot-assets/command-use/commandUse')
-
 const {
 	getPlaylistSummaries,
 } = require('./database/helpers/getPlaylistSummaries')
@@ -88,6 +87,7 @@ const startServer = () => {
 
 // http server and port for Spotify auth
 const HTTP_PORT = 5001
+
 const httpServer = http.createServer(async (req, res) => {
 	if (req.url.startsWith('/auth/spotify/callback')) {
 		const urlObj = new URL(req.url, `http://127.0.0.1:${HTTP_PORT}`)
@@ -186,6 +186,7 @@ ipcMain.on('getPlaylistSummaries', async (event, arg) => {
 	}
 })
 
+// refactor playlist insert handler as standalone method
 ipcMain.on('stopBotScript', async (event, arg) => {
 	console.log('----- GET CURRENT PLAY SUMMARY? -----')
 	const playlistData = await getCurrentPlaylistSummary()
