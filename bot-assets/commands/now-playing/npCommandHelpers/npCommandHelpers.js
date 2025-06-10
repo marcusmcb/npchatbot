@@ -16,7 +16,8 @@ const vibeCheckSelector = (trackArray) => {
 		throw new Error('Invalid track array. Ensure it is a non-empty array.')
 	}
 	const randomIndex = Math.floor(Math.random() * trackArray.length)
-	return trackArray[randomIndex]
+	const vibeCheckData = trackArray[randomIndex]
+	return vibeCheckData
 }
 
 module.exports = {
