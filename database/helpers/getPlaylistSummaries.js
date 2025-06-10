@@ -1,8 +1,7 @@
 const db = require('../database')
 
 const getPlaylistSummaries = async () => {
-	return new Promise((resolve, reject) => {
-		// <-- return the promise!
+	return new Promise((resolve, reject) => {		
 		db.playlists
 			.find({})
 			.sort({ session_date: -1 })
@@ -13,7 +12,7 @@ const getPlaylistSummaries = async () => {
 				} else {
 					console.log('Fetched playlist summaries:', docs.length)
 					console.log('--------------------------------')
-					resolve(docs) // <-- this is all you need
+					resolve(docs)
 				}
 			})
 	})

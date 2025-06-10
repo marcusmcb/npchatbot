@@ -182,7 +182,10 @@ ipcMain.on('getPlaylistSummaries', async (event, arg) => {
 	const playlistSummaries = await getPlaylistSummaries()
 	if (playlistSummaries && playlistSummaries.length > 0) {
 		console.log('Playlist summaries retrieved successfully')
-		const playlistSummaryData = await getPlaylistSummaryData()
+		const playlistSummaryData = await getPlaylistSummaryData(playlistSummaries)
+		console.log('Playlist summary data:')
+		console.log(playlistSummaryData)
+		console.log('----------------------------------')
 		event.reply('playlistSummariesResponse', playlistSummaries)
 	} else {
 		console.log('No playlist summaries found.')
