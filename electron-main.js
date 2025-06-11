@@ -45,7 +45,7 @@ const {
 	getPlaylistSummaries,
 } = require('./database/helpers/getPlaylistSummaries')
 const {
-	getPlaylistSummaryData
+	getPlaylistSummaryData,
 } = require('./database/helpers/getPlaylistSummaryData')
 
 // check if the app is started by Squirrel.Windows
@@ -174,11 +174,29 @@ ipcMain.on('update-connection-state', (event, state) => {
 	isConnected = state
 })
 
+ipcMain.on('delete-selected-playlist', (event, arg) => {
+	console.log('Deleting selected playlist with ID:', arg)
+	// db.playlists.remove({ _id: arg }, {}, (err, numRemoved) => {
+	// 	if (err) {
+	// 		logToFile('Error deleting playlist:', err)
+	// 		console.error('Error deleting playlist:', err)
+	// 		event.reply('deletePlaylistResponse', { success: false, error: err })
+	// 	} else {
+	// 		logToFile(`Playlist with ID ${arg} successfully deleted`)
+	// 		console.log(`Playlist with ID ${arg} successfully deleted`)
+	// 		event.reply('deletePlaylistResponse', {
+	// 			success: true,
+	// 			numRemoved: numRemoved,
+	// 		})
+	// 	}
+	// })
+})
+
 ipcMain.on('submitUserData', async (event, arg) => {
 	handleSubmitUserData(event, arg, mainWindow)
 })
 
-ipcMain.on('getPlaylistSummaries', async (event, arg) => {		
+ipcMain.on('getPlaylistSummaries', async (event, arg) => {
 	const playlistSummaries = await getPlaylistSummaries()
 	if (playlistSummaries && playlistSummaries.length > 0) {
 		console.log('Playlist summaries retrieved successfully')
@@ -194,6 +212,7 @@ ipcMain.on('getPlaylistSummaries', async (event, arg) => {
 })
 
 // refactor playlist insert handler as standalone method
+
 ipcMain.on('stopBotScript', async (event, arg) => {
 	console.log('----- GET CURRENT PLAY SUMMARY? -----')
 	const playlistData = await getCurrentPlaylistSummary()
@@ -218,7 +237,7 @@ ipcMain.on('stopBotScript', async (event, arg) => {
 	} else {
 		console.log('No playlist data found to insert into database.')
 	}
-	
+
 	await handleStopBotScript(event, arg, tmiInstance)
 	console.log('----- STOPPING BOT SCRIPT -----')
 	tmiInstance = null

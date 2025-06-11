@@ -7,6 +7,8 @@ import './styles/reportviewer.css'
 // the user has the application installed but has yet to generate
 // any play histories
 
+const ipcRenderer = window.electron.ipcRenderer
+
 interface ReportViewerProps extends ReportDataProps {
 	playlistSummaries: ReportData[]
 	currentReportIndex: number
@@ -61,6 +63,7 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
 	const handleConfirmDelete = () => {
 		setShowDeleteModal(false)
 		console.log('user confirmed delete')
+		ipcRenderer.send('delete-selected-playlist', reportData?._id)
 		// Add actual delete logic here later
 	}
 

@@ -86,6 +86,7 @@ export interface dypSearchTerm {
 }
 
 export interface ReportData {
+	_id: string
 	dj_name: string
 	set_start_time: string
 	playlist_date: string
