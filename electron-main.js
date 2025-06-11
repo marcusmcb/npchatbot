@@ -176,20 +176,20 @@ ipcMain.on('update-connection-state', (event, state) => {
 
 ipcMain.on('delete-selected-playlist', (event, arg) => {
 	console.log('Deleting selected playlist with ID:', arg)
-	// db.playlists.remove({ _id: arg }, {}, (err, numRemoved) => {
-	// 	if (err) {
-	// 		logToFile('Error deleting playlist:', err)
-	// 		console.error('Error deleting playlist:', err)
-	// 		event.reply('deletePlaylistResponse', { success: false, error: err })
-	// 	} else {
-	// 		logToFile(`Playlist with ID ${arg} successfully deleted`)
-	// 		console.log(`Playlist with ID ${arg} successfully deleted`)
-	// 		event.reply('deletePlaylistResponse', {
-	// 			success: true,
-	// 			numRemoved: numRemoved,
-	// 		})
-	// 	}
-	// })
+	db.playlists.remove({ _id: arg }, {}, (err, numRemoved) => {
+		if (err) {
+			logToFile('Error deleting playlist:', err)
+			console.error('Error deleting playlist:', err)
+			event.reply('deletePlaylistResponse', { success: false, error: err })
+		} else {
+			logToFile(`Playlist with ID ${arg} successfully deleted`)
+			console.log(`Playlist with ID ${arg} successfully deleted`)
+			event.reply('deletePlaylistResponse', {
+				success: true,
+				numRemoved: numRemoved,
+			})
+		}
+	})
 })
 
 ipcMain.on('submitUserData', async (event, arg) => {

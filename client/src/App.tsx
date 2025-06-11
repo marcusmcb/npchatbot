@@ -207,7 +207,7 @@ const App = (): JSX.Element => {
 						setCurrentReportIndex(currentReportIndex)
 					} else {
 						setCurrentReportIndex(0)
-					}					
+					}
 					setReportData(playlistSummary[0] as ReportData)
 					setIsReportReady(true)
 				} else {
@@ -332,6 +332,25 @@ const App = (): JSX.Element => {
 		)
 	}
 
+	// Add this function inside your App component, before the return statement
+	const reloadPlaylistsAfterDelete = (deletedIndex: number) => {
+		fetchPlaylistSummaries(ipcRenderer).then((playlistSummary) => {
+			if (playlistSummary && playlistSummary.length > 0) {
+				setPlaylistSummaries(playlistSummary as ReportData[])
+				// If there is a playlist to the left, show it; otherwise, show the right one
+				const newIndex = deletedIndex > 0 ? deletedIndex - 1 : 0
+				setCurrentReportIndex(newIndex)
+				setReportData(playlistSummary[newIndex] as ReportData)
+				setIsReportReady(true)
+			} else {
+				setPlaylistSummaries([])
+				setCurrentReportIndex(0)
+				setReportData(null)
+				setIsReportReady(false)
+			}
+		})
+	}
+
 	return (
 		<div className='App'>
 			<div className='top-panel'>
@@ -362,6 +381,7 @@ const App = (): JSX.Element => {
 								playlistSummaries={playlistSummaries}
 								currentReportIndex={currentReportIndex}
 								setCurrentReportIndex={setCurrentReportIndex}
+								reloadPlaylistsAfterDelete={reloadPlaylistsAfterDelete}
 							/>
 						</div>
 					</div>
@@ -418,6 +438,7 @@ const App = (): JSX.Element => {
 							playlistSummaries={playlistSummaries}
 							currentReportIndex={currentReportIndex}
 							setCurrentReportIndex={setCurrentReportIndex}
+							 reloadPlaylistsAfterDelete={reloadPlaylistsAfterDelete}
 						/>
 					</div>
 				)}

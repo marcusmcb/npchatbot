@@ -61,6 +61,7 @@ export interface SessionPanelProps {
 	playlistSummaries: ReportData[]
 	currentReportIndex: number
 	setCurrentReportIndex: (idx: number) => void
+	reloadPlaylistsAfterDelete: (deletedIndex: number) => void
 }
 
 export interface DoublePlayed {
@@ -115,4 +116,5 @@ export interface ReportData {
 export interface ReportDataProps {
 	reportData: ReportData | null
 	setReportView: (value: boolean) => void
+	reloadPlaylistsAfterDelete: (deletedIndex: number) => void
 }
