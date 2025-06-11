@@ -2,8 +2,29 @@ body {
 	-webkit-app-region: drag;
 }
 
-button, input, span, a {
+button,
+input,
+span,
+a {
 	-webkit-app-region: no-drag;
 }
 
+/* For Chrome, Edge, and Electron (Webkit browsers) */
+::-webkit-scrollbar {
+	width: 10px;
+	background: #222; /* Track color */
+}
 
+::-webkit-scrollbar-thumb {
+	background: #555; /* Thumb color */
+	border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background: #888;
+}
+
+/* Optional: for horizontal scrollbars */
+::-webkit-scrollbar-horizontal {
+	height: 8px;
+}

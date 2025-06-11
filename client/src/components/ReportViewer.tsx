@@ -1,5 +1,5 @@
-import React, { Fragment } from 'react'
-import { MdArrowBack, MdArrowForward } from 'react-icons/md'
+import React, { useState, Fragment } from 'react'
+import { MdArrowBack, MdArrowForward, MdClose } from 'react-icons/md'
 import { ReportData, ReportDataProps } from '../types'
 import './styles/reportviewer.css'
 
@@ -33,6 +33,8 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
 	currentReportIndex,
 	setCurrentReportIndex,
 }): JSX.Element => {
+	const [showDeleteModal, setShowDeleteModal] = useState(false)
+
 	const formattedSetLength = reportData
 		? formatSetLength(
 				reportData.set_length_hours,
@@ -41,17 +43,29 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
 		: ''
 
 	const handleLeftArrowClick = () => {
-		console.log('Left arrow clicked')
 		if (currentReportIndex < playlistSummaries.length - 1) {
 			setCurrentReportIndex(currentReportIndex + 1)
 		}
 	}
 
 	const handleRightArrowClick = () => {
-		console.log('Right arrow clicked')
 		if (currentReportIndex > 0) {
 			setCurrentReportIndex(currentReportIndex - 1)
 		}
+	}
+
+	const handleDeletePlaylist = () => {
+		setShowDeleteModal(true)
+	}
+
+	const handleConfirmDelete = () => {
+		setShowDeleteModal(false)
+		console.log('user confirmed delete')
+		// Add actual delete logic here later
+	}
+
+	const handleCancelDelete = () => {
+		setShowDeleteModal(false)
 	}
 
 	return (
@@ -80,6 +94,14 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
 							type='button'
 						>
 							<MdArrowForward size={16} />
+						</button>
+						<button
+							className='report-date-selector-close'
+							onClick={handleDeletePlaylist}
+							aria-label='Delete this playlist'
+							type='button'
+						>
+							<MdClose size={16} />
 						</button>
 					</div>
 					<hr
@@ -114,7 +136,15 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
 							</span>
 						</div>
 					</div>
-
+					<button
+						className='report-close-button default-button'
+						onClick={() => {
+							console.log(reportData)
+							setReportView(false)
+						}}
+					>
+						Close
+					</button>
 					<div className='report-panel-group-left'>
 						<div className='report-panel-group'>
 							{/* <div className='reportpanel-item-header'>
@@ -245,15 +275,28 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
 					</div>
 				</div>
 			</div>
-			<button
-				className='report-close-button default-button'
-				onClick={() => {
-					console.log(reportData)
-					setReportView(false)
-				}}
-			>
-				Close
-			</button>
+			{showDeleteModal && (
+				<div className='modal-overlay'>
+					<div className='modal-content'>
+						<div className='modal-title'>Delete Playlist?</div>
+						<div className='modal-message'>
+							Are you sure you want to delete this playlist? This action cannot
+							be undone.
+						</div>
+						<div className='modal-actions'>
+							<button className='modal-btn cancel' onClick={handleCancelDelete}>
+								Cancel
+							</button>
+							<button
+								className='modal-btn delete'
+								onClick={handleConfirmDelete}
+							>
+								Delete
+							</button>
+						</div>
+					</div>
+				</div>
+			)}
 		</Fragment>
 	)
 }
