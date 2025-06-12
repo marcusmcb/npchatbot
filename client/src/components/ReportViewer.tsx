@@ -124,27 +124,50 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
 					<div className='report-panel-item-row'>
 						<div className='report-panel-item'>Set Start Time:</div>
 						<div className='report-panel-item'>
-							<span className='foo'>{reportData?.set_start_time}</span>
+							<span className='report-panel-item-value'>{reportData?.set_start_time}</span>
 						</div>
 					</div>
 					<div className='report-panel-item-row'>
 						<div className='report-panel-item'>Set Length:</div>
 						<div className='report-panel-item'>
-							<span className='foo'>{formattedSetLength}</span>
+							<span className='report-panel-item-value'>{formattedSetLength}</span>
 						</div>
 					</div>
 					<div className='report-panel-item-row'>
 						<div className='report-panel-item'>Total Tracks Played:</div>
 						<div className='report-panel-item'>
-							<span className='foo'>{reportData?.total_tracks_played}</span>
+							<span className='report-panel-item-value'>{reportData?.total_tracks_played}</span>
 						</div>
 					</div>
 					<div className='report-panel-item-row'>
 						<div className='report-panel-item'>Average Track Length:</div>
 						<div className='report-panel-item'>
-							<span className='foo'>
+							<span className='report-panel-item-value'>
 								{reportData?.average_track_length_minutes} minutes,{' '}
 								{reportData?.average_track_length_seconds} seconds
+							</span>
+						</div>
+					</div>
+					<div className='report-panel-item-row'>
+						<div className='report-panel-item'>Spotify Link:</div>
+						<div className='report-panel-item'>
+							<span className='report-panel-item-spotify-link'>
+								{reportData?.spotify_link ? (
+									<a
+										href='#'
+										onClick={(e) => {
+											e.preventDefault()
+											console.log(
+												'Opening Spotify link:', reportData.spotify_link)
+											ipcRenderer.send('open-spotify-url', reportData.spotify_link)
+										}}
+										rel='noopener noreferrer'
+									>
+										View Playlist
+									</a>
+								) : (
+									'No Spotify playlist created for this set.'
+								)}
 							</span>
 						</div>
 					</div>
@@ -237,7 +260,7 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
 						{reportData?.np_songs_queried.length === 0 ? (
 							<>
 								<div className='report-panel-item-header'>
-									The <span className='foo'>!np</span> command was not used
+									The <span className='report-panel-item-value'>!np</span> command was not used
 									during this stream.
 								</div>
 							</>
@@ -263,7 +286,7 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
 						{reportData?.dyp_search_terms.length === 0 ? (
 							<>
 								<div className='report-panel-item-header'>
-									The <span className='foo'>!dyp</span> command was not used
+									The <span className='report-panel-item-value'>!dyp</span> command was not used
 									during this stream.
 								</div>
 							</>

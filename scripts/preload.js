@@ -1,4 +1,4 @@
-const { contextBridge, ipcRenderer } = require('electron')
+const { contextBridge, ipcRenderer, shell } = require('electron')
 
 contextBridge.exposeInMainWorld('electron', {
 	ipcRenderer: {
@@ -11,6 +11,6 @@ contextBridge.exposeInMainWorld('electron', {
 		once: (channel, func) => {
 			ipcRenderer.once(channel, (_, ...args) => func(...args))
 		},
-		removeAllListeners: (channel) => ipcRenderer.removeAllListeners(channel),
-	},
+		removeAllListeners: (channel) => ipcRenderer.removeAllListeners(channel),		
+	},	
 })

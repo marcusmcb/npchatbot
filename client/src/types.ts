@@ -111,6 +111,7 @@ export interface ReportData {
 	// top_three_shortest: ShortSongPlayed[];
 	np_songs_queried: npSongQueried[]
 	dyp_search_terms: dypSearchTerm[]
+	spotify_link: string
 }
 
 export interface ReportDataProps {

@@ -29,6 +29,8 @@ const {
 	handleSubmitUserData,
 } = require('./database/helpers/handleSubmitUserData')
 
+const getUserData = require('./database/helpers/getUserData')
+
 // serato live playlist status validation
 const {
 	validateLivePlaylist,
@@ -145,6 +147,10 @@ ipcMain.on('open-auth-settings', (event, url) => {
 	shell.openExternal(url)
 })
 
+ipcMain.on('open-spotify-url', (event, spotifyUrl) => {
+	shell.openExternal(spotifyUrl)
+})
+
 ipcMain.on('open-spotify-auth-url', async (event, arg) => {
 	const spotifyRedirectUri = `http://127.0.0.1:5001/auth/spotify/callback/`
 	console.log('Spotify Redirect URI: ', spotifyRedirectUri)
@@ -202,7 +208,10 @@ ipcMain.on('getPlaylistSummaries', async (event, arg) => {
 		console.log('Playlist summaries retrieved successfully')
 		const playlistSummaryData = await getPlaylistSummaryData(playlistSummaries)
 		console.log('Playlist summary data:')
-		console.log(playlistSummaryData)
+		console.log(playlistSummaryData.commonTracks)
+		console.log(
+			`${playlistSummaryData.commonTracks.length} common tracks found across playlists.`
+		)
 		console.log('----------------------------------')
 		event.reply('playlistSummariesResponse', playlistSummaries)
 	} else {
@@ -218,6 +227,14 @@ ipcMain.on('stopBotScript', async (event, arg) => {
 	const playlistData = await getCurrentPlaylistSummary()
 	if (playlistData) {
 		const finalPlaylistData = await createPlaylistSummary(playlistData)
+		const user = await getUserData(db)
+		if (user) {
+			if (user.isSpotifyEnabled) {
+				finalPlaylistData.spotify_link = user.currentSpotifyPlaylistLink
+			} else {
+				finalPlaylistData.spotify_link = ''
+			}
+		}
 		console.log('Playlist data to be inserted into database:')
 		console.log(finalPlaylistData)
 		console.log('--------------------------------------')

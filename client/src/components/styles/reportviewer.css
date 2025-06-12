@@ -95,8 +95,12 @@
 	font-weight: bold;
 }
 
-.foo {
+.report-panel-item-value {
 	color: var(--session-info-label-color);
+}
+
+.report-panel-item-spotify-link a:hover {
+	color: var(--success-color)
 }
 
 .report-panel-item-header {
