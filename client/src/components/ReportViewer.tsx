@@ -13,7 +13,7 @@ interface ReportViewerProps extends ReportDataProps {
 	playlistSummaries: ReportData[]
 	currentReportIndex: number
 	setCurrentReportIndex: (idx: number) => void
-	reloadPlaylistsAfterDelete: (deletedIndex: number) => void
+	reloadPlaylistSummaries: (deletedIndex: number) => void
 }
 
 // helper method to format the set length string
@@ -35,7 +35,7 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
 	playlistSummaries,
 	currentReportIndex,
 	setCurrentReportIndex,
-	reloadPlaylistsAfterDelete,
+	reloadPlaylistSummaries,
 }): JSX.Element => {
 	const [showDeleteModal, setShowDeleteModal] = useState(false)
 
@@ -67,7 +67,7 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
 		ipcRenderer.send('delete-selected-playlist', reportData?._id)
 		ipcRenderer.once('deletePlaylistResponse', (response: any) => {
 			if (response && response.success) {
-				reloadPlaylistsAfterDelete(currentReportIndex)
+				reloadPlaylistSummaries(currentReportIndex)
 			} else if (response && response.error) {
 				console.error('Error deleting playlist:', response.error)
 			} else {

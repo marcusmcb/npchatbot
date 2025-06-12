@@ -333,7 +333,7 @@ const App = (): JSX.Element => {
 	}
 
 	// Add this function inside your App component, before the return statement
-	const reloadPlaylistsAfterDelete = (deletedIndex: number) => {
+	const reloadPlaylistSummaries = (deletedIndex: number) => {
 		fetchPlaylistSummaries(ipcRenderer).then((playlistSummary) => {
 			if (playlistSummary && playlistSummary.length > 0) {
 				setPlaylistSummaries(playlistSummary as ReportData[])
@@ -381,7 +381,7 @@ const App = (): JSX.Element => {
 								playlistSummaries={playlistSummaries}
 								currentReportIndex={currentReportIndex}
 								setCurrentReportIndex={setCurrentReportIndex}
-								reloadPlaylistsAfterDelete={reloadPlaylistsAfterDelete}
+								reloadPlaylistSummaries={reloadPlaylistSummaries}
 							/>
 						</div>
 					</div>
@@ -438,7 +438,7 @@ const App = (): JSX.Element => {
 							playlistSummaries={playlistSummaries}
 							currentReportIndex={currentReportIndex}
 							setCurrentReportIndex={setCurrentReportIndex}
-							 reloadPlaylistsAfterDelete={reloadPlaylistsAfterDelete}
+							 reloadPlaylistSummaries={reloadPlaylistSummaries}
 						/>
 					</div>
 				)}
