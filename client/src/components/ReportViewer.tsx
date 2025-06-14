@@ -7,6 +7,9 @@ import './styles/reportviewer.css'
 // the user has the application installed but has yet to generate
 // any play histories
 
+// update the report viewer arrow elements to be in a fixed
+// position with the report date placed/centered in between
+
 const ipcRenderer = window.electron.ipcRenderer
 
 interface ReportViewerProps extends ReportDataProps {

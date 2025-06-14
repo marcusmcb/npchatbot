@@ -62,6 +62,7 @@ export interface SessionPanelProps {
 	currentReportIndex: number
 	setCurrentReportIndex: (idx: number) => void
 	reloadPlaylistSummaries: (deletedIndex: number) => void
+	setPlaylistSummaries: (summaries: ReportData[]) => void
 }
 
 export interface DoublePlayed {

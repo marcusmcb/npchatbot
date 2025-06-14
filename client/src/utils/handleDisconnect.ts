@@ -9,6 +9,8 @@ const handleDisconnect = async (
 	setIsReportReady: (ready: boolean) => void,
 	addMessageToQueue: (message: string) => void,
 	setIsBotConnected: (connected: boolean) => void,
+	setPlaylistSummaries: (summaries: ReportData[]) => void,
+	setCurrentReportIndex: (index: number) => void,
 	setError: (error: string) => void
 ) => {
 	console.log('*** npChatbot disconnect event ***')
@@ -35,9 +37,11 @@ const handleDisconnect = async (
 	console.log('stopBotResponse received:', stopBotResult)
 
 	// Now fetch playlist summaries after stopBotScript has completed
-	const playlistSummary = await fetchPlaylistSummaries(ipcRenderer)
-	console.log('Current Playlist Summary: ', playlistSummary[0])
-	setReportData(playlistSummary[0] as ReportData)
+	const playlistSummaries = await fetchPlaylistSummaries(ipcRenderer)
+	console.log('Current Playlist Summary: ', playlistSummaries[0])
+	setPlaylistSummaries(playlistSummaries)
+	setCurrentReportIndex(0)
+	setReportData(playlistSummaries[0] as ReportData)
 	setIsReportReady(true)
 }
 

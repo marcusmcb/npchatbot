@@ -301,6 +301,8 @@ const App = (): JSX.Element => {
 			setIsReportReady,
 			addMessageToQueue,
 			setIsBotConnected,
+			setPlaylistSummaries,
+			setCurrentReportIndex,
 			setError
 		)
 	}
@@ -438,7 +440,8 @@ const App = (): JSX.Element => {
 							playlistSummaries={playlistSummaries}
 							currentReportIndex={currentReportIndex}
 							setCurrentReportIndex={setCurrentReportIndex}
-							 reloadPlaylistSummaries={reloadPlaylistSummaries}
+							reloadPlaylistSummaries={reloadPlaylistSummaries}
+							setPlaylistSummaries={setPlaylistSummaries}
 						/>
 					</div>
 				)}
