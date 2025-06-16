@@ -65,8 +65,8 @@ export interface SessionPanelProps {
 	setPlaylistSummaries: (summaries: ReportData[]) => void
 }
 
-export interface DoublePlayed {
-	name: string
+export interface DoublePlayed {	
+	track_id: string
 }
 
 export interface LongSongPlayed {

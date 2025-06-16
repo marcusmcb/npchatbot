@@ -252,7 +252,7 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
 								<div className='report-panel-item-detail'>
 									{reportData?.doubles_played.map((double, index) => (
 										<div className='doubles-text' key={index}>
-											* {double.name}
+											* {double.track_id}
 										</div>
 									))}
 								</div>
