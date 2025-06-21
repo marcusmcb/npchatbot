@@ -8,6 +8,7 @@
 
 // import ReportViewer from './ReportViewer'
 // import ReactDOM from 'react-dom'
+
 import React, { useState, useEffect } from 'react'
 import { ReportData, SessionPanelProps } from '../types'
 import '../App.css'
@@ -16,14 +17,43 @@ import './styles/sessionpanel.css'
 const ipcRenderer = window.electron.ipcRenderer
 
 const SessionPanel: React.FC<SessionPanelProps> = (props) => {
-	const [hours, setHours] = useState(0)
-	const [minutes, setMinutes] = useState(0)
-	const [seconds, setSeconds] = useState(0)
+	const [uptimeSeconds, setUptimeSeconds] = useState(0)
 
 	const resetUptime = () => {
-		setHours(0)
-		setMinutes(0)
-		setSeconds(0)
+		setUptimeSeconds(0)
+	}
+
+	useEffect(() => {
+		let interval: NodeJS.Timeout
+
+		if (props.isBotConnected) {
+			ipcRenderer.send('update-connection-state', true)
+			interval = setInterval(() => {
+				setUptimeSeconds((prev) => prev + 1)
+			}, 1000)
+		} else {
+			ipcRenderer.send('update-connection-status', false)
+		}
+
+		return () => {
+			if (interval) {
+				clearInterval(interval)
+			}
+		}
+	}, [props.isBotConnected])
+
+	const formatUptime = (totalSeconds: number) => {
+		const hours = Math.floor(totalSeconds / 3600)
+		const minutes = Math.floor((totalSeconds % 3600) / 60)
+		const seconds = totalSeconds % 60
+
+		if (hours > 0) {
+			return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds
+				.toString()
+				.padStart(2, '0')}`
+		} else {
+			return `${minutes}:${seconds.toString().padStart(2, '0')}`
+		}
 	}
 
 	// useEffect(() => {
@@ -32,37 +62,37 @@ const SessionPanel: React.FC<SessionPanelProps> = (props) => {
 	// 	}
 	// }, [props.isReportReady, props.reportData])
 
-	useEffect(() => {
-		let interval: NodeJS.Timeout
+	// useEffect(() => {
+	// 	let interval: NodeJS.Timeout
 
-		if (props.isBotConnected) {
-			ipcRenderer.send('update-connection-state', true)
-			interval = setInterval(() => {
-				setSeconds((prevSeconds) => {
-					if (prevSeconds === 59) {
-						setMinutes((prevMinutes) => {
-							if (prevMinutes === 59) {
-								setHours((prevHours) => prevHours + 1)
-								return 0
-							}
-							return prevMinutes + 1
-						})
-						return 0
-					}
-					return prevSeconds + 1
-				})
-			}, 1000)
-		} else {
-			ipcRenderer.send('update-connection-status', false)
-		}
+	// 	if (props.isBotConnected) {
+	// 		ipcRenderer.send('update-connection-state', true)
+	// 		interval = setInterval(() => {
+	// 			setSeconds((prevSeconds) => {
+	// 				if (prevSeconds === 59) {
+	// 					setMinutes((prevMinutes) => {
+	// 						if (prevMinutes === 59) {
+	// 							setHours((prevHours) => prevHours + 1)
+	// 							return 0
+	// 						}
+	// 						return prevMinutes + 1
+	// 					})
+	// 					return 0
+	// 				}
+	// 				return prevSeconds + 1
+	// 			})
+	// 		}, 1000)
+	// 	} else {
+	// 		ipcRenderer.send('update-connection-status', false)
+	// 	}
 
-		// Cleanup interval on unmount or when bot disconnects
-		return () => {
-			if (interval) {
-				clearInterval(interval)
-			}
-		}
-	}, [props.isBotConnected])
+	// 	// Cleanup interval on unmount or when bot disconnects
+	// 	return () => {
+	// 		if (interval) {
+	// 			clearInterval(interval)
+	// 		}
+	// 	}
+	// }, [props.isBotConnected])
 
 	return (
 		<div className='chatbot-controls'>
@@ -128,9 +158,7 @@ const SessionPanel: React.FC<SessionPanelProps> = (props) => {
 			<div className='session-info-label'>
 				Uptime:
 				<span className='session-info-status' style={{ color: 'lightgreen' }}>
-					{hours > 0 ? `${hours} hours, ` : ''}{' '}
-					{minutes > 0 ? `${minutes} mins, ` : ''}{' '}
-					{seconds > 0 ? `${seconds} secs` : ''}
+					{uptimeSeconds === 0 ? '' : formatUptime(uptimeSeconds)}
 				</span>
 			</div>
 		</div>
