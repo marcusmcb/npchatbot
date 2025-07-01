@@ -19,3 +19,13 @@
   margin-top: 12px;
   margin-left: 5px;
 }
+
+.app-version {
+    font-size: 0.8em;
+    color: #aaa;
+    font-family: var(--fira-sans, sans-serif);
+    margin-top: -25px;
+    margin-bottom: 12px;
+    margin-left: 2px;
+    text-align: left;
+}

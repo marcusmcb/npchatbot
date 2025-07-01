@@ -206,13 +206,16 @@ ipcMain.on('getPlaylistSummaries', async (event, arg) => {
 	const playlistSummaries = await getPlaylistSummaries()
 	if (playlistSummaries && playlistSummaries.length > 0) {
 		console.log('Playlist summaries retrieved successfully')
+		console.log('----------------------------------')
 		const playlistSummaryData = await getPlaylistSummaryData(playlistSummaries)
-		console.log('Playlist summary data:')
-		console.log(playlistSummaryData.commonTracks)
 		console.log(
 			`${playlistSummaryData.commonTracks.length} common tracks found across playlists.`
 		)
 		console.log('----------------------------------')
+		// for (let i = 0; i < playlistSummaryData.commonTracks.length; i++) {
+		// 	console.log(`* ${playlistSummaryData.commonTracks[i].track_id}`)
+		// }
+		// console.log('----------------------------------')
 		event.reply('playlistSummariesResponse', playlistSummaries)
 	} else {
 		console.log('No playlist summaries found.')
