@@ -88,8 +88,22 @@
 
 .report-date-selector {
 	display: flex;
-	flex-direction: row;
-	margin-top: 5px;
+	align-items: center;
+	justify-content: space-between;
+	width: 90%; /* Match the HR width for visual alignment */
+	margin: 10px auto 10px 0px; /* Align left, center within parent */
+	gap: 0.5em;
+}
+
+.report-date-center {
+	flex: 1;
+	text-align: center;
+	font-family: var(--fira-sans);
+	font-weight: bold;
+	margin: 0 0.5em;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .report-date-selector-arrow {

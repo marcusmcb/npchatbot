@@ -101,7 +101,7 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
 						>
 							<MdArrowBack size={16} />
 						</button>
-						<div className='report-subtitle'>{reportData?.playlist_date}</div>
+						<div className='report-subtitle report-date-center'>{reportData?.playlist_date}</div>
 						<button
 							className='report-date-selector-arrow'
 							onClick={handleRightArrowClick}
@@ -183,54 +183,7 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
 					>
 						Close
 					</button>
-					<div className='report-panel-group-left'>
-						<div className='report-panel-group'>
-							{/* <div className='reportpanel-item-header'>
-								Longest Song Played:{' '}
-							</div>
-							<div className='report-panel-item-detail'>
-								{reportData?.longest_track_name}{' '}
-								<span className='report-panel-item-detail-caption'>
-									({reportData?.longest_track_length})
-								</span>
-							</div> */}
-							{/* <div>
-							{reportData?.top_three_longest.map((longest, index) => (
-								<div key={index}>
-									<div className='report-panel-item-detail'>
-										* {longest.name}{' '}
-										<span className='report-panel-item-detail-caption'>
-											({longest.length})
-										</span>
-									</div>
-								</div>
-							))}
-						</div> */}
-							{/* </div>
-						<div className='report-panel-group'>
-							<div className='report-panel-item-header'>
-								Shortest Song Played:{' '}
-							</div>
-							<div className='report-panel-item-detail'>
-								{reportData?.shortest_track_name}{' '}
-								<span className='report-panel-item-detail-caption'>
-									({reportData?.shortest_track_length})
-								</span>
-							</div> */}
-							{/* <div>
-							{reportData?.top_three_shortest.map((shortest, index) => (
-								<div key={index}>
-									<div className='report-panel-item-detail'>
-										* {shortest.name}{' '}
-										<span className='report-panel-item-detail-caption'>
-											({shortest.length})
-										</span>
-									</div>
-								</div>
-							))}
-						</div> */}
-						</div>
-					</div>
+					
 				</div>
 				{/* REPORT PANEL RIGHT */}
 				<div className='report-panel-right'>
