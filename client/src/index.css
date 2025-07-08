@@ -1,5 +1,11 @@
 body {
 	-webkit-app-region: drag;
+	/* Prevent window scrollbars */
+	margin: 0;
+	padding: 0;
+	height: 100vh;
+	width: 100vw;
+	overflow: hidden;
 }
 
 button,
@@ -7,6 +13,11 @@ input,
 span,
 a {
 	-webkit-app-region: no-drag;
+}
+
+/* Ensure the right report panel is never draggable (prevents window drag on scrollbar) */
+.report-panel-right {
+	-webkit-app-region: no-drag !important;
 }
 
 /* For Chrome, Edge, and Electron (Webkit browsers) */
