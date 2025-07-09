@@ -169,7 +169,7 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
 										View Playlist
 									</a>
 								) : (
-									'No Spotify playlist created for this set.'
+									'No playlist created for this stream.'
 								)}
 							</span>
 						</div>

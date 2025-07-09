@@ -40,7 +40,7 @@
 	flex-grow: 1;
 	height: 100vh;
 	min-height: 0;
-	overflow: hidden; /* Prevent window scrollbars */
+	overflow: hidden; /* prevent window scrollbars */
 }
 
 .report-panel-left {
@@ -90,8 +90,8 @@
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	width: 90%; /* Match the HR width for visual alignment */
-	margin: 10px auto 10px 0px; /* Align left, center within parent */
+	width: 90%; 
+	margin: 10px auto 10px 0px; 
 	gap: 0.5em;
 }
 
