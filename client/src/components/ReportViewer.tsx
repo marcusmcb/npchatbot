@@ -20,17 +20,17 @@ interface ReportViewerProps extends ReportDataProps {
 }
 
 // helper method to format the set length string
-const formatSetLength = (hours: number, minutes: number): string => {
-	const parts: string[] = []
-	if (hours > 0) {
-		parts.push(`${hours} hour${hours > 1 ? 's' : ''}`)
-	}
-	if (minutes > 0) {
-		parts.push(`${minutes} minute${minutes > 1 ? 's' : ''}`)
-	}
+// const formatSetLength = (hours: number, minutes: number): string => {
+// 	const parts: string[] = []
+// 	if (hours > 0) {
+// 		parts.push(`${hours} hour${hours > 1 ? 's' : ''}`)
+// 	}
+// 	if (minutes > 0) {
+// 		parts.push(`${minutes} minute${minutes > 1 ? 's' : ''}`)
+// 	}
 
-	return parts.length > 0 ? parts.join(', ') : '0 seconds'
-}
+// 	return parts.length > 0 ? parts.join(', ') : '0 seconds'
+// }
 
 const ReportViewer: React.FC<ReportViewerProps> = ({
 	reportData,
@@ -194,7 +194,7 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
 							<span className='report-panel-item-spotify-link'>
 								{reportData?.spotify_link ? (
 									<a
-										href='#'
+										// href='#'
 										onClick={(e) => {
 											e.preventDefault()
 											console.log(
