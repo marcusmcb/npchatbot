@@ -207,6 +207,10 @@ ipcMain.on('getPlaylistSummaries', async (event, arg) => {
 	if (playlistSummaries && playlistSummaries.length > 0) {
 		console.log('Playlist summaries retrieved successfully')
 		console.log('----------------------------------')
+		for (let i = 0; i < playlistSummaries.length; i++) {
+			console.log(playlistSummaries[i])
+			console.log('-----------------------------')
+		}
 		const playlistSummaryData = await getPlaylistSummaryData(playlistSummaries)
 		console.log(
 			`${playlistSummaryData.commonTracks.length} common tracks found across playlists.`
@@ -230,6 +234,11 @@ ipcMain.on('stopBotScript', async (event, arg) => {
 	const playlistData = await getCurrentPlaylistSummary()
 	if (playlistData) {
 		const finalPlaylistData = await createPlaylistSummary(playlistData)
+		console.log('--------------------------------------')
+		if (finalPlaylistData) {
+			console.log('Final playlist data created successfully:')
+			console.log(finalPlaylistData)
+		}
 		const user = await getUserData(db)
 		if (user) {
 			if (user.isSpotifyEnabled) {

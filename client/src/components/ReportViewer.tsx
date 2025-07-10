@@ -105,6 +105,21 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
 		setShowDeleteModal(false)
 	}
 
+	// Helper to deduplicate, count, and sort by count descending
+	const getUniqueCounts = (arr: { name: string }[]) => {
+		const counts: { [key: string]: number } = {}
+		arr.forEach((item) => {
+			if (item.name in counts) {
+				counts[item.name] += 1
+			} else {
+				counts[item.name] = 1
+			}
+		})
+		return Object.entries(counts)
+			.map(([name, count]) => ({ name, count }))
+			.sort((a, b) => b.count - a.count || a.name.localeCompare(b.name))
+	}
+
 	return (
 		<Fragment>
 			<div className='report-panel'>
@@ -236,56 +251,62 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
 						)}
 					</div>
 					<div className='report-panel-group'>
-						{reportData?.np_songs_queried.length === 0 ? (
+						{reportData && reportData.np_songs_queried.length === 0 ? (
 							<>
 								<div className='report-panel-item-header'>
 									The <span className='report-panel-item-value'>!np</span> command was not used
 									during this stream.
 								</div>
 							</>
-						) : (
+						) : reportData ? (
 							<>
 								<div className='report-panel-item-header'>
 									Songs queried:{' '}
 									<span className='doubles-length'>
-										{reportData?.np_songs_queried.length}
+										{reportData.np_songs_queried.length}
 									</span>
 								</div>
 								<div className='report-panel-item-detail'>
-									{reportData?.np_songs_queried.map((song, index) => (
+									{getUniqueCounts(reportData.np_songs_queried).map((song, index) => (
 										<div className='doubles-text' key={index}>
 											* {song.name}
+											{song.count > 1 && (
+												<span className='highlight-color'> ({song.count} times)</span>
+											)}
 										</div>
 									))}
 								</div>
 							</>
-						)}
+						) : null}
 					</div>
 					<div className='report-panel-group'>
-						{reportData?.dyp_search_terms.length === 0 ? (
+						{reportData && reportData.dyp_search_terms.length === 0 ? (
 							<>
 								<div className='report-panel-item-header'>
 									The <span className='report-panel-item-value'>!dyp</span> command was not used
 									during this stream.
 								</div>
 							</>
-						) : (
+						) : reportData ? (
 							<>
 								<div className='report-panel-item-header'>
 									Terms searched:{' '}
 									<span className='doubles-length'>
-										{reportData?.dyp_search_terms.length}
+										{reportData.dyp_search_terms.length}
 									</span>
 								</div>
 								<div className='report-panel-item-detail'>
-									{reportData?.dyp_search_terms.map((song, index) => (
+									{getUniqueCounts(reportData.dyp_search_terms).map((term, index) => (
 										<div className='doubles-text' key={index}>
-											"{song.name}"
+											"{term.name}"
+											{term.count > 1 && (
+												<span className='main-text-color'> ({term.count} times)</span>
+											)}
 										</div>
 									))}
 								</div>
 							</>
-						)}
+						) : null}
 					</div>
 				</div>
 			</div>
