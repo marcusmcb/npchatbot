@@ -69,8 +69,8 @@
 
 .report-panel-left,
 .report-panel-right {
-	flex: 1; 
-	text-align: left; 
+	flex: 1;
+	text-align: left;
 	padding: 0px 10px;
 	min-width: 0;
 }
@@ -90,8 +90,8 @@
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	width: 90%; 
-	margin: 10px auto 10px 0px; 
+	width: 90%;
+	margin: 10px auto 10px 0px;
 	gap: 0.5em;
 }
 
@@ -132,8 +132,12 @@
 	color: var(--session-info-label-color);
 }
 
+.report-panel-item-value-span {
+	color: var(--main-text-color);
+}
+
 .report-panel-item-spotify-link a:hover {
-	color: var(--success-color)
+	color: var(--success-color);
 }
 
 .report-panel-item-header {
@@ -277,4 +281,12 @@
 .modal-btn.cancel:hover,
 .modal-btn.delete:hover {
 	opacity: 0.85;
+}
+
+.highlight-color,
+.spotify-link {
+	color: var(--session-info-label-color);
+}
+.main-text-color {
+	color: var(--main-text-color);
 }

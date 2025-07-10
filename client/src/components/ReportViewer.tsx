@@ -42,12 +42,34 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
 }): JSX.Element => {
 	const [showDeleteModal, setShowDeleteModal] = useState(false)
 
-	const formattedSetLength = reportData
-		? formatSetLength(
-				reportData.set_length_hours,
-				reportData.set_length_minutes
-		  )
-		: ''
+	// Helper to render set length with colored numbers
+	const renderSetLength = () => {
+		if (!reportData) return null
+		const hours = reportData.set_length_hours
+		const minutes = reportData.set_length_minutes
+		const parts = []
+		if (hours > 0) {
+			parts.push(
+				<>
+					<span className="highlight-color">{hours}</span>
+					<span className="main-text-color"> hour{hours > 1 ? 's' : ''}</span>
+				</>
+			)
+		}
+		if (minutes > 0) {
+			if (parts.length > 0) parts.push(<span className="main-text-color">, </span>)
+			parts.push(
+				<>
+					<span className="highlight-color">{minutes}</span>
+					<span className="main-text-color"> minute{minutes > 1 ? 's' : ''}</span>
+				</>
+			)
+		}
+		if (parts.length === 0) {
+			return <span className="main-text-color">0 seconds</span>
+		}
+		return parts
+	}
 
 	const handleLeftArrowClick = () => {
 		if (currentReportIndex < playlistSummaries.length - 1) {
@@ -133,7 +155,7 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
 					<div className='report-panel-item-row'>
 						<div className='report-panel-item'>Set Length:</div>
 						<div className='report-panel-item'>
-							<span className='report-panel-item-value'>{formattedSetLength}</span>
+							<span className='report-panel-item-value'>{renderSetLength()}</span>
 						</div>
 					</div>
 					<div className='report-panel-item-row'>
@@ -146,8 +168,8 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
 						<div className='report-panel-item'>Average Track Length:</div>
 						<div className='report-panel-item'>
 							<span className='report-panel-item-value'>
-								{reportData?.average_track_length_minutes} minutes,{' '}
-								{reportData?.average_track_length_seconds} seconds
+								{reportData?.average_track_length_minutes} <span className="report-panel-item-value-span">minutes,</span>{' '}
+								{reportData?.average_track_length_seconds} <span className="report-panel-item-value-span">seconds</span>
 							</span>
 						</div>
 					</div>
@@ -165,6 +187,7 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
 											ipcRenderer.send('open-spotify-url', reportData.spotify_link)
 										}}
 										rel='noopener noreferrer'
+										className='spotify-link'
 									>
 										View Playlist
 									</a>
