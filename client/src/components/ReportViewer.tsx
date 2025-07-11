@@ -93,6 +93,12 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
 		ipcRenderer.once('deletePlaylistResponse', (response: any) => {
 			if (response && response.success) {
 				reloadPlaylistSummaries(currentReportIndex)
+				// After reload, check if any summaries remain
+				setTimeout(() => {
+					if (playlistSummaries.length <= 1) {
+						setReportView(false)
+					}
+				}, 200)
 			} else if (response && response.error) {
 				console.error('Error deleting playlist:', response.error)
 			} else {
