@@ -268,6 +268,7 @@ const endTrackCurrentSongPlaying = () => {
 		trackingInterval = null
 		currentSong = null
 		console.log('Auto ID tracking interval successfully ended.')
+		console.log('--------------------------------------')
 	}
 }
 

@@ -28,6 +28,11 @@ const createLiveReport = async (url) => {
 			const minutes = timeParts[1] || 0
 			startTimeParsed = new Date()
 			startTimeParsed.setHours(hours, minutes, 0, 0) // Set start time
+			// --- TEMPORARY FIX: Add 1 hour to compensate for website anomaly ---
+			startTimeParsed.setHours(startTimeParsed.getHours() + 1)
+			// ---------------------------------------------------------------
+			console.log('Start Time Parsed (with +1hr anomaly fix): ', startTimeParsed)
+			console.log("----------------------------")
 		} else {
 			throw new Error('Start time is missing or invalid.')
 		}
@@ -145,7 +150,16 @@ const createLiveReport = async (url) => {
 		console.log('Total Tracks: ', trackLog.length)
 
 		// format start time
-		if (starttime) {
+		let starttimeFormatted
+		if (startTimeParsed) {
+			// Format the adjusted start time (with +1 hour fix) for display
+			let hours = startTimeParsed.getHours()
+			const minutes = startTimeParsed.getMinutes()
+			const period = hours >= 12 ? 'PM' : 'AM'
+			hours = hours % 12
+			hours = hours === 0 ? 12 : hours
+			starttimeFormatted = `${hours}:${minutes.toString().padStart(2, '0')} ${period}`
+		} else if (starttime) {
 			const [time, period] = starttime.split(/(am|pm)/i)
 			starttimeFormatted = `${time.trim()} ${period.toUpperCase()}`
 		} else {

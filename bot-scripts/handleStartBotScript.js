@@ -155,6 +155,7 @@ const handleStartBotScript = async (event, arg, botProcess) => {
 		}
 	} else {
 		console.log('Spotify is not enabled')
+		console.log('-------------------------')
 	}
 }
 

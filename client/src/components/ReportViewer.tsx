@@ -300,7 +300,7 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
 										<div className='doubles-text' key={index}>
 											"{term.name}"
 											{term.count > 1 && (
-												<span className='main-text-color'> ({term.count} times)</span>
+												<span className='highlight-color'> ({term.count} times)</span>
 											)}
 										</div>
 									))}

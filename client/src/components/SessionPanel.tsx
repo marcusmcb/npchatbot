@@ -6,11 +6,8 @@
 // events after initial connection
 // in the client UI
 
-// import ReportViewer from './ReportViewer'
-// import ReactDOM from 'react-dom'
-
 import React, { useState, useEffect } from 'react'
-import { ReportData, SessionPanelProps } from '../types'
+import { SessionPanelProps } from '../types'
 import '../App.css'
 import './styles/sessionpanel.css'
 
@@ -55,44 +52,6 @@ const SessionPanel: React.FC<SessionPanelProps> = (props) => {
 			return `${minutes}:${seconds.toString().padStart(2, '0')}`
 		}
 	}
-
-	// useEffect(() => {
-	// 	if (props.isReportReady && props.reportData) {
-	// 		openReportView(props.reportData)
-	// 	}
-	// }, [props.isReportReady, props.reportData])
-
-	// useEffect(() => {
-	// 	let interval: NodeJS.Timeout
-
-	// 	if (props.isBotConnected) {
-	// 		ipcRenderer.send('update-connection-state', true)
-	// 		interval = setInterval(() => {
-	// 			setSeconds((prevSeconds) => {
-	// 				if (prevSeconds === 59) {
-	// 					setMinutes((prevMinutes) => {
-	// 						if (prevMinutes === 59) {
-	// 							setHours((prevHours) => prevHours + 1)
-	// 							return 0
-	// 						}
-	// 						return prevMinutes + 1
-	// 					})
-	// 					return 0
-	// 				}
-	// 				return prevSeconds + 1
-	// 			})
-	// 		}, 1000)
-	// 	} else {
-	// 		ipcRenderer.send('update-connection-status', false)
-	// 	}
-
-	// 	// Cleanup interval on unmount or when bot disconnects
-	// 	return () => {
-	// 		if (interval) {
-	// 			clearInterval(interval)
-	// 		}
-	// 	}
-	// }, [props.isBotConnected])
 
 	return (
 		<div className='chatbot-controls'>
@@ -139,8 +98,9 @@ const SessionPanel: React.FC<SessionPanelProps> = (props) => {
 						onClick={() => {
 							props.setReportView(true)
 						}}
+						disabled={props.isBotConnected}
 					>
-						Playlist Report
+						View Summary
 					</button>
 				)}
 			</div>

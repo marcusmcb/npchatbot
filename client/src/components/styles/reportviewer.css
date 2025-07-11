@@ -40,7 +40,7 @@
 	flex-grow: 1;
 	height: 100vh;
 	min-height: 0;
-	overflow: hidden; /* prevent window scrollbars */
+	overflow: hidden; /* prevent window scroll bars */
 }
 
 .report-panel-left {

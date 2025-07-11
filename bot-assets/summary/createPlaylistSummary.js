@@ -37,10 +37,10 @@ const createPlaylistSummary = async (summaryData) => {
 		track_log: summaryData.track_log
 	}
 
-	console.log('--------------------------------------')
-	console.log('OUTGOING REPORT DATA: ')
-	console.log(finalSummaryData)
-	console.log('--------------------------------------')
+	// console.log('--------------------------------------')
+	// console.log('OUTGOING REPORT DATA: ')
+	// console.log(finalSummaryData)
+	// console.log('--------------------------------------')
 
 	return finalSummaryData
 }

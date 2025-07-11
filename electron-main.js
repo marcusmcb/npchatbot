@@ -207,10 +207,10 @@ ipcMain.on('getPlaylistSummaries', async (event, arg) => {
 	if (playlistSummaries && playlistSummaries.length > 0) {
 		console.log('Playlist summaries retrieved successfully')
 		console.log('----------------------------------')
-		for (let i = 0; i < playlistSummaries.length; i++) {
-			console.log(playlistSummaries[i])
-			console.log('-----------------------------')
-		}
+		// for (let i = 0; i < playlistSummaries.length; i++) {
+		// 	console.log(playlistSummaries[i])
+		// 	console.log('-----------------------------')
+		// }
 		const playlistSummaryData = await getPlaylistSummaryData(playlistSummaries)
 		console.log(
 			`${playlistSummaryData.commonTracks.length} common tracks found across playlists.`
@@ -233,11 +233,11 @@ ipcMain.on('stopBotScript', async (event, arg) => {
 	console.log('----- GET CURRENT PLAY SUMMARY? -----')
 	const playlistData = await getCurrentPlaylistSummary()
 	if (playlistData) {
-		const finalPlaylistData = await createPlaylistSummary(playlistData)
-		console.log('--------------------------------------')
+		const finalPlaylistData = await createPlaylistSummary(playlistData)		
 		if (finalPlaylistData) {
 			console.log('Final playlist data created successfully:')
-			console.log(finalPlaylistData)
+			// console.log(finalPlaylistData)
+			console.log('--------------------------------------')
 		}
 		const user = await getUserData(db)
 		if (user) {
@@ -248,7 +248,7 @@ ipcMain.on('stopBotScript', async (event, arg) => {
 			}
 		}
 		console.log('Playlist data to be inserted into database:')
-		console.log(finalPlaylistData)
+		// console.log(finalPlaylistData)
 		console.log('--------------------------------------')
 
 		db.playlists.insert(finalPlaylistData, (err, newDoc) => {

@@ -151,7 +151,7 @@ const getTwitchRefreshToken = async (refreshToken) => {
 		// console.log('TOKEN DATA: ')
 		// console.log(response.data)
 		console.log('Twitch Auth Token Returned')
-		console.log(response.data)
+		// console.log(response.data)
 		console.log('--------------------------------------')
 		return response.data
 	} catch (error) {
