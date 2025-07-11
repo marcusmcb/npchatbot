@@ -76,7 +76,7 @@ const PORT = process.env.PORT || 5002
 server.use(bodyParser.json())
 server.use(cors())
 
-const isDev = true
+const isDev = false
 
 process.env.NODE_ENV = isDev ? 'development' : 'production'
 

@@ -35,7 +35,7 @@ const TitleBar = ({
 	return (
 		<div>
 			<div className='app-title'>npChatbot</div>
-			<div className='app-version'>version 1.0.2</div>
+			<div className='app-version'>version 1.0.3</div>
 			{/* <div className='auth-button-labels'>Authorizations</div> */}
 			<div className='auth-button-row'>
 				<button
