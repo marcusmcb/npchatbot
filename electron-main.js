@@ -50,6 +50,9 @@ const {
 	getPlaylistSummaryData,
 } = require('./database/helpers/getPlaylistSummaryData')
 
+// delete playlist handler
+const { deletePlaylist } = require('./database/helpers/deletePlaylist')
+
 // check if the app is started by Squirrel.Windows
 if (require('electron-squirrel-startup')) app.quit()
 
@@ -76,7 +79,7 @@ const PORT = process.env.PORT || 5002
 server.use(bodyParser.json())
 server.use(cors())
 
-const isDev = true
+const isDev = false
 
 process.env.NODE_ENV = isDev ? 'development' : 'production'
 
@@ -180,22 +183,8 @@ ipcMain.on('update-connection-state', (event, state) => {
 	isConnected = state
 })
 
-ipcMain.on('delete-selected-playlist', (event, arg) => {
-	console.log('Deleting selected playlist with ID:', arg)
-	db.playlists.remove({ _id: arg }, {}, (err, numRemoved) => {
-		if (err) {
-			logToFile('Error deleting playlist:', err)
-			console.error('Error deleting playlist:', err)
-			event.reply('deletePlaylistResponse', { success: false, error: err })
-		} else {
-			logToFile(`Playlist with ID ${arg} successfully deleted`)
-			console.log(`Playlist with ID ${arg} successfully deleted`)
-			event.reply('deletePlaylistResponse', {
-				success: true,
-				numRemoved: numRemoved,
-			})
-		}
-	})
+ipcMain.on('delete-selected-playlist', async (event, arg) => {
+	await deletePlaylist(arg, event)
 })
 
 ipcMain.on('submitUserData', async (event, arg) => {
@@ -206,20 +195,12 @@ ipcMain.on('getPlaylistSummaries', async (event, arg) => {
 	const playlistSummaries = await getPlaylistSummaries()
 	if (playlistSummaries && playlistSummaries.length > 0) {
 		console.log('Playlist summaries retrieved successfully')
-		console.log('----------------------------------')
-		// for (let i = 0; i < playlistSummaries.length; i++) {
-		// 	console.log(playlistSummaries[i])
-		// 	console.log('-----------------------------')
-		// }
+		console.log('----------------------------------')		
 		const playlistSummaryData = await getPlaylistSummaryData(playlistSummaries)
 		console.log(
 			`${playlistSummaryData.commonTracks.length} common tracks found across playlists.`
 		)
-		console.log('----------------------------------')
-		// for (let i = 0; i < playlistSummaryData.commonTracks.length; i++) {
-		// 	console.log(`* ${playlistSummaryData.commonTracks[i].track_id}`)
-		// }
-		// console.log('----------------------------------')
+		console.log('----------------------------------')		
 		event.reply('playlistSummariesResponse', playlistSummaries)
 	} else {
 		console.log('No playlist summaries found.')
@@ -233,7 +214,7 @@ ipcMain.on('stopBotScript', async (event, arg) => {
 	console.log('----- GET CURRENT PLAY SUMMARY? -----')
 	const playlistData = await getCurrentPlaylistSummary()
 	if (playlistData) {
-		const finalPlaylistData = await createPlaylistSummary(playlistData)		
+		const finalPlaylistData = await createPlaylistSummary(playlistData)
 		if (finalPlaylistData) {
 			console.log('Final playlist data created successfully:')
 			// console.log(finalPlaylistData)
