@@ -19,19 +19,6 @@ interface ReportViewerProps extends ReportDataProps {
 	reloadPlaylistSummaries: (deletedIndex: number) => void
 }
 
-// helper method to format the set length string
-// const formatSetLength = (hours: number, minutes: number): string => {
-// 	const parts: string[] = []
-// 	if (hours > 0) {
-// 		parts.push(`${hours} hour${hours > 1 ? 's' : ''}`)
-// 	}
-// 	if (minutes > 0) {
-// 		parts.push(`${minutes} minute${minutes > 1 ? 's' : ''}`)
-// 	}
-
-// 	return parts.length > 0 ? parts.join(', ') : '0 seconds'
-// }
-
 const ReportViewer: React.FC<ReportViewerProps> = ({
 	reportData,
 	setReportView,
