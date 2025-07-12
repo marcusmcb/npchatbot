@@ -29,12 +29,13 @@ const {
 	handleSubmitUserData,
 } = require('./database/helpers/handleSubmitUserData')
 
-const getUserData = require('./database/helpers/getUserData')
-
 // serato live playlist status validation
 const {
 	validateLivePlaylist,
 } = require('./helpers/validations/validateLivePlaylist')
+
+// user data handler
+const getUserData = require('./database/helpers/getUserData')
 
 // playlist summary handlers
 const {
@@ -82,7 +83,7 @@ const PORT = process.env.PORT || 5002
 server.use(bodyParser.json())
 server.use(cors())
 
-const isDev = false
+const isDev = true
 
 process.env.NODE_ENV = isDev ? 'development' : 'production'
 
