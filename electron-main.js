@@ -50,6 +50,9 @@ const {
 	getPlaylistSummaryData,
 } = require('./database/helpers/getPlaylistSummaryData')
 
+// add playlist handler
+const { addPlaylist } = require('./database/helpers/addPlaylist')
+
 // delete playlist handler
 const { deletePlaylist } = require('./database/helpers/deletePlaylist')
 
@@ -195,12 +198,12 @@ ipcMain.on('getPlaylistSummaries', async (event, arg) => {
 	const playlistSummaries = await getPlaylistSummaries()
 	if (playlistSummaries && playlistSummaries.length > 0) {
 		console.log('Playlist summaries retrieved successfully')
-		console.log('----------------------------------')		
+		console.log('----------------------------------')
 		const playlistSummaryData = await getPlaylistSummaryData(playlistSummaries)
 		console.log(
 			`${playlistSummaryData.commonTracks.length} common tracks found across playlists.`
 		)
-		console.log('----------------------------------')		
+		console.log('----------------------------------')
 		event.reply('playlistSummariesResponse', playlistSummaries)
 	} else {
 		console.log('No playlist summaries found.')
@@ -211,15 +214,9 @@ ipcMain.on('getPlaylistSummaries', async (event, arg) => {
 // refactor playlist insert handler as standalone method
 
 ipcMain.on('stopBotScript', async (event, arg) => {
-	console.log('----- GET CURRENT PLAY SUMMARY? -----')
 	const playlistData = await getCurrentPlaylistSummary()
 	if (playlistData) {
 		const finalPlaylistData = await createPlaylistSummary(playlistData)
-		if (finalPlaylistData) {
-			console.log('Final playlist data created successfully:')
-			// console.log(finalPlaylistData)
-			console.log('--------------------------------------')
-		}
 		const user = await getUserData(db)
 		if (user) {
 			if (user.isSpotifyEnabled) {
@@ -228,22 +225,7 @@ ipcMain.on('stopBotScript', async (event, arg) => {
 				finalPlaylistData.spotify_link = ''
 			}
 		}
-		console.log('Playlist data to be inserted into database:')
-		// console.log(finalPlaylistData)
-		console.log('--------------------------------------')
-
-		db.playlists.insert(finalPlaylistData, (err, newDoc) => {
-			if (err) {
-				logToFile('Error inserting playlist data:', err)
-				console.error('Error inserting playlist data:', err)
-			} else {
-				logToFile('Playlist data successfully inserted into database')
-				console.log('Playlist data successfully inserted into database')
-				console.log('--------------------------------------')
-				console.log(newDoc)
-				console.log('--------------------------------------')
-			}
-		})
+		await addPlaylist(finalPlaylistData)
 	} else {
 		console.log('No playlist data found to insert into database.')
 	}

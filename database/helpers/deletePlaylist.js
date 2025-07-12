@@ -8,11 +8,13 @@ const deletePlaylist = async (playlistId, event) => {
 			if (err) {
 				logToFile('Error deleting playlist:', err)
 				console.error('Error deleting playlist:', err)
+        console.log('-----------------------')
 				event.reply('deletePlaylistResponse', { success: false, error: err })
 				reject(err)
 			} else {
 				logToFile(`Playlist with ID ${playlistId} successfully deleted`)
 				console.log(`Playlist with ID ${playlistId} successfully deleted`)
+        console.log('-----------------------')
 				event.reply('deletePlaylistResponse', {
 					success: true,
 					numRemoved: numRemoved,
