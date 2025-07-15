@@ -13,9 +13,9 @@ const {
 } = require('../auth/spotify/getSpotifyAccessToken')
 
 const logToFile = require('../scripts/logger')
-const errorHandler = require('../helpers/errorHandler/errorHandler')
+const errorHandler = require('../database/helpers/errorHandler/errorHandler')
 const db = require('../database/database')
-const getUserData = require('../database/helpers/getUserData')
+const getUserData = require('../database/helpers/userData/getUserData')
 const OBSWebSocket = require('obs-websocket-js').default
 const obs = new OBSWebSocket()
 

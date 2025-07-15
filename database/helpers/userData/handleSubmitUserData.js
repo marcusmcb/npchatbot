@@ -1,23 +1,23 @@
 const {
 	getTwitchRefreshToken,
 	updateUserToken,
-} = require('../../auth/twitch/createTwitchAccessToken')
+} = require('../../../auth/twitch/createTwitchAccessToken')
 const {
 	updateUserData,
-} = require('../../helpers/updateUserParams/updateUserParams')
+} = require('../updateUserParams/updateUserParams')
 const {
 	seratoURLValidityCheck,
 	twitchURLValidityCheck,
-} = require('../../helpers/validations/validations')
+} = require('../validations/validations')
 const {
 	INVALID_TWITCH_CHATBOT_URL,
 	INVALID_TWITCH_URL,
 	INVALID_SERATO_DISPLAY_NAME,
-} = require('../../bot-assets/constants/constants')
+} = require('../../../bot-assets/constants/constants')
 
-const logToFile = require('../../scripts/logger')
-const errorHandler = require('../../helpers/errorHandler/errorHandler')
-const db = require('../../database/database')
+const logToFile = require('../../../scripts/logger')
+const errorHandler = require('../errorHandler/errorHandler')
+const db = require('../../database')
 
 const handleSubmitUserData = async (event, arg, mainWindow) => {
 	let token

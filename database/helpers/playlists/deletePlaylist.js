@@ -1,5 +1,5 @@
-const db = require('../database')
-const logToFile = require('../../scripts/logger')
+const db = require('../../database')
+const logToFile = require('../../../scripts/logger')
 
 const deletePlaylist = async (playlistId, event) => {
 	return new Promise((resolve, reject) => {

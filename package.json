@@ -8,7 +8,7 @@
 		"start-client": "npm start --prefix client",
 		"start-electron": "electron .",
 		"dev": "concurrently --kill-others \"npm run start-client\" \"npm run start-electron\"",
-		"build:react": "cd client && npm run build && node ../utils/fix-paths.js",
+		"build:react": "cd client && npm run build && node ../scripts/utils/fix-paths.js",
 		"package": "npm run build:react && electron-forge package",
 		"make": "npm run build:react && electron-forge make",
 		"publish": "electron-forge publish",

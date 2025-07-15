@@ -1,4 +1,4 @@
-const db = require('../database')
+const db = require('../../database')
 
 const getPlaylistSummaries = async () => {
 	return new Promise((resolve, reject) => {		

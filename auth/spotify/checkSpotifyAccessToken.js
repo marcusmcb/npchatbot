@@ -1,6 +1,6 @@
 const axios = require('axios')
 const db = require('../../database/database')
-const getUserData = require('../../database/helpers/getUserData')
+const getUserData = require('../../database/helpers/userData/getUserData')
 const {
 	getSpotifyAccessToken,
 } = require('../../auth/spotify/getSpotifyAccessToken')

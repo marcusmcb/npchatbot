@@ -24,18 +24,18 @@ const {
 } = require('./auth/spotify/createSpotifyAccessToken')
 const { setSpotifyUserId } = require('./auth/spotify/setSpotifyUserId')
 const { handleTwitchAuth } = require('./auth/twitch/handleTwitchAuth')
-const { handleGetUserData } = require('./database/helpers/handleGetUserData')
+const { handleGetUserData } = require('./database/helpers/userData/handleGetUserData')
 const {
 	handleSubmitUserData,
-} = require('./database/helpers/handleSubmitUserData')
+} = require('./database/helpers/userData/handleSubmitUserData')
 
 // serato live playlist status validation
 const {
 	validateLivePlaylist,
-} = require('./helpers/validations/validateLivePlaylist')
+} = require('./database/helpers/validations/validateLivePlaylist')
 
 // user data handler
-const getUserData = require('./database/helpers/getUserData')
+const getUserData = require('./database/helpers/userData/getUserData')
 
 // playlist summary handlers
 const {
@@ -46,16 +46,16 @@ const {
 } = require('./bot-assets/command-use/commandUse')
 const {
 	getPlaylistSummaries,
-} = require('./database/helpers/getPlaylistSummaries')
+} = require('./database/helpers/playlistSummaries/getPlaylistSummaries')
 const {
 	getPlaylistSummaryData,
-} = require('./database/helpers/getPlaylistSummaryData')
+} = require('./database/helpers/playlistSummaries/getPlaylistSummaryData')
 
 // add playlist handler
-const { addPlaylist } = require('./database/helpers/addPlaylist')
+const { addPlaylist } = require('./database/helpers/playlists/addPlaylist')
 
 // delete playlist handler
-const { deletePlaylist } = require('./database/helpers/deletePlaylist')
+const { deletePlaylist } = require('./database/helpers/playlists/deletePlaylist')
 
 // check if the app is started by Squirrel.Windows
 if (require('electron-squirrel-startup')) app.quit()

@@ -7,7 +7,7 @@ const {
 	OBS_NOT_FOUND_ERROR,
 	INVALID_REFRESH_TOKEN,
 	INVALID_SPOTIFY_REFRESH_TOKEN,
-} = require('../../bot-assets/constants/constants')
+} = require('../../../bot-assets/constants/constants')
 
 const errorHandler = (error) => {
 	console.log("Error Handler: ", error)

@@ -2,7 +2,7 @@
 // to the client UI
 
 const fs = require('fs')
-const db = require('../database')
+const db = require('../../database')
 
 const handleGetUserData = async (event, arg) => {
 	if (fs.existsSync(db.users.filename)) {
