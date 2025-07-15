@@ -12,11 +12,26 @@ const parseTimeString = (timeString) => {
 }
 
 const vibeCheckSelector = (trackArray) => {
+	
 	if (!Array.isArray(trackArray) || trackArray.length === 0) {
 		throw new Error('Invalid track array. Ensure it is a non-empty array.')
 	}
-	const randomIndex = Math.floor(Math.random() * trackArray.length)
-	const vibeCheckData = trackArray[randomIndex]
+	let eligibleTracks = []
+	if (trackArray.length > 5) {
+		// exclude the 4 most recent tracks (indices 0-3)
+		eligibleTracks = trackArray.slice(4)
+	} else if (trackArray.length > 2) {
+		// exclude the current and previous song (indices 0-1)
+		eligibleTracks = trackArray.slice(2)
+	} else {
+		// only one or two tracks, nothing to exclude
+		eligibleTracks = []
+	}
+	if (eligibleTracks.length === 0) {
+		throw new Error('Not enough tracks to perform a vibe check.')
+	}
+	const randomIndex = Math.floor(Math.random() * eligibleTracks.length)
+	const vibeCheckData = eligibleTracks[randomIndex]
 	return vibeCheckData
 }
 
