@@ -216,7 +216,8 @@ ipcMain.on('getPlaylistSummaries', async (event, arg) => {
 
 ipcMain.on('stopBotScript', async (event, arg) => {
 	const playlistData = await getCurrentPlaylistSummary()
-	if (playlistData) {
+	console.log("Playlist data: ", playlistData)
+	if (playlistData) {		
 		const finalPlaylistData = await createPlaylistSummary(playlistData)
 		const user = await getUserData(db)
 		if (user) {

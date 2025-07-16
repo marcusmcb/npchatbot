@@ -19,8 +19,14 @@ if (process.env.DB_PATH) {
 		dbPath = path.join(userDataPath, 'users.db')
 		playlistDbPath = path.join(userDataPath, 'playlists.db')
 		if (!fs.existsSync(dbPath)) {
-			fs.copyFileSync(path.join(__dirname, '../users.db'), dbPath)
-			console.log(`Database file copied to: ${dbPath}`)
+			const sourceDb = path.join(__dirname, '../users.db')
+			if (fs.existsSync(sourceDb)) {
+				fs.copyFileSync(sourceDb, dbPath)
+				console.log(`Database file copied to: ${dbPath}`)
+			} else {
+				fs.writeFileSync(dbPath, '', { flag: 'wx' })
+				console.log(`Empty database file created at: ${dbPath}`)
+			}
 		}
 	}
 }

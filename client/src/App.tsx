@@ -201,7 +201,8 @@ const App = (): JSX.Element => {
 		const fetchPlaylistData = async () => {
 			try {
 				const playlistSummary = await fetchPlaylistSummaries(ipcRenderer)
-				if (playlistSummary && playlistSummary.length > 0) {
+				console.log('Fetched playlist summary:', playlistSummary.length)
+				if (playlistSummary && playlistSummary.length !== 0) {
 					setPlaylistSummaries(playlistSummary as ReportData[])
 					if (currentReportIndex !== 0) {
 						setCurrentReportIndex(currentReportIndex)
@@ -333,8 +334,7 @@ const App = (): JSX.Element => {
 			isValidEmail
 		)
 	}
-
-	// Add this function inside your App component, before the return statement
+			
 	const reloadPlaylistSummaries = (deletedIndex: number) => {
 		fetchPlaylistSummaries(ipcRenderer).then((playlistSummary) => {
 			if (playlistSummary && playlistSummary.length > 0) {

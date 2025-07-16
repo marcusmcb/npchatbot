@@ -38,11 +38,19 @@ const handleDisconnect = async (
 
 	// Now fetch playlist summaries after stopBotScript has completed
 	const playlistSummaries = await fetchPlaylistSummaries(ipcRenderer)
-	console.log('Current Playlist Summary: ', playlistSummaries[0])
-	setPlaylistSummaries(playlistSummaries)
-	setCurrentReportIndex(0)
-	setReportData(playlistSummaries[0] as ReportData)
-	setIsReportReady(true)
+	console.log('Fetched playlist summaries:', playlistSummaries)
+	console.log("*****************************************************")
+	if (!playlistSummaries || playlistSummaries.length !== 0) {
+		setPlaylistSummaries(playlistSummaries)
+		setCurrentReportIndex(0)
+		setReportData(playlistSummaries[0] as ReportData)
+		setIsReportReady(true)
+	} else {
+		setPlaylistSummaries([])
+		setCurrentReportIndex(0)
+		setReportData(null)
+		setIsReportReady(false)
+	}
 }
 
 export default handleDisconnect
