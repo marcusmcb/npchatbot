@@ -79,6 +79,7 @@ typings/
 # dotenv environment variables file
 .env
 .env.test
+_env
 
 # http cert files
 /server.cert

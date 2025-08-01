@@ -1,0 +1,244 @@
+{
+  "logFormatVersion": 1,
+  "jobId": "ab0e2ae4-c3c5-4cb6-ac3b-723124a5260e",
+  "status": "Accepted",
+  "statusSummary": "Ready for distribution",
+  "statusCode": 0,
+  "archiveFilename": "npchatbot-app.zip",
+  "uploadDate": "2025-07-17T15:41:20.986Z",
+  "sha256": "3d9d970b8a8a1fd20b9d58531b2f4e0ed8ac5a17a6246d58baffe1c0917a4193",
+  "ticketContents": [
+    {
+      "path": "npchatbot-app.zip/npchatbot.app/Contents/Resources/app.asar.unpacked/_out/npchatbot-darwin-arm64/npchatbot.app/Contents/Resources/app.asar.unpacked/node_modules/fsevents/fsevents.node",
+      "digestAlgorithm": "SHA-256",
+      "cdhash": "07293e9a1a8dfe925a7f2c58830baccf9075e05b",
+      "arch": "x86_64"
+    },
+    {
+      "path": "npchatbot-app.zip/npchatbot.app/Contents/Resources/app.asar.unpacked/_out/npchatbot-darwin-arm64/npchatbot.app/Contents/Resources/app.asar.unpacked/node_modules/fsevents/fsevents.node",
+      "digestAlgorithm": "SHA-256",
+      "cdhash": "2b12d07f7ba8e6f321dac6aefdfbb42bd3d3598f",
+      "arch": "arm64"
+    },
+    {
+      "path": "npchatbot-app.zip/npchatbot.app/Contents/Resources/app.asar.unpacked/_out/npchatbot-darwin-arm64/npchatbot.app/Contents/Resources/app.asar.unpacked/client/node_modules/fsevents/fsevents.node",
+      "digestAlgorithm": "SHA-256",
+      "cdhash": "07293e9a1a8dfe925a7f2c58830baccf9075e05b",
+      "arch": "x86_64"
+    },
+    {
+      "path": "npchatbot-app.zip/npchatbot.app/Contents/Resources/app.asar.unpacked/_out/npchatbot-darwin-arm64/npchatbot.app/Contents/Resources/app.asar.unpacked/client/node_modules/fsevents/fsevents.node",
+      "digestAlgorithm": "SHA-256",
+      "cdhash": "2b12d07f7ba8e6f321dac6aefdfbb42bd3d3598f",
+      "arch": "arm64"
+    },
+    {
+      "path": "npchatbot-app.zip/npchatbot.app/Contents/Frameworks/npchatbot Helper (GPU).app",
+      "digestAlgorithm": "SHA-256",
+      "cdhash": "0bd3ef70be2fba77a86b1e83dba85dd5ffba091a",
+      "arch": "arm64"
+    },
+    {
+      "path": "npchatbot-app.zip/npchatbot.app/Contents/Frameworks/npchatbot Helper (GPU).app/Contents/MacOS/npchatbot Helper (GPU)",
+      "digestAlgorithm": "SHA-256",
+      "cdhash": "0bd3ef70be2fba77a86b1e83dba85dd5ffba091a",
+      "arch": "arm64"
+    },
+    {
+      "path": "npchatbot-app.zip/npchatbot.app/Contents/Frameworks/npchatbot Helper.app",
+      "digestAlgorithm": "SHA-256",
+      "cdhash": "09b13baa6c8c0897aac5240324aa6ea005acd38f",
+      "arch": "arm64"
+    },
+    {
+      "path": "npchatbot-app.zip/npchatbot.app/Contents/Frameworks/npchatbot Helper.app/Contents/MacOS/npchatbot Helper",
+      "digestAlgorithm": "SHA-256",
+      "cdhash": "09b13baa6c8c0897aac5240324aa6ea005acd38f",
+      "arch": "arm64"
+    },
+    {
+      "path": "npchatbot-app.zip/npchatbot.app/Contents/Frameworks/npchatbot Helper (Renderer).app",
+      "digestAlgorithm": "SHA-256",
+      "cdhash": "4b09521d5f1ffeacdd65c514d987d1fb24dc426c",
+      "arch": "arm64"
+    },
+    {
+      "path": "npchatbot-app.zip/npchatbot.app/Contents/Frameworks/npchatbot Helper (Renderer).app/Contents/MacOS/npchatbot Helper (Renderer)",
+      "digestAlgorithm": "SHA-256",
+      "cdhash": "4b09521d5f1ffeacdd65c514d987d1fb24dc426c",
+      "arch": "arm64"
+    },
+    {
+      "path": "npchatbot-app.zip/npchatbot.app/Contents/Frameworks/npchatbot Helper (Plugin).app",
+      "digestAlgorithm": "SHA-256",
+      "cdhash": "017c89c5b27925573773b3eaff4eeb36d8ba710f",
+      "arch": "arm64"
+    },
+    {
+      "path": "npchatbot-app.zip/npchatbot.app/Contents/Frameworks/npchatbot Helper (Plugin).app/Contents/MacOS/npchatbot Helper (Plugin)",
+      "digestAlgorithm": "SHA-256",
+      "cdhash": "017c89c5b27925573773b3eaff4eeb36d8ba710f",
+      "arch": "arm64"
+    },
+    {
+      "path": "npchatbot-app.zip/npchatbot.app/Contents/Frameworks/npchatbot Helper.app",
+      "digestAlgorithm": "SHA-256",
+      "cdhash": "09b13baa6c8c0897aac5240324aa6ea005acd38f",
+      "arch": "arm64"
+    },
+    {
+      "path": "npchatbot-app.zip/npchatbot.app/Contents/Frameworks/Electron Framework.framework/Versions/Current",
+      "digestAlgorithm": "SHA-256",
+      "cdhash": "e64c9bc1c61a5a61346b87633203d397aa2b5513",
+      "arch": "arm64"
+    },
+    {
+      "path": "npchatbot-app.zip/npchatbot.app/Contents/Frameworks/Mantle.framework/Versions/Current",
+      "digestAlgorithm": "SHA-256",
+      "cdhash": "c7a392d24986490ca9484696a9c472366dda21ad",
+      "arch": "arm64"
+    },
+    {
+      "path": "npchatbot-app.zip/npchatbot.app/Contents/Frameworks/Electron Framework.framework/Versions/Current/Helpers/chrome_crashpad_handler",
+      "digestAlgorithm": "SHA-256",
+      "cdhash": "7d7a74151e98983cef532eb86d7c0732d339e791",
+      "arch": "arm64"
+    },
+    {
+      "path": "npchatbot-app.zip/npchatbot.app/Contents/Frameworks/npchatbot Helper (Renderer).app",
+      "digestAlgorithm": "SHA-256",
+      "cdhash": "4b09521d5f1ffeacdd65c514d987d1fb24dc426c",
+      "arch": "arm64"
+    },
+    {
+      "path": "npchatbot-app.zip/npchatbot.app",
+      "digestAlgorithm": "SHA-256",
+      "cdhash": "bbb4a0f8c4eec25bdc0d7a74d057f40e883cd481",
+      "arch": "arm64"
+    },
+    {
+      "path": "npchatbot-app.zip/npchatbot.app/Contents/Frameworks/Squirrel.framework/Versions/Current",
+      "digestAlgorithm": "SHA-256",
+      "cdhash": "c3d0bf2d1714b17e6b732220754773b505660e96",
+      "arch": "arm64"
+    },
+    {
+      "path": "npchatbot-app.zip/npchatbot.app/Contents/Frameworks/npchatbot Helper (Plugin).app",
+      "digestAlgorithm": "SHA-256",
+      "cdhash": "017c89c5b27925573773b3eaff4eeb36d8ba710f",
+      "arch": "arm64"
+    },
+    {
+      "path": "npchatbot-app.zip/npchatbot.app/Contents/Frameworks/ReactiveObjC.framework/Versions/Current",
+      "digestAlgorithm": "SHA-256",
+      "cdhash": "ff4d5c25ec298a6311ae092944ecb0956435b6d7",
+      "arch": "arm64"
+    },
+    {
+      "path": "npchatbot-app.zip/npchatbot.app/Contents/Frameworks/npchatbot Helper (GPU).app",
+      "digestAlgorithm": "SHA-256",
+      "cdhash": "0bd3ef70be2fba77a86b1e83dba85dd5ffba091a",
+      "arch": "arm64"
+    },
+    {
+      "path": "npchatbot-app.zip/npchatbot.app/Contents/MacOS/npchatbot",
+      "digestAlgorithm": "SHA-256",
+      "cdhash": "bbb4a0f8c4eec25bdc0d7a74d057f40e883cd481",
+      "arch": "arm64"
+    },
+    {
+      "path": "npchatbot-app.zip/npchatbot.app/Contents/Resources/app.asar.unpacked/node_modules/fsevents/fsevents.node",
+      "digestAlgorithm": "SHA-256",
+      "cdhash": "07293e9a1a8dfe925a7f2c58830baccf9075e05b",
+      "arch": "x86_64"
+    },
+    {
+      "path": "npchatbot-app.zip/npchatbot.app/Contents/Resources/app.asar.unpacked/node_modules/fsevents/fsevents.node",
+      "digestAlgorithm": "SHA-256",
+      "cdhash": "2b12d07f7ba8e6f321dac6aefdfbb42bd3d3598f",
+      "arch": "arm64"
+    },
+    {
+      "path": "npchatbot-app.zip/npchatbot.app/Contents/Resources/app.asar.unpacked/client/node_modules/fsevents/fsevents.node",
+      "digestAlgorithm": "SHA-256",
+      "cdhash": "07293e9a1a8dfe925a7f2c58830baccf9075e05b",
+      "arch": "x86_64"
+    },
+    {
+      "path": "npchatbot-app.zip/npchatbot.app/Contents/Resources/app.asar.unpacked/client/node_modules/fsevents/fsevents.node",
+      "digestAlgorithm": "SHA-256",
+      "cdhash": "2b12d07f7ba8e6f321dac6aefdfbb42bd3d3598f",
+      "arch": "arm64"
+    },
+    {
+      "path": "npchatbot-app.zip/npchatbot.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Electron Framework",
+      "digestAlgorithm": "SHA-256",
+      "cdhash": "e64c9bc1c61a5a61346b87633203d397aa2b5513",
+      "arch": "arm64"
+    },
+    {
+      "path": "npchatbot-app.zip/npchatbot.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Libraries/libEGL.dylib",
+      "digestAlgorithm": "SHA-256",
+      "cdhash": "b579ff20ed336be9099cd287d6110ef58d4dbca8",
+      "arch": "arm64"
+    },
+    {
+      "path": "npchatbot-app.zip/npchatbot.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Libraries/libvk_swiftshader.dylib",
+      "digestAlgorithm": "SHA-256",
+      "cdhash": "eae2a60ffe0a3169cfa9c475a2328c6f073a9927",
+      "arch": "arm64"
+    },
+    {
+      "path": "npchatbot-app.zip/npchatbot.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Libraries/libGLESv2.dylib",
+      "digestAlgorithm": "SHA-256",
+      "cdhash": "db605eb472618c30f74b8d0337944f744da39be1",
+      "arch": "arm64"
+    },
+    {
+      "path": "npchatbot-app.zip/npchatbot.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Libraries/libffmpeg.dylib",
+      "digestAlgorithm": "SHA-256",
+      "cdhash": "e05bc1b7d77aec94f488274f0d14fa4f66abec74",
+      "arch": "arm64"
+    },
+    {
+      "path": "npchatbot-app.zip/npchatbot.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Helpers/chrome_crashpad_handler",
+      "digestAlgorithm": "SHA-256",
+      "cdhash": "7d7a74151e98983cef532eb86d7c0732d339e791",
+      "arch": "arm64"
+    },
+    {
+      "path": "npchatbot-app.zip/npchatbot.app/Contents/Frameworks/ReactiveObjC.framework/Versions/A/ReactiveObjC",
+      "digestAlgorithm": "SHA-256",
+      "cdhash": "ff4d5c25ec298a6311ae092944ecb0956435b6d7",
+      "arch": "arm64"
+    },
+    {
+      "path": "npchatbot-app.zip/npchatbot.app/Contents/Frameworks/Squirrel.framework/Versions/A/Squirrel",
+      "digestAlgorithm": "SHA-256",
+      "cdhash": "c3d0bf2d1714b17e6b732220754773b505660e96",
+      "arch": "arm64"
+    },
+    {
+      "path": "npchatbot-app.zip/npchatbot.app/Contents/Frameworks/Squirrel.framework/Versions/A/Resources/ShipIt",
+      "digestAlgorithm": "SHA-256",
+      "cdhash": "edb1624bcc12bb4e41ee85fcb17fee9d6b383704",
+      "arch": "arm64"
+    },
+    {
+      "path": "npchatbot-app.zip/npchatbot.app/Contents/Frameworks/Mantle.framework/Versions/A/Mantle",
+      "digestAlgorithm": "SHA-256",
+      "cdhash": "c7a392d24986490ca9484696a9c472366dda21ad",
+      "arch": "arm64"
+    }
+  ],
+  "issues": [
+    {
+      "severity": "warning",
+      "code": null,
+      "path": "npchatbot-app.zip/npchatbot.app/Contents/Resources/app.asar.unpacked/_out/npchatbot-darwin-arm64/npchatbot.app",
+      "message": "Unable to notarize npchatbot-app.zip/npchatbot.app/Contents/Resources/app.asar.unpacked/_out/npchatbot-darwin-arm64/npchatbot.app",
+      "docUrl": null,
+      "architecture": null
+    }
+  ]
+}
