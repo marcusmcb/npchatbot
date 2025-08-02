@@ -116,7 +116,7 @@ const handleVibeCheck = (
 ) => {
 	const vibeCheckSelection = vibeCheckSelector(reportData.track_log)
 	console.log('Vibe check selection: ', vibeCheckSelection)
-	console.log("---------------------------------")
+	console.log('---------------------------------')
 	const message = `${config.twitchChannelName} played "${vibeCheckSelection.track_id}" ${vibeCheckSelection.time_played} in this stream.`
 	twitchClient.say(channel, message)
 	updateOBSWithText(
@@ -208,13 +208,17 @@ const handleStats = (
 	config,
 	tags
 ) => {
-	const averageTrackLength =
-		reportData.average_track_length.minutes +
-		':' +
-		reportData.average_track_length.seconds
+	const minutes = reportData.average_track_length.minutes
+	let seconds = reportData.average_track_length.seconds
+	if (typeof seconds === 'number') {
+		seconds = seconds < 10 ? '0' + seconds : String(seconds)
+	} else {
+		seconds = String(seconds)
+	}
+	const averageTrackLength = minutes + ':' + seconds
 	console.log('Average track length: ')
-	console.log('Minutes: ', reportData.average_track_length.minutes)
-	console.log('Seconds: ', reportData.average_track_length.seconds)
+	console.log('Minutes: ', minutes)
+	console.log('Seconds: ', seconds)
 	const totalTracksPlayed = reportData.total_tracks_played
 	const message = `${config.twitchChannelName} has played ${totalTracksPlayed} songs so far in this set with an average track length of ${averageTrackLength}.`
 	twitchClient.say(channel, message)

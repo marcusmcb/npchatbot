@@ -2,11 +2,15 @@
 
 #### Visit the npChatbot project website <a href="https://www.npchatbot.com">here</a>!
 
-This repo contains a complete chatbot solution for DJs streaming live sets on Twitch that adds a suite of chat commands which allow your viewers to interact with your Serato play history in real-time as you play tracks.
+This repo contains the source code the npChatbot desktop software for PC & Mac.
 
-This is done by use of the TMI.js library to connect the chatbot to your Twitch channel and the Live Playlist feature in Serato DJ Pro to transmit track info for each track played during your set.
+npChatbot is a utility app for DJs who stream live on Twitch using Serato.  
 
-The desktop app is written with Node/TypeScript and packaged via Electron.
+Once downloaded, installed, and authorized with Twitch, npChatbot enables a series of interactive music discovery commands that allow your viewers to search your play history in real-time.  
+
+npChatbot also has the option to authorize the app with your Spotify account, allowing you to create and update playlists of your DJ sets with each song you play, which you can easily share with your streaming community using the included <strong>!np playlist</strong> command.
+
+The app is built and packaged with Electron, utilizing NodeJS, React, custom CSS, and a mix of both JavaScript and TypeScript.
 
 <hr>
 
@@ -31,7 +35,7 @@ If you're using a dedicated chatbot account for this app, the chatbot account <i
 Once authorized, you can then enter in your user credentials:
 
 - Twitch Channel Name (your primary streaming channel)
-- Twitch Chatbot Name (your chatbot account for your primary streaming channel)
+- Twitch Chatbot Name (the account you've authorized npChatbot with)
 - Serato Display Name (your Serato user profile name)
 - OBS Websocket Address & Password (optional - see below)
 
@@ -110,9 +114,10 @@ When you've completed your live stream, simply click "Disconnect" to disconnect 
 - React/TypeScript (client UI)
 - Electron (back end logic, data API, and handlers)
 - Electron-Forge (destkop build and packaging)
-- NodeJS (chatbot scripting, web scraping, and playlist analysis)
+- NodeJS (ES modules for chatbot scripting, web scraping, and playlist analysis)
 - Twitch API / TMI.js (app authorization & chat event listeners)
 - OBS-Websocket-JS (OBS text integration)
+- Spotify API (playlist creation, song-level queries, real-time playlist updates)
 
 <hr>
 
@@ -128,22 +133,26 @@ Tested and verified working using Serato DJ Pro (versions 3.0.1 -> 3.2.4) and OB
 
 <hr>
 
-#### Questions:
+#### Questions & Bug Reports:
 
 Feel free to message me with any questions regrading the app, configuration/setup, or feature requests to expand the core concept <a href='mailto:npchatbotapp@gmail.com'>here</a>.
+
+Likewise, you can report any bugs or errors to this address as well (I check it regularly!).  Screen-shots help if you happen to have one of the bug/error in question.
 
 <hr>
 
 #### The big idea...
 
-To create and integrate a set of chat commands for your Twitch channel that allow your viewers to directly interact with your Serato play history in real time during your live streams.
+To create and integrate a set of interactive chat tools for your Twitch channel that allow your viewers to directly interact with your Serato play history in real time during your live streams.
 
 Music discovery is a key and often under-rated aspect of Twitch.  npChatbot aims to facilitate this by giving viewers a direct means to interact with a streamer's live play history.  
 
-Doing so allows viewers to directly look up any song currently playing, any song or artist previously played, along with real-time stats that are unique to each DJ stream.  
+Doing so allows viewers to directly look up any song currently playing, any song or artist previously played, along with real-time stats that are unique to each DJ and each stream.  
 
 The real time command use by viewers also gives DJs streaming on Twitch some insight as to what artists, songs, or genres of music their live audiences are signalling an interest in.
 
-Overall, npChatbot's purpose is to add a simple and unique layer of music discovery via chat commands within a DJ streamer's channel.
+The added Spotify integration gives streaming DJs an easily shareable playlist with their communities, further fortifying the bond with their respective audiences.
+
+This began as a simple Node script, running on a Raspberry Pi here in my office to give viewers in my own channel an easy way to look up the song "now playing".  It's now a fully-fledged desktop app, ready for you to download and try out for yourself.
 
 Marcus McBride, 2025.
