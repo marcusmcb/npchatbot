@@ -4,20 +4,24 @@ import CredentialsPanel from './components/CredentialsPanel'
 import PreferencesPanel from './components/PreferencesPanel'
 import SessionPanel from './components/SessionPanel'
 import MessagePanel from './components/MessagePanel'
+import ReportViewer from './components/ReportViewer'
+
 import { BotProcessResponse, AuthSuccess } from './types'
 import { ReportData } from './types'
-import ReportViewer from './components/ReportViewer'
-import handleConnect from './utils/handleConnect'
-import handleDisconnect from './utils/handleDisconnect'
-import handleSubmit from './utils/handleSubmit'
-import validateLivePlaylist from './utils/validateLivePlaylist'
+
 import useWebSocket from './hooks/useWebSocket'
 import useGetUserData from './hooks/useGetUserData'
 import useMessageQueue from './hooks/useMessageQueue'
 import useTooltipVisibility from './hooks/useTooltipVisibility'
 import useFormModified from './hooks/useFormModified'
-import './App.css'
 import fetchPlaylistSummaries from './utils/fetchPlaylistSummaries'
+
+import handleConnect from './utils/handleConnect'
+import handleDisconnect from './utils/handleDisconnect'
+import handleSubmit from './utils/handleSubmit'
+import validateLivePlaylist from './utils/validateLivePlaylist'
+
+import './App.css'
 
 const App = (): JSX.Element => {
 	/* TYPES */
