@@ -1,5 +1,6 @@
 import SpotifyIcon from './icons/spotify/SpotifyIcon'
 import TwitchIcon from './icons/twitch/TwitchIcon'
+import DiscordIcon from './icons/discord/DiscordIcon'
 import { TitleBarProps } from '../types'
 import '../App.css'
 import './styles/titlebar.css'
@@ -10,6 +11,7 @@ const TitleBar = ({
 	isTwitchAuthorized,
 	isSpotifyAuthorized,
 	isBotConnected,
+	isDiscordAuthorized,
 }: TitleBarProps): JSX.Element => {
 	const handleAuthClick = () => {
 		if (!isTwitchAuthorized) {
@@ -29,6 +31,15 @@ const TitleBar = ({
 			console.log('Already authorized with Spotify')
 			// ipcRenderer.send('open-auth-settings', 'https://www.twitch.tv/settings/connections')
 			ipcRenderer.send('open-spotify-auth-url')
+		}
+	}
+
+	const handleDiscordAuthClick = () => {
+		if (!isDiscordAuthorized) {
+			ipcRenderer.send('open-discord-auth-url')
+		} else {
+			console.log('Already authorized with Discord')
+			ipcRenderer.send('open-discord-auth-url')
 		}
 	}
 
@@ -60,6 +71,17 @@ const TitleBar = ({
 					<span className='button-content'>
 						<SpotifyIcon size={20} />
 						{/* {isTwitchAuthorized ? 'Authorized' : 'Authorize'} */}
+					</span>
+				</button>
+				<button
+					onClick={handleDiscordAuthClick}
+					disabled={isBotConnected}
+					className={
+						isDiscordAuthorized ? 'auth-button-authorized' : 'auth-button-default'
+					}
+				>
+					<span className='button-content'>
+						<DiscordIcon size={20} />
 					</span>
 				</button>
 				<div className='auth-button-label'>Linked Accounts</div>

@@ -18,6 +18,7 @@ export interface MessagePanelProps {
 export interface TitleBarProps {
 	isTwitchAuthorized: boolean
 	isSpotifyAuthorized: boolean
+	isDiscordAuthorized: boolean
 	isBotConnected: boolean
 }
 

@@ -61,6 +61,7 @@ const App = (): JSX.Element => {
 	const [isBotConnected, setIsBotConnected] = useState(false)
 	const [isTwitchAuthorized, setIsTwitchAuthorized] = useState(false)
 	const [isSpotifyAuthorized, setIsSpotifyAuthorized] = useState(false)
+	const [isDiscordAuthorized, setIsDiscordAuthorized] = useState(false) // default false
 	const [isSpotifyEnabled, setIsSpotifyEnabled] = useState(false)
 	const [isConnectionReady, setIsConnectionReady] = useState(false)
 	const [isAutoIDEnabled, setIsAutoIDEnabled] = useState(false)
@@ -266,6 +267,17 @@ const App = (): JSX.Element => {
 		}
 	}, [])
 
+	// Listen for Discord authorization success
+	useEffect(() => {
+		const handleDiscordAuthSuccess = () => {
+			setIsDiscordAuthorized(true)
+		}
+		window.electron.ipcRenderer.on('discord-auth-successful', handleDiscordAuthSuccess)
+		return () => {
+			window.electron.ipcRenderer.removeAllListeners('discord-auth-successful')
+		}
+	}, [])
+
 	// method to validate that the user's Serato Live Playlist
 	// is public and can be accessed by npChatbot
 	const validateLivePlaylistWrapper = async (
@@ -367,6 +379,7 @@ const App = (): JSX.Element => {
 						<TitleBar
 							isTwitchAuthorized={isTwitchAuthorized}
 							isSpotifyAuthorized={isSpotifyAuthorized}
+							isDiscordAuthorized={isDiscordAuthorized}
 							isBotConnected={isBotConnected}
 						/>
 						<MessagePanel
