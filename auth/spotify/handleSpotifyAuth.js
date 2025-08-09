@@ -7,6 +7,7 @@ const {
 	initSpotifyAuthToken,
 } = require('../../auth/spotify/createSpotifyAccessToken')
 const { setSpotifyUserId } = require('../../auth/spotify/setSpotifyUserId')
+const { ipcMain } = require('electron')
 
 let spotifyAuthWindow
 let spotifyAuthCode
