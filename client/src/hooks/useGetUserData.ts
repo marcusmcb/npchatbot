@@ -14,6 +14,7 @@ const useGetUserData = (
 	setIsSpotifyAuthorized: React.Dispatch<React.SetStateAction<boolean>>,
 	setIsTwitchAuthorized: React.Dispatch<React.SetStateAction<boolean>>,
 	setIsConnectionReady: React.Dispatch<React.SetStateAction<boolean>>,
+	setIsDiscordAuthorized: React.Dispatch<React.SetStateAction<boolean>>,
 	addMessageToQueue: (message: string) => void
 ) => {
 	useEffect(() => {
@@ -50,6 +51,7 @@ const useGetUserData = (
 					setContinueLastPlaylist(response.data.continueLastPlaylist)
 					setIsSpotifyAuthorized(!!response.data.spotifyAuthorizationCode)
 					setIsTwitchAuthorized(!!response.data.appAuthorizationCode)
+					setIsDiscordAuthorized(!!response.data.discord)	
 					setIsConnectionReady(
 						// Check if all necessary fields are filled for connection
 						!!response.data.twitchChannelName &&

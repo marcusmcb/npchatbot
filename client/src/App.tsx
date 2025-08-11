@@ -198,6 +198,7 @@ const App = (): JSX.Element => {
 		setIsSpotifyAuthorized,
 		setIsTwitchAuthorized,
 		setIsConnectionReady,
+		setIsDiscordAuthorized,
 		addMessageToQueue
 	)
 

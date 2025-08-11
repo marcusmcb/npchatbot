@@ -5,7 +5,7 @@ function getDiscordTokens(callback) {
     if (err) {
       callback(err, null);
     } else {
-      callback(null, doc && doc.discordTokens ? doc.discordTokens : null);
+      callback(null, doc && doc.discord ? doc.discord : null);
     }
   });
 }
