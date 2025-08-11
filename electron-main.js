@@ -142,13 +142,31 @@ const discordHttpServer = http.createServer(async (req, res) => {
 			console.log('-------------------------------')
 			console.log('Auth Code: ', code)
 			console.log('-------------------------------')
+
+			// exchange auth code for token
+
+			// set discordAccessToken, discordRefreshToken
+			// and discordAuthorizationCode in users.db
+
 			const tokenData = await exchangeCodeForToken(code)
 			if (tokenData) console.log('Token Data: ', tokenData)
 			console.log('-------------------------------')
 			// Store Discord tokens in NeDB users database
 			db.users.update(
 				{},
-				{ $set: { discordTokens: tokenData } },
+				{
+					$set: {
+						discord: {
+							accessToken: tokenData.access_token,
+							refreshToken: tokenData.refresh_token,
+							authorizationCode: code,
+							webhook_url: tokenData.webhook.url,
+							channel_id: tokenData.webhook.channel_id,
+							guild_id: tokenData.webhook.guild_id,
+							webhook_id: tokenData.webhook.id,
+						},
+					},
+				},
 				{ multi: true },
 				(err) => {
 					if (err) {
