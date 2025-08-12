@@ -402,6 +402,7 @@ const App = (): JSX.Element => {
 								currentReportIndex={currentReportIndex}
 								setCurrentReportIndex={setCurrentReportIndex}
 								reloadPlaylistSummaries={reloadPlaylistSummaries}
+								isDiscordAuthorized={isDiscordAuthorized}
 							/>
 						</div>
 					</div>
@@ -459,7 +460,7 @@ const App = (): JSX.Element => {
 							currentReportIndex={currentReportIndex}
 							setCurrentReportIndex={setCurrentReportIndex}
 							reloadPlaylistSummaries={reloadPlaylistSummaries}
-							setPlaylistSummaries={setPlaylistSummaries}
+							setPlaylistSummaries={setPlaylistSummaries}							
 						/>
 					</div>
 				)}

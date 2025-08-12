@@ -293,9 +293,29 @@ ipcMain.on('validateLivePlaylist', async (event, arg) => {
 })
 
 ipcMain.on('update-connection-state', (event, state) => {
-	console.log('-----------------------')
-	console.log('Connection state updated:', state)
-	isConnected = state
+   console.log('-----------------------')
+   console.log('Connection state updated:', state)
+   isConnected = state
+})
+
+// IPC handler to share Spotify playlist link to Discord channel
+const sendDiscordMessage = require('./auth/discord/sendDiscordMessage')
+ipcMain.on('share-playlist-to-discord', async (event, { channelId, playlistUrl }) => {
+   try {
+	   if (!channelId || !playlistUrl) {
+		   event.reply('sharePlaylistToDiscordResponse', { success: false, error: 'Missing channelId or playlistUrl.' })
+		   return
+	   }
+	   const message = `Check out this Spotify playlist: ${playlistUrl}`
+	   const result = await sendDiscordMessage(channelId, message)
+	   if (result && result.id) {
+		   event.reply('sharePlaylistToDiscordResponse', { success: true })
+	   } else {
+		   event.reply('sharePlaylistToDiscordResponse', { success: false, error: 'Failed to send message to Discord.' })
+	   }
+   } catch (error) {
+	   event.reply('sharePlaylistToDiscordResponse', { success: false, error: error.toString() })
+   }
 })
 
 ipcMain.on('delete-selected-playlist', async (event, arg) => {

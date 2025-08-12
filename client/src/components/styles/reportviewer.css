@@ -226,6 +226,10 @@
 	margin: 20px 0px;
 }
 
+.discord-share-icon {
+	margin-left: 15px;
+}
+
 .modal-overlay {
 	position: fixed;
 	top: 0;
@@ -238,6 +242,7 @@
 	align-items: center;
 	justify-content: center;
 }
+
 .modal-content {
 	background: #222;
 	color: #fff;
@@ -247,6 +252,7 @@
 	min-width: 320px;
 	max-width: 90vw;
 }
+
 .modal-title {
 	font-size: 1.2em;
 	font-weight: bold;
@@ -254,15 +260,18 @@
 	font-family: var(--fira-sans);
 	color: var(--highlight-color);
 }
+
 .modal-message {
 	margin-bottom: 1.5em;
 	font-family: var(--dm-sans);
 }
+
 .modal-actions {
 	display: flex;
 	justify-content: flex-end;
 	gap: 1em;
 }
+
 .modal-btn {
 	padding: 0.5em 1.2em;
 	border: none;
@@ -270,14 +279,17 @@
 	font-size: 1em;
 	cursor: pointer;
 }
+
 .modal-btn.cancel {
 	background: #444;
 	color: #fff;
 }
+
 .modal-btn.delete {
 	background: #e74c3c;
 	color: #fff;
 }
+
 .modal-btn.cancel:hover,
 .modal-btn.delete:hover {
 	opacity: 0.85;
@@ -287,6 +299,7 @@
 .spotify-link {
 	color: var(--session-info-label-color);
 }
+
 .main-text-color {
 	color: var(--main-text-color);
 }

@@ -1,6 +1,7 @@
 import React, { useState, Fragment } from 'react'
 import { MdArrowBack, MdArrowForward, MdClose } from 'react-icons/md'
 import { ReportData, ReportDataProps } from '../types'
+import DiscordIcon from './icons/discord/DiscordIcon'
 import './styles/reportviewer.css'
 
 // add logic in the return to account for the first use case where
@@ -15,6 +16,7 @@ const ipcRenderer = window.electron.ipcRenderer
 interface ReportViewerProps extends ReportDataProps {
 	playlistSummaries: ReportData[]
 	currentReportIndex: number
+	isDiscordAuthorized: boolean
 	setCurrentReportIndex: (idx: number) => void
 	reloadPlaylistSummaries: (deletedIndex: number) => void
 }
@@ -26,6 +28,7 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
 	currentReportIndex,
 	setCurrentReportIndex,
 	reloadPlaylistSummaries,
+	isDiscordAuthorized,
 }): JSX.Element => {
 	const [showDeleteModal, setShowDeleteModal] = useState(false)
 
@@ -38,22 +41,26 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
 		if (hours > 0) {
 			parts.push(
 				<>
-					<span className="highlight-color">{hours}</span>
-					<span className="main-text-color"> hour{hours > 1 ? 's' : ''}</span>
+					<span className='highlight-color'>{hours}</span>
+					<span className='main-text-color'> hour{hours > 1 ? 's' : ''}</span>
 				</>
 			)
 		}
 		if (minutes > 0) {
-			if (parts.length > 0) parts.push(<span className="main-text-color">, </span>)
+			if (parts.length > 0)
+				parts.push(<span className='main-text-color'>, </span>)
 			parts.push(
 				<>
-					<span className="highlight-color">{minutes}</span>
-					<span className="main-text-color"> minute{minutes > 1 ? 's' : ''}</span>
+					<span className='highlight-color'>{minutes}</span>
+					<span className='main-text-color'>
+						{' '}
+						minute{minutes > 1 ? 's' : ''}
+					</span>
 				</>
 			)
 		}
 		if (parts.length === 0) {
-			return <span className="main-text-color">0 seconds</span>
+			return <span className='main-text-color'>0 seconds</span>
 		}
 		return parts
 	}
@@ -131,7 +138,9 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
 						>
 							<MdArrowBack size={16} />
 						</button>
-						<div className='report-subtitle report-date-center'>{reportData?.playlist_date}</div>
+						<div className='report-subtitle report-date-center'>
+							{reportData?.playlist_date}
+						</div>
 						<button
 							className='report-date-selector-arrow'
 							onClick={handleRightArrowClick}
@@ -157,27 +166,35 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
 					<div className='report-panel-item-row'>
 						<div className='report-panel-item'>Set Start Time:</div>
 						<div className='report-panel-item'>
-							<span className='report-panel-item-value'>{reportData?.set_start_time}</span>
+							<span className='report-panel-item-value'>
+								{reportData?.set_start_time}
+							</span>
 						</div>
 					</div>
 					<div className='report-panel-item-row'>
 						<div className='report-panel-item'>Set Length:</div>
 						<div className='report-panel-item'>
-							<span className='report-panel-item-value'>{renderSetLength()}</span>
+							<span className='report-panel-item-value'>
+								{renderSetLength()}
+							</span>
 						</div>
 					</div>
 					<div className='report-panel-item-row'>
 						<div className='report-panel-item'>Total Tracks Played:</div>
 						<div className='report-panel-item'>
-							<span className='report-panel-item-value'>{reportData?.total_tracks_played}</span>
+							<span className='report-panel-item-value'>
+								{reportData?.total_tracks_played}
+							</span>
 						</div>
 					</div>
 					<div className='report-panel-item-row'>
 						<div className='report-panel-item'>Average Track Length:</div>
 						<div className='report-panel-item'>
 							<span className='report-panel-item-value'>
-								{reportData?.average_track_length_minutes} <span className="report-panel-item-value-span">minutes,</span>{' '}
-								{reportData?.average_track_length_seconds} <span className="report-panel-item-value-span">seconds</span>
+								{reportData?.average_track_length_minutes}{' '}
+								<span className='report-panel-item-value-span'>minutes,</span>{' '}
+								{reportData?.average_track_length_seconds}{' '}
+								<span className='report-panel-item-value-span'>seconds</span>
 							</span>
 						</div>
 					</div>
@@ -191,8 +208,13 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
 										onClick={(e) => {
 											e.preventDefault()
 											console.log(
-												'Opening Spotify link:', reportData.spotify_link)
-											ipcRenderer.send('open-spotify-url', reportData.spotify_link)
+												'Opening Spotify link:',
+												reportData.spotify_link
+											)
+											ipcRenderer.send(
+												'open-spotify-url',
+												reportData.spotify_link
+											)
 										}}
 										rel='noopener noreferrer'
 										className='spotify-link'
@@ -201,6 +223,13 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
 									</a>
 								) : (
 									'No playlist created for this stream.'
+								)}
+								{reportData?.spotify_link && isDiscordAuthorized ? (
+									<span className='discord-share-icon'>
+										<DiscordIcon />
+									</span>
+								) : (
+									<></>
 								)}
 							</span>
 						</div>
@@ -214,7 +243,6 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
 					>
 						Close
 					</button>
-					
 				</div>
 				{/* REPORT PANEL RIGHT */}
 				<div className='report-panel-right'>
@@ -247,8 +275,8 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
 						{reportData && reportData.np_songs_queried.length === 0 ? (
 							<>
 								<div className='report-panel-item-header'>
-									The <span className='report-panel-item-value'>!np</span> command was not used
-									during this stream.
+									The <span className='report-panel-item-value'>!np</span>{' '}
+									command was not used during this stream.
 								</div>
 							</>
 						) : reportData ? (
@@ -260,14 +288,19 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
 									</span>
 								</div>
 								<div className='report-panel-item-detail'>
-									{getUniqueCounts(reportData.np_songs_queried).map((song, index) => (
-										<div className='doubles-text' key={index}>
-											* {song.name}
-											{song.count > 1 && (
-												<span className='highlight-color'> ({song.count} times)</span>
-											)}
-										</div>
-									))}
+									{getUniqueCounts(reportData.np_songs_queried).map(
+										(song, index) => (
+											<div className='doubles-text' key={index}>
+												* {song.name}
+												{song.count > 1 && (
+													<span className='highlight-color'>
+														{' '}
+														({song.count} times)
+													</span>
+												)}
+											</div>
+										)
+									)}
 								</div>
 							</>
 						) : null}
@@ -276,8 +309,8 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
 						{reportData && reportData.dyp_search_terms.length === 0 ? (
 							<>
 								<div className='report-panel-item-header'>
-									The <span className='report-panel-item-value'>!dyp</span> command was not used
-									during this stream.
+									The <span className='report-panel-item-value'>!dyp</span>{' '}
+									command was not used during this stream.
 								</div>
 							</>
 						) : reportData ? (
@@ -289,14 +322,19 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
 									</span>
 								</div>
 								<div className='report-panel-item-detail'>
-									{getUniqueCounts(reportData.dyp_search_terms).map((term, index) => (
-										<div className='doubles-text' key={index}>
-											"{term.name}"
-											{term.count > 1 && (
-												<span className='highlight-color'> ({term.count} times)</span>
-											)}
-										</div>
-									))}
+									{getUniqueCounts(reportData.dyp_search_terms).map(
+										(term, index) => (
+											<div className='doubles-text' key={index}>
+												"{term.name}"
+												{term.count > 1 && (
+													<span className='highlight-color'>
+														{' '}
+														({term.count} times)
+													</span>
+												)}
+											</div>
+										)
+									)}
 								</div>
 							</>
 						) : null}
