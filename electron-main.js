@@ -68,6 +68,8 @@ const {
 	deletePlaylist,
 } = require('./database/helpers/playlists/deletePlaylist')
 
+const sendDiscordMessage = require('./auth/discord/sendDiscordMessage')
+
 // check if the app is started by Squirrel.Windows
 if (require('electron-squirrel-startup')) app.quit()
 
@@ -299,23 +301,25 @@ ipcMain.on('update-connection-state', (event, state) => {
 })
 
 // IPC handler to share Spotify playlist link to Discord channel
-const sendDiscordMessage = require('./auth/discord/sendDiscordMessage')
-ipcMain.on('share-playlist-to-discord', async (event, { channelId, playlistUrl }) => {
-   try {
-	   if (!channelId || !playlistUrl) {
-		   event.reply('sharePlaylistToDiscordResponse', { success: false, error: 'Missing channelId or playlistUrl.' })
-		   return
-	   }
-	   const message = `Check out this Spotify playlist: ${playlistUrl}`
-	   const result = await sendDiscordMessage(channelId, message)
-	   if (result && result.id) {
-		   event.reply('sharePlaylistToDiscordResponse', { success: true })
-	   } else {
-		   event.reply('sharePlaylistToDiscordResponse', { success: false, error: 'Failed to send message to Discord.' })
-	   }
-   } catch (error) {
-	   event.reply('sharePlaylistToDiscordResponse', { success: false, error: error.toString() })
-   }
+ipcMain.on('share-playlist-to-discord', async (event, spotifyURL) => {
+  console.log("Sharing playlist to Discord,,,")
+  console.log('Spotify URL: ', spotifyURL)
+  console.log("------------------------------")
+  //  try {
+	//    if (!channelId || !playlistUrl) {
+	// 	   event.reply('sharePlaylistToDiscordResponse', { success: false, error: 'Missing channelId or playlistUrl.' })
+	// 	   return
+	//    }
+	//    const message = `Check out this Spotify playlist: ${playlistUrl}`
+	//    const result = await sendDiscordMessage(channelId, message)
+	//    if (result && result.id) {
+	// 	   event.reply('sharePlaylistToDiscordResponse', { success: true })
+	//    } else {
+	// 	   event.reply('sharePlaylistToDiscordResponse', { success: false, error: 'Failed to send message to Discord.' })
+	//    }
+  //  } catch (error) {
+	//    event.reply('sharePlaylistToDiscordResponse', { success: false, error: error.toString() })
+  //  }
 })
 
 ipcMain.on('delete-selected-playlist', async (event, arg) => {

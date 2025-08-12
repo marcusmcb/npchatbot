@@ -1,6 +1,7 @@
 import React, { useState, Fragment } from 'react'
 import { MdArrowBack, MdArrowForward, MdClose } from 'react-icons/md'
 import { ReportData, ReportDataProps } from '../types'
+import handleDiscordShare from '../utils/handleDiscordShare'
 import DiscordIcon from './icons/discord/DiscordIcon'
 import './styles/reportviewer.css'
 
@@ -30,7 +31,7 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
 	reloadPlaylistSummaries,
 	isDiscordAuthorized,
 }): JSX.Element => {
-	const [showDeleteModal, setShowDeleteModal] = useState(false)
+	const [showDeleteModal, setShowDeleteModal] = useState(false)	
 
 	// Helper to render set length with colored numbers
 	const renderSetLength = () => {
@@ -225,7 +226,12 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
 									'No playlist created for this stream.'
 								)}
 								{reportData?.spotify_link && isDiscordAuthorized ? (
-									<span className='discord-share-icon'>
+									<span
+										className='discord-share-icon'
+										onClick={() => {
+											handleDiscordShare(reportData.spotify_link)
+										}}
+									>
 										<DiscordIcon />
 									</span>
 								) : (
