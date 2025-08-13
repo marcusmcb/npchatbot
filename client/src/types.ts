@@ -114,7 +114,8 @@ export interface ReportData {
 	np_songs_queried: npSongQueried[]
 	dyp_search_terms: dypSearchTerm[]
 	spotify_link: string
-	discord_channel_id?: string // Added for Discord sharing
+	discord_channel_id?: string
+	session_date?: Date
 }
 
 export interface ReportDataProps {

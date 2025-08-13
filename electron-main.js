@@ -33,16 +33,11 @@ const {
 	handleSubmitUserData,
 } = require('./database/helpers/userData/handleSubmitUserData')
 
-// Discord token handler
-const getDiscordTokens = require('./database/helpers/userData/getDiscordTokens')
-
 // Discord auth handler
 const {
 	getDiscordAuthUrl,
-	exchangeCodeForToken,
+	exchangeCodeForDiscordToken,
 } = require('./auth/discord/handleDiscordAuth')
-
-const sendDiscordMessage = require('./auth/discord/sendDiscordMessage')
 
 // serato live playlist status validation
 const {
@@ -52,7 +47,7 @@ const {
 // user data handler
 const getUserData = require('./database/helpers/userData/getUserData')
 
-// playlist summary handlers
+/* PLAYLIST HANDLERS */
 const {
 	createPlaylistSummary,
 } = require('./bot-assets/summary/createPlaylistSummary')
@@ -66,10 +61,12 @@ const {
 	getPlaylistSummaryData,
 } = require('./database/helpers/playlistSummaries/getPlaylistSummaryData')
 
-// add playlist handler
 const { addPlaylist } = require('./database/helpers/playlists/addPlaylist')
 
-// delete playlist handler
+const {
+	sharePlaylistToDiscord,
+} = require('./database/helpers/playlists/sharePlaylistToDiscord')	
+
 const {
 	deletePlaylist,
 } = require('./database/helpers/playlists/deletePlaylist')
@@ -121,9 +118,17 @@ const waitForServer = async (url, timeout = 15000) => {
 	return false
 }
 
-// Discord auth callback server
+// utility method to start app server
+const startServer = () => {
+	serverInstance = https.createServer(options, server).listen(PORT, () => {
+		console.log(`npChatbot HTTPS server is running on port ${PORT}`)
+	})
+}
+
+// Discord auth callback PORT value
 const DISCORD_HTTP_PORT = 5003
 
+// Discord auth callback server
 const discordHttpServer = http.createServer(async (req, res) => {
 	if (req.url.startsWith('/auth/discord/callback')) {
 		const urlObj = new URL(req.url, `http://127.0.0.1:${DISCORD_HTTP_PORT}`)
@@ -154,7 +159,7 @@ const discordHttpServer = http.createServer(async (req, res) => {
 			// set discordAccessToken, discordRefreshToken
 			// and discordAuthorizationCode in users.db
 
-			const tokenData = await exchangeCodeForToken(code)
+			const tokenData = await exchangeCodeForDiscordToken(code)
 			if (tokenData) console.log('Token Data: ', tokenData)
 			console.log('-------------------------------')
 			// Store Discord tokens in NeDB users database
@@ -200,13 +205,6 @@ discordHttpServer.listen(DISCORD_HTTP_PORT, () => {
 		`Discord auth callback HTTP server running on port ${DISCORD_HTTP_PORT}`
 	)
 })
-
-// utility method to start app server
-const startServer = () => {
-	serverInstance = https.createServer(options, server).listen(PORT, () => {
-		console.log(`npChatbot HTTPS server is running on port ${PORT}`)
-	})
-}
 
 // http server and port for Spotify auth
 const HTTP_PORT = 5001
@@ -265,8 +263,28 @@ ipcMain.on('open-auth-settings', (event, url) => {
 	shell.openExternal(url)
 })
 
+ipcMain.on('getUserData', async (event, arg) => {
+	handleGetUserData(event, arg)
+})
+
+ipcMain.on('userDataUpdated', () => {
+	mainWindow.webContents.send('userDataUpdated')
+})
+
 ipcMain.on('open-spotify-url', (event, spotifyUrl) => {
 	shell.openExternal(spotifyUrl)
+})
+
+ipcMain.on('open-twitch-auth-url', async (event, arg) => {
+	handleTwitchAuth(event, arg, mainWindow, wss)
+})
+
+ipcMain.on('delete-selected-playlist', async (event, arg) => {
+	await deletePlaylist(arg, event)
+})
+
+ipcMain.on('submitUserData', async (event, arg) => {
+	handleSubmitUserData(event, arg, mainWindow)
 })
 
 ipcMain.on('open-spotify-auth-url', async (event, arg) => {
@@ -281,18 +299,6 @@ ipcMain.on('open-discord-auth-url', async (event, arg) => {
 	shell.openExternal(discordAuthUrl)
 })
 
-ipcMain.on('open-twitch-auth-url', async (event, arg) => {
-	handleTwitchAuth(event, arg, mainWindow, wss)
-})
-
-ipcMain.on('getUserData', async (event, arg) => {
-	handleGetUserData(event, arg)
-})
-
-ipcMain.on('userDataUpdated', () => {
-	mainWindow.webContents.send('userDataUpdated')
-})
-
 ipcMain.on('validateLivePlaylist', async (event, arg) => {
 	const isValid = await validateLivePlaylist(arg.url)
 	event.reply('validateLivePlaylistResponse', { isValid: isValid })
@@ -305,168 +311,12 @@ ipcMain.on('update-connection-state', (event, state) => {
 })
 
 // IPC handler to share Spotify playlist link to Discord channel
-ipcMain.on('share-playlist-to-discord', async (event, spotifyURL) => {
-	console.log('Sharing playlist to Discord...')
-	console.log('Spotify URL: ', spotifyURL)
-	console.log('------------------------------')
-
-	// Step 1: Retrieve Discord channelId and refresh token from user data
+ipcMain.on('share-playlist-to-discord', async (event, payload) => {
+	const { spotifyURL, sessionDate } = payload || {}
 	const userData = await getUserData(db)
-	if (!userData || !userData.discord || !userData.discord.channel_id) {
-		console.error('No Discord channel ID found in user data.')
-		event.reply('sharePlaylistToDiscordResponse', {
-			success: false,
-			error: 'No Discord channel ID found.',
-		})
-		return
-	} else {
-		console.log(
-			'User data with Discord ID found: ',
-			userData.discord.channel_id
-		)
-		console.log('------------------------------')
-	}
-
-	const discordData = userData.discord
-	const channelId = discordData.channel_id
-
-	// Preferred path: Use webhook to post (no need for OAuth token refresh)
-	if (discordData.webhook_url) {
-		try {
-			const message = `Check out this Spotify playlist: ${spotifyURL}`
-			const resp = await fetch(discordData.webhook_url, {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ content: message }),
-			})
-			if (resp.ok) {
-				console.log('Message sent to Discord via webhook successfully.')
-				event.reply('sharePlaylistToDiscordResponse', { success: true })
-				return
-			}
-			const errText = await resp.text()
-			console.error('Webhook post failed:', resp.status, errText)
-			// If webhook fails, fall back to token-based post below
-		} catch (err) {
-			console.error('Error posting via webhook:', err)
-			// Fall back to token-based post below
-		}
-	}
-
-	// Step 2: Refresh Discord access token before posting
-
-	let refreshedToken = null
-
-	try {
-		// If we have a refresh_token, use it to get a new access token
-		if (discordData.refreshToken) {
-			const params = new URLSearchParams()
-			params.append('grant_type', 'refresh_token')
-			params.append('refresh_token', discordData.refreshToken)
-
-			// Use HTTP Basic auth as per Discord docs
-			const basic = Buffer.from(
-				`${process.env.DISCORD_CLIENT_ID}:${process.env.DISCORD_CLIENT_SECRET}`
-			).toString('base64')
-
-			const response = await fetch('https://discord.com/api/v10/oauth2/token', {
-				method: 'POST',
-				body: params,
-				headers: {
-					Authorization: `Basic ${basic}`,
-					'Content-Type': 'application/x-www-form-urlencoded',
-				},
-			})
-
-			const tokenData = await response.json()
-			if (tokenData) console.log('Token Data: ', tokenData)
-			console.log('-----------------------------------')
-			if (tokenData.access_token) {
-				refreshedToken = tokenData.access_token
-				// Step 3: Update users.db with new tokens (refresh tokens are single-use)
-				db.users.update(
-					{ _id: userData._id },
-					{
-						$set: {
-							'discord.accessToken': tokenData.access_token,
-							'discord.refreshToken':
-								tokenData.refresh_token || discordData.refreshToken,
-						},
-					},
-					{},
-					(err) => {
-						if (err) {
-							console.error('Failed to update Discord token in db:', err)
-						} else {
-							console.log('Discord token updated in db.')
-						}
-					}
-				)
-			} else {
-				console.error('Failed to refresh Discord token:', tokenData)
-				// If the refresh token is invalid, fall back to existing access token
-				if (tokenData.error === 'invalid_grant' && discordData.accessToken) {
-					refreshedToken = discordData.accessToken
-				} else {
-					event.reply('sharePlaylistToDiscordResponse', {
-						success: false,
-						error: 'Failed to refresh Discord token.',
-					})
-					return
-				}
-			}
-		} else {
-			// No refresh token, use existing access token
-			refreshedToken = discordData.accessToken
-		}
-	} catch (error) {
-		console.error('Error refreshing Discord token:', error)
-		event.reply('sharePlaylistToDiscordResponse', {
-			success: false,
-			error: 'Error refreshing Discord token.',
-		})
-		return
-	}
-
-	// Step 4: Submit POST request to Discord
-	try {
-		const message = `Check out this Spotify playlist: ${spotifyURL}`
-		const response = await fetch(
-			`https://discord.com/api/v10/channels/${channelId}/messages`,
-			{
-				method: 'POST',
-				headers: {
-					Authorization: `Bearer ${refreshedToken}`,
-					'Content-Type': 'application/json',
-				},
-				body: JSON.stringify({ content: message }),
-			}
-		)
-		const result = await response.json()
-		if (result && result.id) {
-			console.log('Message sent to Discord successfully:', result.id)
-			event.reply('sharePlaylistToDiscordResponse', { success: true })
-		} else {
-			console.error('Failed to send message to Discord:', result)
-			event.reply('sharePlaylistToDiscordResponse', {
-				success: false,
-				error: 'Failed to send message to Discord.',
-			})
-		}
-	} catch (error) {
-		event.reply('sharePlaylistToDiscordResponse', {
-			success: false,
-			error: error.toString(),
-		})
-	}
-})
-
-ipcMain.on('delete-selected-playlist', async (event, arg) => {
-	await deletePlaylist(arg, event)
-})
-
-ipcMain.on('submitUserData', async (event, arg) => {
-	handleSubmitUserData(event, arg, mainWindow)
+	const twitchChannelName = userData?.twitchChannelName
+	const webhookURL = userData?.discord?.webhook_url
+	await sharePlaylistToDiscord(spotifyURL, webhookURL, twitchChannelName, sessionDate, event)
 })
 
 ipcMain.on('getPlaylistSummaries', async (event, arg) => {

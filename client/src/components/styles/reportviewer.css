@@ -230,6 +230,11 @@
 	margin-left: 10px;
 }
 
+.report-button-row {
+	display: flex;
+	flex-direction: row;	
+}
+
 .modal-overlay {
 	position: fixed;
 	top: 0;

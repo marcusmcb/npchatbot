@@ -31,7 +31,7 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
 	reloadPlaylistSummaries,
 	isDiscordAuthorized,
 }): JSX.Element => {
-	const [showDeleteModal, setShowDeleteModal] = useState(false)	
+	const [showDeleteModal, setShowDeleteModal] = useState(false)
 
 	// Helper to render set length with colored numbers
 	const renderSetLength = () => {
@@ -229,7 +229,10 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
 									<span
 										className='discord-share-icon'
 										onClick={() => {
-											handleDiscordShare(reportData.spotify_link)
+											handleDiscordShare(
+												reportData.spotify_link,
+												reportData.session_date
+											)
 										}}
 									>
 										<DiscordIcon />
@@ -240,15 +243,20 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
 							</span>
 						</div>
 					</div>
-					<button
-						className='report-close-button default-button'
-						onClick={() => {
-							console.log(reportData)
-							setReportView(false)
-						}}
-					>
-						Close
-					</button>
+					<div className='report-button-row'>
+						<button
+							className='report-close-button default-button'
+							onClick={() => {
+								console.log(reportData)
+								setReportView(false)
+							}}
+						>
+							Close
+						</button>
+						<div>
+							Shared
+						</div>
+					</div>
 				</div>
 				{/* REPORT PANEL RIGHT */}
 				<div className='report-panel-right'>
@@ -299,7 +307,7 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
 											<div className='doubles-text' key={index}>
 												* {song.name}
 												{song.count > 1 && (
-													<span className='highlight-color'>
+													<span className='highlight-color' key={index}>
 														{' '}
 														({song.count} times)
 													</span>
@@ -333,7 +341,7 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
 											<div className='doubles-text' key={index}>
 												"{term.name}"
 												{term.count > 1 && (
-													<span className='highlight-color'>
+													<span className='highlight-color' key={index}>
 														{' '}
 														({term.count} times)
 													</span>

@@ -19,7 +19,7 @@ const getDiscordAuthUrl = (state) => {
 	return `https://discord.com/oauth2/authorize?${params}`
 }
 
-const exchangeCodeForToken = async (code) => {
+const exchangeCodeForDiscordToken = async (code) => {
 	try {
 		console.log('Discord Token Exchange called.')
 		console.log('-------------------------------')
@@ -46,4 +46,4 @@ const exchangeCodeForToken = async (code) => {
 	}
 }
 
-module.exports = { getDiscordAuthUrl, exchangeCodeForToken }
+module.exports = { getDiscordAuthUrl, exchangeCodeForDiscordToken }
