@@ -1,8 +1,10 @@
-const fetchPlaylistSummaries = async (ipcRenderer: any): Promise<any> => {
+const ipcRenderer = window.electron.ipcRenderer
+
+const fetchPlaylistSummaries = async (): Promise<any> => {
 	console.log('*** Fetching Playlist Summaries ***')
 	return new Promise((resolve) => {
-		ipcRenderer.send('getPlaylistSummaries')
-		ipcRenderer.once('playlistSummariesResponse', (data: any) => {
+		ipcRenderer.send('get-playlist-summaries')
+		ipcRenderer.once('get-playlist-summaries-response', (data: any) => {
 			if (data) {
 				console.log('Received playlist summaries data:', data)
 				resolve(data)			

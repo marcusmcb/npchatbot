@@ -11,6 +11,7 @@ import { ReportData } from './types'
 
 import useWebSocket from './hooks/useWebSocket'
 import useGetUserData from './hooks/useGetUserData'
+import useGetPlaylistData from './hooks/useGetPlaylistData'
 import useMessageQueue from './hooks/useMessageQueue'
 import useTooltipVisibility from './hooks/useTooltipVisibility'
 import useFormModified from './hooks/useFormModified'
@@ -202,37 +203,16 @@ const App = (): JSX.Element => {
 		addMessageToQueue
 	)
 
-	// hook to fetch user playlist summary data
-	useEffect(() => {
-		const fetchPlaylistData = async () => {
-			try {
-				const playlistSummary = await fetchPlaylistSummaries(ipcRenderer)
-				console.log('Fetched playlist summary:', playlistSummary.length)
-				if (playlistSummary && playlistSummary.length !== 0) {
-					setPlaylistSummaries(playlistSummary as ReportData[])
-					if (currentReportIndex !== 0) {
-						setCurrentReportIndex(currentReportIndex)
-					} else {
-						setCurrentReportIndex(0)
-					}
-					setReportData(playlistSummary[0] as ReportData)
-					setIsReportReady(true)
-				} else {
-					setPlaylistSummaries([])
-					setCurrentReportIndex(0)
-					setReportData(null)
-					setIsReportReady(false)
-				}
-			} catch (error) {
-				setPlaylistSummaries([])
-				setCurrentReportIndex(0)
-				setReportData(null)
-				setIsReportReady(false)
-			}
-		}
-		fetchPlaylistData()
-	}, [])
+	// hook to fetch playlist summaries and set initial report index
+	useGetPlaylistData(
+		currentReportIndex,
+		setPlaylistSummaries,
+		setCurrentReportIndex,
+		setReportData,
+		setIsReportReady
+	)	
 
+	// hook to update report data when current report index changes
 	useEffect(() => {
 		if (playlistSummaries.length > 0) {
 			setReportData(playlistSummaries[currentReportIndex])
@@ -273,7 +253,10 @@ const App = (): JSX.Element => {
 		const handleDiscordAuthSuccess = () => {
 			setIsDiscordAuthorized(true)
 		}
-		window.electron.ipcRenderer.on('discord-auth-successful', handleDiscordAuthSuccess)
+		window.electron.ipcRenderer.on(
+			'discord-auth-successful',
+			handleDiscordAuthSuccess
+		)
 		return () => {
 			window.electron.ipcRenderer.removeAllListeners('discord-auth-successful')
 		}
@@ -351,9 +334,11 @@ const App = (): JSX.Element => {
 			isValidEmail
 		)
 	}
-			
+
+	// helper method to reload playlist summaries
+	// and reset current report index when a playlist is deleted
 	const reloadPlaylistSummaries = (deletedIndex: number) => {
-		fetchPlaylistSummaries(ipcRenderer).then((playlistSummary) => {
+		fetchPlaylistSummaries().then((playlistSummary) => {
 			if (playlistSummary && playlistSummary.length > 0) {
 				setPlaylistSummaries(playlistSummary as ReportData[])
 				// If there is a playlist to the left, show it; otherwise, show the right one
@@ -460,7 +445,7 @@ const App = (): JSX.Element => {
 							currentReportIndex={currentReportIndex}
 							setCurrentReportIndex={setCurrentReportIndex}
 							reloadPlaylistSummaries={reloadPlaylistSummaries}
-							setPlaylistSummaries={setPlaylistSummaries}							
+							setPlaylistSummaries={setPlaylistSummaries}
 						/>
 					</div>
 				)}

@@ -8,8 +8,8 @@ const validateLivePlaylist = async (
 	const seratoDisplayName = formData.seratoDisplayName.replaceAll(' ', '_')
 	const livePlaylistURL =
 		'https://www.serato.com/playlists/' + seratoDisplayName + '/live'
-	ipcRenderer.send('validateLivePlaylist', { url: livePlaylistURL })
-	ipcRenderer.once('validateLivePlaylistResponse', (response: any) => {
+	ipcRenderer.send('validate-live-playlist', { url: livePlaylistURL })
+	ipcRenderer.once('validate-live-playlist-response', (response: any) => {
 		if (response && response.isValid) {
 			addMessageToQueue(
 				'Your Serato Live Playlist is public and ready for use with npChatbot.'

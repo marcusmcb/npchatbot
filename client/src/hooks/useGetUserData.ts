@@ -20,7 +20,7 @@ const useGetUserData = (
 	useEffect(() => {
 		const ipcRendererInstance = window.electron?.ipcRenderer
 		if (ipcRendererInstance) {
-			ipcRendererInstance.send('getUserData', {})
+			ipcRendererInstance.send('get-user-data', {})
 			const handleGetUserDataResponse = (response: any) => {
 				// console.log('Response: ', response.error)
 				if (response.error) {

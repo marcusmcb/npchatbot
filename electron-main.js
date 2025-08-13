@@ -33,7 +33,7 @@ const {
 	handleSubmitUserData,
 } = require('./database/helpers/userData/handleSubmitUserData')
 
-// Discord auth handler
+// discord auth handler
 const {
 	getDiscordAuthUrl,
 	exchangeCodeForDiscordToken,
@@ -65,7 +65,7 @@ const { addPlaylist } = require('./database/helpers/playlists/addPlaylist')
 
 const {
 	sharePlaylistToDiscord,
-} = require('./database/helpers/playlists/sharePlaylistToDiscord')	
+} = require('./database/helpers/playlists/sharePlaylistToDiscord')
 
 const {
 	deletePlaylist,
@@ -263,10 +263,11 @@ ipcMain.on('open-auth-settings', (event, url) => {
 	shell.openExternal(url)
 })
 
-ipcMain.on('getUserData', async (event, arg) => {
+ipcMain.on('get-user-data', async (event, arg) => {
 	handleGetUserData(event, arg)
 })
 
+// is this listener being used?
 ipcMain.on('userDataUpdated', () => {
 	mainWindow.webContents.send('userDataUpdated')
 })
@@ -283,7 +284,7 @@ ipcMain.on('delete-selected-playlist', async (event, arg) => {
 	await deletePlaylist(arg, event)
 })
 
-ipcMain.on('submitUserData', async (event, arg) => {
+ipcMain.on('submit-user-data', async (event, arg) => {
 	handleSubmitUserData(event, arg, mainWindow)
 })
 
@@ -299,9 +300,9 @@ ipcMain.on('open-discord-auth-url', async (event, arg) => {
 	shell.openExternal(discordAuthUrl)
 })
 
-ipcMain.on('validateLivePlaylist', async (event, arg) => {
+ipcMain.on('validate-live-playlist', async (event, arg) => {
 	const isValid = await validateLivePlaylist(arg.url)
-	event.reply('validateLivePlaylistResponse', { isValid: isValid })
+	event.reply('validate-live-playlist-response', { isValid: isValid })
 })
 
 ipcMain.on('update-connection-state', (event, state) => {
@@ -310,16 +311,22 @@ ipcMain.on('update-connection-state', (event, state) => {
 	isConnected = state
 })
 
-// IPC handler to share Spotify playlist link to Discord channel
 ipcMain.on('share-playlist-to-discord', async (event, payload) => {
 	const { spotifyURL, sessionDate } = payload || {}
 	const userData = await getUserData(db)
 	const twitchChannelName = userData?.twitchChannelName
 	const webhookURL = userData?.discord?.webhook_url
-	await sharePlaylistToDiscord(spotifyURL, webhookURL, twitchChannelName, sessionDate, event)
+	await sharePlaylistToDiscord(
+		spotifyURL,
+		webhookURL,
+		twitchChannelName,
+		sessionDate,
+		event
+	)
 })
 
-ipcMain.on('getPlaylistSummaries', async (event, arg) => {
+// ipc handler to return user's playlist summary data
+ipcMain.on('get-playlist-summaries', async (event, arg) => {
 	const playlistSummaries = await getPlaylistSummaries()
 	if (playlistSummaries && playlistSummaries.length > 0) {
 		console.log('Playlist summaries retrieved successfully')
@@ -329,16 +336,48 @@ ipcMain.on('getPlaylistSummaries', async (event, arg) => {
 			`${playlistSummaryData.commonTracks.length} common tracks found across playlists.`
 		)
 		console.log('----------------------------------')
-		event.reply('playlistSummariesResponse', playlistSummaries)
+		event.reply('get-playlist-summaries-response', playlistSummaries)
 	} else {
 		console.log('No playlist summaries found.')
-		event.reply('playlistSummariesResponse', [])
+		event.reply('get-playlist-summaries-response', [])
 	}
 })
 
-// refactor playlist insert handler as standalone method
+// ipc handler for the Twitch connection process
+ipcMain.on('start-bot-script', async (event, arg) => {
+	const validStartResponse = await handleStartBotScript(event, arg, botProcess)
+	if (validStartResponse === false) {
+		return
+	}
+	// load configurations and initialize chatbot script
+	setTimeout(() => {
+		loadConfigurations()
+			.then((config) => {
+				setTimeout(async () => {
+					const init = await initializeBot(config)
+					tmiInstance = init
+					botProcess === true
+					event.reply('start-bot-response', {
+						success: true,
+						message: 'npChatbot is connected to your Twitch channel.',
+					})
+				}, 1000)
+			})
+			.catch((err) => {
+				logToFile(`Error loading configurations: ${err}`)
+				logToFile('*******************************')
+				console.error('Error loading configurations:', err)
+			})
+			.finally(() => {
+				console.log('------------------')
+				console.log('Bot started successfully')
+				console.log('------------------')
+			})
+	}, 1000)
+})
 
-ipcMain.on('stopBotScript', async (event, arg) => {
+// ipc handler for the Twitch disconnection process
+ipcMain.on('stop-bot-script', async (event, arg) => {
 	const playlistData = await getCurrentPlaylistSummary()
 	console.log('Playlist data: ', playlistData)
 	if (playlistData) {
@@ -365,38 +404,7 @@ ipcMain.on('stopBotScript', async (event, arg) => {
 	console.log('--------------------------------------')
 })
 
-ipcMain.on('startBotScript', async (event, arg) => {
-	const validStartResponse = await handleStartBotScript(event, arg, botProcess)
-	if (validStartResponse === false) {
-		return
-	}
-	// load configurations and initialize chatbot script
-	setTimeout(() => {
-		loadConfigurations()
-			.then((config) => {
-				setTimeout(async () => {
-					const init = await initializeBot(config)
-					tmiInstance = init
-					botProcess === true
-					event.reply('startBotResponse', {
-						success: true,
-						message: 'npChatbot is connected to your Twitch channel.',
-					})
-				}, 1000)
-			})
-			.catch((err) => {
-				logToFile(`Error loading configurations: ${err}`)
-				logToFile('*******************************')
-				console.error('Error loading configurations:', err)
-			})
-			.finally(() => {
-				console.log('------------------')
-				console.log('Bot started successfully')
-				console.log('------------------')
-			})
-	}, 1000)
-})
-
+// create the main application window
 const createWindow = async () => {
 	mainWindow = new BrowserWindow({
 		width: 1130,
@@ -420,10 +428,10 @@ const createWindow = async () => {
 		: `file://${path.join(__dirname, './client/build/index.html')}`
 
 	if (isDev) {
-		// Wait for React dev server to be ready before loading
+		// wait for client dev server to be ready before loading
 		const ready = await waitForServer('http://127.0.0.1:3000')
 		if (!ready) {
-			console.error('React dev server did not start in time.')
+			console.error('Client dev server did not start in time.')
 			return
 		}
 	}
@@ -453,13 +461,13 @@ const createWindow = async () => {
 				app.quit()
 			}
 		} else {
-			// If not connected, quit immediately
+			// if not connected, quit immediately
 			app.quit()
 		}
 	})
 }
 
-// Use the async createWindow everywhere
+// use the async createWindow everywhere
 app.on('activate', async () => {
 	if (BrowserWindow.getAllWindows().length === 0) {
 		await createWindow()

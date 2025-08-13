@@ -62,7 +62,7 @@ const handleSubmit = async (
 		continueLastPlaylist,
 	}
 
-	ipcRenderer.send('submitUserData', submitData)
+	ipcRenderer.send('submit-user-data', submitData)
 	ipcRenderer.once('userDataResponse', (response: any) => {
 		console.log(response)
 		if (response && response.success) {
