@@ -21,12 +21,6 @@ const {
 	endTrackCurrentSongPlaying,
 } = require('./bot-assets/auto-id/trackCurrentSongPlaying')
 
-// playlist summary methods
-const {
-	npSongsQueried,
-	dypSearchTerms,
-} = require('./bot-assets/command-use/commandUse')
-
 const wss = new WebSocket.Server({ port: 8081 })
 
 const initializeBot = async (config) => {
