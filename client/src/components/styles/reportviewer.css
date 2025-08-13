@@ -140,6 +140,10 @@
 	color: var(--success-color);
 }
 
+.spotify-link {
+	cursor: pointer;
+}
+
 .report-panel-item-header {
 	margin-top: 5px;
 	margin-bottom: 10px;
@@ -204,7 +208,8 @@
 .report-panel-share-message {
 	margin-top: 30px;
 	color: var(--success-color);
-	font-weight: 600;
+	font-family: var(--dm-sans);
+	font-size: 20px;
 }
 
 /* .hr {
@@ -234,11 +239,12 @@
 
 .discord-share-icon {
 	margin-left: 10px;
+	cursor: pointer;
 }
 
 .report-button-row {
 	display: flex;
-	flex-direction: row;	
+	flex-direction: row;
 }
 
 .modal-overlay {

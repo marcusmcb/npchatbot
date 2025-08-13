@@ -5,13 +5,6 @@ import handleDiscordShare from '../utils/handleDiscordShare'
 import DiscordIcon from './icons/discord/DiscordIcon'
 import './styles/reportviewer.css'
 
-// add logic in the return to account for the first use case where
-// the user has the application installed but has yet to generate
-// any play histories
-
-// update the report viewer arrow elements to be in a fixed
-// position with the report date placed/centered in between
-
 const ipcRenderer = window.electron.ipcRenderer
 
 interface ReportViewerProps extends ReportDataProps {
@@ -69,6 +62,21 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
 		return parts
 	}
 
+	// Helper to deduplicate, count, and sort by count descending
+	const getUniqueCounts = (arr: { name: string }[]) => {
+		const counts: { [key: string]: number } = {}
+		arr.forEach((item) => {
+			if (item.name in counts) {
+				counts[item.name] += 1
+			} else {
+				counts[item.name] = 1
+			}
+		})
+		return Object.entries(counts)
+			.map(([name, count]) => ({ name, count }))
+			.sort((a, b) => b.count - a.count || a.name.localeCompare(b.name))
+	}
+
 	const handleLeftArrowClick = () => {
 		if (currentReportIndex < playlistSummaries.length - 1) {
 			setCurrentReportIndex(currentReportIndex + 1)
@@ -83,6 +91,10 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
 
 	const handleDeletePlaylist = () => {
 		setShowDeleteModal(true)
+	}
+
+	const handleCancelDelete = () => {
+		setShowDeleteModal(false)
 	}
 
 	const handleConfirmDelete = () => {
@@ -103,25 +115,6 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
 				console.error('Unexpected response format from deletePlaylistResponse')
 			}
 		})
-	}
-
-	const handleCancelDelete = () => {
-		setShowDeleteModal(false)
-	}
-
-	// Helper to deduplicate, count, and sort by count descending
-	const getUniqueCounts = (arr: { name: string }[]) => {
-		const counts: { [key: string]: number } = {}
-		arr.forEach((item) => {
-			if (item.name in counts) {
-				counts[item.name] += 1
-			} else {
-				counts[item.name] = 1
-			}
-		})
-		return Object.entries(counts)
-			.map(([name, count]) => ({ name, count }))
-			.sort((a, b) => b.count - a.count || a.name.localeCompare(b.name))
 	}
 
 	return (
