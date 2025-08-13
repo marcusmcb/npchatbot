@@ -25,7 +25,7 @@ const sharePlaylistToDiscord = async (
 		})
 		if (resp.ok) {
 			console.log('Message sent to Discord via webhook successfully.')
-			event.reply('sharePlaylistToDiscordResponse', { success: true })
+			event.reply('share-playlist-to-discord-response', { success: true })
 			return
 		}
 		const errText = await resp.text()

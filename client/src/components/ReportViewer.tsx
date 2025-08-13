@@ -32,6 +32,9 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
 	isDiscordAuthorized,
 }): JSX.Element => {
 	const [showDeleteModal, setShowDeleteModal] = useState(false)
+	const [currentDiscordMessage, setCurrentDiscordMessage] = useState<
+		string | null
+	>(null)
 
 	// Helper to render set length with colored numbers
 	const renderSetLength = () => {
@@ -230,6 +233,7 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
 										className='discord-share-icon'
 										onClick={() => {
 											handleDiscordShare(
+												setCurrentDiscordMessage,
 												reportData.spotify_link,
 												reportData.session_date
 											)
@@ -243,18 +247,22 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
 							</span>
 						</div>
 					</div>
-					<div className='report-button-row'>
-						<button
-							className='report-close-button default-button'
-							onClick={() => {
-								console.log(reportData)
-								setReportView(false)
-							}}
-						>
-							Close
-						</button>
-						<div>
-							Shared
+					<div className='report-panel-item-row'>
+						<div className='report-panel-item'>
+							<button
+								className='report-close-button default-button'
+								onClick={() => {
+									console.log(reportData)
+									setReportView(false)
+								}}
+							>
+								Close
+							</button>
+						</div>
+						<div className='report-panel-item'>
+							<div className='report-panel-item-value report-panel-share-message'>
+								{currentDiscordMessage && <span>{currentDiscordMessage}</span>}
+							</div>
 						</div>
 					</div>
 				</div>

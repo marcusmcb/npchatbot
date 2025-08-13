@@ -29,7 +29,7 @@
 
 .report-close-button {
 	margin-top: 25px;
-	width: 25%;
+	width: 50%;
 	/* margin-left: 10px; */
 }
 
@@ -199,6 +199,12 @@
 .report-date-selector-close:focus {
 	color: var(--main-text-color);
 	font-weight: bold;
+}
+
+.report-panel-share-message {
+	margin-top: 30px;
+	color: var(--success-color);
+	font-weight: 600;
 }
 
 /* .hr {
