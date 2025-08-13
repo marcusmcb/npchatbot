@@ -17,20 +17,25 @@ const sharePlaylistToDiscord = async (
 			  })
 			: null
 		const message = `Check out the Spotify playlist from ${twitchChannelName}'s ${formattedDate} stream on Twitch! - ${spotifyURL}`
-			
+
 		const resp = await fetch(webhookURL, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({ content: message }),
 		})
+
 		if (resp.ok) {
 			console.log('Message sent to Discord via webhook successfully.')
 			event.reply('share-playlist-to-discord-response', { success: true })
 			return
+		} else {
+			const errText = await resp.text()
+			console.error('Webhook post failed:', resp.status, errText)
+			// if webhook fails, fall back to token-based post below
+			event.reply('share-playlist-to-discord-response', {
+				success: false,
+			})
 		}
-		const errText = await resp.text()
-		console.error('Webhook post failed:', resp.status, errText)
-		// if webhook fails, fall back to token-based post below
 	} catch (err) {
 		console.error('Error posting via webhook:', err)
 	}

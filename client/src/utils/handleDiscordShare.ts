@@ -1,9 +1,9 @@
 const ipcRenderer = window.electron.ipcRenderer
 
 const handleDiscordShare = async (
-  setCurrentDiscordMessage: (message: string | null) => void,
+	setCurrentDiscordMessage: (message: string | null) => void,
 	spotifyURL: string,
-	sessionDate?: Date,	
+	sessionDate?: Date
 ) => {
 	console.log('Sharing to Discord...')
 	const payload = {
@@ -14,9 +14,16 @@ const handleDiscordShare = async (
 	ipcRenderer.once('share-playlist-to-discord-response', (response: any) => {
 		if (response && response.success) {
 			setCurrentDiscordMessage('Successfully Shared')
-      setTimeout(() => {
-        setCurrentDiscordMessage(null)
-      }, 5000)
+			setTimeout(() => {
+				setCurrentDiscordMessage(null)
+			}, 5000)
+		} else {
+			setCurrentDiscordMessage(
+				'Failed to share playlist to Discord.  Please re-authorize npChatbot with Discord.'
+			)
+			setTimeout(() => {
+				setCurrentDiscordMessage(null)
+			}, 5000)
 		}
 	})
 }
