@@ -4,6 +4,7 @@ const { npSongsQueried } = require('../../command-use/commandUse')
 const {
 	vibeCheckSelector,
 } = require('../now-playing/npCommandHelpers/npCommandHelpers')
+const { getCurrentPlaylistSummary } = require("../../command-use/commandUse")
 
 const {
 	NO_LIVE_DATA_MESSAGE,
@@ -49,6 +50,9 @@ const handleDefault = (
 	obsClearDisplayTime,
 	config
 ) => {
+	console.log("Current Playlist Summary: ")
+	console.log(getCurrentPlaylistSummary())
+	console.log("---------------------------")
 	const currentTrackPlaying = reportData.track_log[0].track_id
 	const message = `Now playing: ${currentTrackPlaying}`
 	npSongsQueried.push({ name: currentTrackPlaying })
@@ -283,6 +287,9 @@ const npCommands = async (
 			handler(channel, twitchClient, tags)
 			return
 		}
+
+		// replace createLiveReport call with the user's
+		// Serato Live Playlist data stored as 
 
 		const reportData = await createLiveReport(url)
 		if (reportData === undefined) {

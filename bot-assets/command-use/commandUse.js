@@ -15,4 +15,5 @@ module.exports = {
   dypSearchTerms,  
   setCurrentPlaylistSummary,
   getCurrentPlaylistSummary,
+  currentPlaylistSummary
 }

@@ -246,6 +246,9 @@ const trackCurrentSongPlaying = async (config, url, twitchClient, wss) => {
 		if (newCurrentSong !== currentSong) {
 			currentSong = newCurrentSong
 
+			// add method to here to scrape and store the user's
+			// full Serato Live Playlist data
+
 			const reportData = await createLiveReport(url)
 			console.log('---- Report Data Created ----')
 			setCurrentPlaylistSummary(reportData)
@@ -263,7 +266,7 @@ const trackCurrentSongPlaying = async (config, url, twitchClient, wss) => {
 }
 
 const endTrackCurrentSongPlaying = () => {
-	if (trackingInterval) {		
+	if (trackingInterval) {
 		clearInterval(trackingInterval)
 		trackingInterval = null
 		currentSong = null

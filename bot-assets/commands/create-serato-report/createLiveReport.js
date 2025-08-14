@@ -216,6 +216,7 @@ const createLiveReport = async (url) => {
 
 		console.log('----------------------')
 		console.log('Serato Report Created: ')
+		console.log(seratoLiveReport)
 		// console.log('DJ Name: ', seratoLiveReport.dj_name)
 		// console.log('Start Time:', seratoLiveReport.set_start_time)
 		// console.log('Set Length: ', seratoLiveReport.set_length)
