@@ -32,7 +32,7 @@ const handleStartBotScript = async (event, arg, botProcess) => {
 
 	// check if bot process is already running
 	if (botProcess) {
-		event.reply('startBotResponse', {
+		event.reply('start-bot-response', {
 			success: false,
 			error: 'Bot is already running.',
 		})
@@ -56,7 +56,7 @@ const handleStartBotScript = async (event, arg, botProcess) => {
 				success: false,
 				error: errorHandler(currentAccessToken.message),
 			}
-			event.reply('startBotResponse', errorResponse)
+			event.reply('start-bot-response', errorResponse)
 			return false
 		} else {
 			await updateUserToken(db, event, currentAccessToken)
@@ -70,7 +70,7 @@ const handleStartBotScript = async (event, arg, botProcess) => {
 			success: false,
 			error: 'Failed to update user token.',
 		}
-		event.reply('startBotResponse', errorResponse)
+		event.reply('start-bot-response', errorResponse)
 		return false
 	}
 
@@ -86,7 +86,7 @@ const handleStartBotScript = async (event, arg, botProcess) => {
 			console.log('--------------------------------------')
 		} catch (error) {
 			errorResponse.error = errorHandler(error)
-			event.reply('startBotResponse', errorResponse)
+			event.reply('start-bot-response', errorResponse)
 			return false
 		}
 	}
@@ -104,7 +104,7 @@ const handleStartBotScript = async (event, arg, botProcess) => {
 			// console.log('--------------------------------------')
 			// console.log('Error: ', errorResponse.error)
 			// console.log('--------------------------------------')
-			event.reply('startBotResponse', errorResponse)
+			event.reply('start-bot-response', errorResponse)
 			return false
 		} else {
 			// if continue Last playlist is not enabled, create a new Spotify playlist
@@ -113,7 +113,7 @@ const handleStartBotScript = async (event, arg, botProcess) => {
 				console.log('-------------------------')
 				let response = await createSpotifyPlaylist()
 				if (response) {
-					event.reply('startBotResponse', response)
+					event.reply('start-bot-response', response)
 				}
 			} else {
 				// get the currentSpotifyPlaylistId from the user.db file
@@ -140,7 +140,7 @@ const handleStartBotScript = async (event, arg, botProcess) => {
 						// send message to the client UI when this occurs
 						let response = await createSpotifyPlaylist()
 						if (response) {
-							event.reply('startBotResponse', response)
+							event.reply('start-bot-response', response)
 						}
 					}
 				} else {
@@ -148,7 +148,7 @@ const handleStartBotScript = async (event, arg, botProcess) => {
 					console.log('-------------------------')
 					let response = await createSpotifyPlaylist()
 					if (response) {
-						event.reply('startBotResponse', response)
+						event.reply('start-bot-response', response)
 					}
 				}
 			}

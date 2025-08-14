@@ -7,13 +7,13 @@ const handleStopBotScript = async (event, arg, tmiInstance) => {
 			console.log('TWITCH CHAT HAS BEEN DISCONNECTED')
 			console.log('- - - - - - - - - - - - - - - - - -')
 		})		
-		event.reply('stopBotResponse', {
+		event.reply('stop-bot-response', {
 			success: true,
 			message: 'ipcMain: bot client successfully disconnected',
 			// data: playlistSummary,
 		})
 	} else {
-		event.reply('stopBotResponse', {
+		event.reply('stop-bot-response', {
 			success: false,
 			error: 'ipcMain: no bot client running to disconnect',
 		})

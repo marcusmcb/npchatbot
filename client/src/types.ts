@@ -1,3 +1,5 @@
+/* INTERFACE EXPORTS */
+
 export interface BotProcessResponse {
 	success: boolean
 	message?: any
@@ -18,33 +20,8 @@ export interface MessagePanelProps {
 export interface TitleBarProps {
 	isTwitchAuthorized: boolean
 	isSpotifyAuthorized: boolean
+	isDiscordAuthorized: boolean
 	isBotConnected: boolean
-}
-
-export type CredentialsFieldConfig = {
-	id: string
-	label: string
-	name: keyof CredentialsPanelProps['formData']
-	placeholder?: string
-}
-
-export type CredentialsPanelProps = {
-	formData: {
-		twitchChannelName: string
-		twitchChatbotName: string
-		seratoDisplayName: string
-		obsWebsocketAddress?: string
-		obsWebsocketPassword?: string
-	}
-	handleInputChange: (event: React.ChangeEvent<HTMLInputElement>) => void
-	showTooltip: string | null
-	setShowTooltip: (value: string | null) => void
-	handleSubmit: (event: React.FormEvent<HTMLFormElement>) => void
-	isBotConnected: boolean
-	isObsResponseEnabled: boolean
-	isTwitchAuthorized: boolean
-	isSpotifyAuthorized: boolean
-	isFormModified: boolean
 }
 
 export interface SessionPanelProps {
@@ -65,7 +42,7 @@ export interface SessionPanelProps {
 	setPlaylistSummaries: (summaries: ReportData[]) => void
 }
 
-export interface DoublePlayed {	
+export interface DoublePlayed {
 	track_id: string
 }
 
@@ -113,10 +90,40 @@ export interface ReportData {
 	np_songs_queried: npSongQueried[]
 	dyp_search_terms: dypSearchTerm[]
 	spotify_link: string
+	discord_channel_id?: string
+	session_date?: Date
 }
 
 export interface ReportDataProps {
 	reportData: ReportData | null
 	setReportView: (value: boolean) => void
 	reloadPlaylistSummaries: (deletedIndex: number) => void
+}
+
+/* TYPE EXPORTS */
+
+export type CredentialsFieldConfig = {
+	id: string
+	label: string
+	name: keyof CredentialsPanelProps['formData']
+	placeholder?: string
+}
+
+export type CredentialsPanelProps = {
+	formData: {
+		twitchChannelName: string
+		twitchChatbotName: string
+		seratoDisplayName: string
+		obsWebsocketAddress?: string
+		obsWebsocketPassword?: string
+	}
+	handleInputChange: (event: React.ChangeEvent<HTMLInputElement>) => void
+	showTooltip: string | null
+	setShowTooltip: (value: string | null) => void
+	handleSubmit: (event: React.FormEvent<HTMLFormElement>) => void
+	isBotConnected: boolean
+	isObsResponseEnabled: boolean
+	isTwitchAuthorized: boolean
+	isSpotifyAuthorized: boolean
+	isFormModified: boolean
 }

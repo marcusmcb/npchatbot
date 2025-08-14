@@ -1,5 +1,4 @@
 const db = require('./database/database')
-// const logToFile = require('./scripts/logger')
 
 const loadConfigurations = () => {
 	return new Promise((resolve, reject) => {
@@ -7,8 +6,7 @@ const loadConfigurations = () => {
 			if (err) {
 				reject(err)
 			} else if (user) {
-				console.log('User credentials & preferences loaded')
-				// console.log(user)
+				console.log('User credentials & preferences loaded')				
 				console.log('--------------------------------------')
 				resolve(user)
 			} else {

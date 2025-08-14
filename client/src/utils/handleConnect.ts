@@ -8,7 +8,7 @@ const handleConnect = async (
 ) => {
 	addMessageToQueue('Connecting to Twitch...')
 	console.log('*** sending request to start npChatbot script ***')
-	ipcRenderer.send('startBotScript', {
+	ipcRenderer.send('start-bot-script', {
 		twitchChannelName: formData.twitchChannelName,
 		obsWebsocketAddress: formData.obsWebsocketAddress
 			? formData.obsWebsocketAddress
@@ -24,7 +24,7 @@ const handleConnect = async (
 		seratoDisplayName: formData.seratoDisplayName,
 	})
 	console.log('*** start request sent, awaiting response ***')
-	ipcRenderer.on('startBotResponse', (response: any) => {
+	ipcRenderer.on('start-bot-response', (response: any) => {
 		if (response && response.success) {
 			console.log('--- npChatbot has been successfully started ---')
 			addMessageToQueue(response.message)

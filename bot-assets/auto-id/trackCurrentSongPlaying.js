@@ -226,7 +226,7 @@ const trackCurrentSongPlaying = async (config, url, twitchClient, wss) => {
 				channel,
 				'npChatbot is now tracking the current song playing.'
 			)
-		}, 10000)
+		}, 3000)
 	}
 
 	trackingInterval = setInterval(async () => {

@@ -102,4 +102,5 @@ if (!appPath) {
   console.error("Usage: node sign.js <path-to-app>");
   process.exit(1);
 }
+
 signApp(appPath);

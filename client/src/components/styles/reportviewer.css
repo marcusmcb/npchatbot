@@ -29,7 +29,7 @@
 
 .report-close-button {
 	margin-top: 25px;
-	width: 25%;
+	width: 50%;
 	/* margin-left: 10px; */
 }
 
@@ -140,6 +140,10 @@
 	color: var(--success-color);
 }
 
+.spotify-link {
+	cursor: pointer;
+}
+
 .report-panel-item-header {
 	margin-top: 5px;
 	margin-bottom: 10px;
@@ -201,6 +205,13 @@
 	font-weight: bold;
 }
 
+.report-panel-share-message {
+	margin-top: 30px;
+	color: var(--success-color);
+	font-family: var(--dm-sans);
+	font-size: 20px;
+}
+
 /* .hr {
 	margin-top: 15px;
 } */
@@ -226,6 +237,16 @@
 	margin: 20px 0px;
 }
 
+.discord-share-icon {
+	margin-left: 10px;
+	cursor: pointer;
+}
+
+.report-button-row {
+	display: flex;
+	flex-direction: row;
+}
+
 .modal-overlay {
 	position: fixed;
 	top: 0;
@@ -238,6 +259,7 @@
 	align-items: center;
 	justify-content: center;
 }
+
 .modal-content {
 	background: #222;
 	color: #fff;
@@ -247,6 +269,7 @@
 	min-width: 320px;
 	max-width: 90vw;
 }
+
 .modal-title {
 	font-size: 1.2em;
 	font-weight: bold;
@@ -254,15 +277,18 @@
 	font-family: var(--fira-sans);
 	color: var(--highlight-color);
 }
+
 .modal-message {
 	margin-bottom: 1.5em;
 	font-family: var(--dm-sans);
 }
+
 .modal-actions {
 	display: flex;
 	justify-content: flex-end;
 	gap: 1em;
 }
+
 .modal-btn {
 	padding: 0.5em 1.2em;
 	border: none;
@@ -270,14 +296,17 @@
 	font-size: 1em;
 	cursor: pointer;
 }
+
 .modal-btn.cancel {
 	background: #444;
 	color: #fff;
 }
+
 .modal-btn.delete {
 	background: #e74c3c;
 	color: #fff;
 }
+
 .modal-btn.cancel:hover,
 .modal-btn.delete:hover {
 	opacity: 0.85;
@@ -287,6 +316,7 @@
 .spotify-link {
 	color: var(--session-info-label-color);
 }
+
 .main-text-color {
 	color: var(--main-text-color);
 }

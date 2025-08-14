@@ -14,13 +14,13 @@ const handleDisconnect = async (
 	setError: (error: string) => void
 ) => {
 	console.log('*** npChatbot disconnect event ***')
-	ipcRenderer.send('stopBotScript', {
+	ipcRenderer.send('stop-bot-script', {
 		seratoDisplayName: formData.seratoDisplayName,
 	})
 
 	// Await the stopBotResponse before continuing
 	const stopBotResult = await new Promise<any>((resolve) => {
-		ipcRenderer.once('stopBotResponse', (response: any) => {
+		ipcRenderer.once('stop-bot-response', (response: any) => {
 			if (response && response.success) {
 				addMessageToQueue('npChatbot has been disconnected from Twitch.')
 				setIsBotConnected(false)
@@ -37,7 +37,7 @@ const handleDisconnect = async (
 	console.log('stopBotResponse received:', stopBotResult)
 
 	// Now fetch playlist summaries after stopBotScript has completed
-	const playlistSummaries = await fetchPlaylistSummaries(ipcRenderer)
+	const playlistSummaries = await fetchPlaylistSummaries()
 	console.log('Fetched playlist summaries:', playlistSummaries)
 	console.log("*****************************************************")
 	if (!playlistSummaries || playlistSummaries.length !== 0) {

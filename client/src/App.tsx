@@ -11,6 +11,7 @@ import { ReportData } from './types'
 
 import useWebSocket from './hooks/useWebSocket'
 import useGetUserData from './hooks/useGetUserData'
+import useGetPlaylistData from './hooks/useGetPlaylistData'
 import useMessageQueue from './hooks/useMessageQueue'
 import useTooltipVisibility from './hooks/useTooltipVisibility'
 import useFormModified from './hooks/useFormModified'
@@ -61,6 +62,7 @@ const App = (): JSX.Element => {
 	const [isBotConnected, setIsBotConnected] = useState(false)
 	const [isTwitchAuthorized, setIsTwitchAuthorized] = useState(false)
 	const [isSpotifyAuthorized, setIsSpotifyAuthorized] = useState(false)
+	const [isDiscordAuthorized, setIsDiscordAuthorized] = useState(false) // default false
 	const [isSpotifyEnabled, setIsSpotifyEnabled] = useState(false)
 	const [isConnectionReady, setIsConnectionReady] = useState(false)
 	const [isAutoIDEnabled, setIsAutoIDEnabled] = useState(false)
@@ -132,6 +134,12 @@ const App = (): JSX.Element => {
 				console.log('**** Spotify Auth Successful ****')
 				setIsSpotifyAuthorized(true)
 			}
+			if (
+				event.data === 'npChatbot successfully linked to your Discord channel'
+			) {
+				console.log('**** Discord Auth Successful ****')
+				setIsDiscordAuthorized(true)
+			}
 		},
 		() => {
 			// console.log('WebSocket is open now.')
@@ -197,40 +205,20 @@ const App = (): JSX.Element => {
 		setIsSpotifyAuthorized,
 		setIsTwitchAuthorized,
 		setIsConnectionReady,
+		setIsDiscordAuthorized,
 		addMessageToQueue
 	)
 
-	// hook to fetch user playlist summary data
-	useEffect(() => {
-		const fetchPlaylistData = async () => {
-			try {
-				const playlistSummary = await fetchPlaylistSummaries(ipcRenderer)
-				console.log('Fetched playlist summary:', playlistSummary.length)
-				if (playlistSummary && playlistSummary.length !== 0) {
-					setPlaylistSummaries(playlistSummary as ReportData[])
-					if (currentReportIndex !== 0) {
-						setCurrentReportIndex(currentReportIndex)
-					} else {
-						setCurrentReportIndex(0)
-					}
-					setReportData(playlistSummary[0] as ReportData)
-					setIsReportReady(true)
-				} else {
-					setPlaylistSummaries([])
-					setCurrentReportIndex(0)
-					setReportData(null)
-					setIsReportReady(false)
-				}
-			} catch (error) {
-				setPlaylistSummaries([])
-				setCurrentReportIndex(0)
-				setReportData(null)
-				setIsReportReady(false)
-			}
-		}
-		fetchPlaylistData()
-	}, [])
+	// hook to fetch playlist summaries and set initial report index
+	useGetPlaylistData(
+		currentReportIndex,
+		setPlaylistSummaries,
+		setCurrentReportIndex,
+		setReportData,
+		setIsReportReady
+	)
 
+	// hook to update report data when current report index changes
 	useEffect(() => {
 		if (playlistSummaries.length > 0) {
 			setReportData(playlistSummaries[currentReportIndex])
@@ -265,6 +253,20 @@ const App = (): JSX.Element => {
 			window.electron.ipcRenderer.removeAllListeners('botProcessResponse')
 		}
 	}, [])
+
+	// Listen for Discord authorization success
+	// useEffect(() => {
+	// 	const handleDiscordAuthSuccess = () => {
+	// 		setIsDiscordAuthorized(true)
+	// 	}
+	// 	window.electron.ipcRenderer.on(
+	// 		'discord-auth-success',
+	// 		handleDiscordAuthSuccess
+	// 	)
+	// 	return () => {
+	// 		window.electron.ipcRenderer.removeAllListeners('discord-auth-successful')
+	// 	}
+	// }, [])
 
 	// method to validate that the user's Serato Live Playlist
 	// is public and can be accessed by npChatbot
@@ -338,9 +340,11 @@ const App = (): JSX.Element => {
 			isValidEmail
 		)
 	}
-			
+
+	// helper method to reload playlist summaries
+	// and reset current report index when a playlist is deleted
 	const reloadPlaylistSummaries = (deletedIndex: number) => {
-		fetchPlaylistSummaries(ipcRenderer).then((playlistSummary) => {
+		fetchPlaylistSummaries().then((playlistSummary) => {
 			if (playlistSummary && playlistSummary.length > 0) {
 				setPlaylistSummaries(playlistSummary as ReportData[])
 				// If there is a playlist to the left, show it; otherwise, show the right one
@@ -367,6 +371,7 @@ const App = (): JSX.Element => {
 						<TitleBar
 							isTwitchAuthorized={isTwitchAuthorized}
 							isSpotifyAuthorized={isSpotifyAuthorized}
+							isDiscordAuthorized={isDiscordAuthorized}
 							isBotConnected={isBotConnected}
 						/>
 						<MessagePanel
@@ -388,6 +393,7 @@ const App = (): JSX.Element => {
 								currentReportIndex={currentReportIndex}
 								setCurrentReportIndex={setCurrentReportIndex}
 								reloadPlaylistSummaries={reloadPlaylistSummaries}
+								isDiscordAuthorized={isDiscordAuthorized}
 							/>
 						</div>
 					</div>

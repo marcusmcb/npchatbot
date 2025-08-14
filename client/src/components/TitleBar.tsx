@@ -1,5 +1,6 @@
 import SpotifyIcon from './icons/spotify/SpotifyIcon'
 import TwitchIcon from './icons/twitch/TwitchIcon'
+import DiscordIcon from './icons/discord/DiscordIcon'
 import { TitleBarProps } from '../types'
 import '../App.css'
 import './styles/titlebar.css'
@@ -10,6 +11,7 @@ const TitleBar = ({
 	isTwitchAuthorized,
 	isSpotifyAuthorized,
 	isBotConnected,
+	isDiscordAuthorized,
 }: TitleBarProps): JSX.Element => {
 	const handleAuthClick = () => {
 		if (!isTwitchAuthorized) {
@@ -32,17 +34,28 @@ const TitleBar = ({
 		}
 	}
 
+	const handleDiscordAuthClick = () => {
+		if (!isDiscordAuthorized) {
+			ipcRenderer.send('open-discord-auth-url')
+		} else {
+			console.log('Already authorized with Discord')
+			ipcRenderer.send('open-discord-auth-url')
+		}
+	}
+
 	return (
 		<div>
 			<div className='app-title'>npChatbot</div>
-			<div className='app-version'>version 1.0.3</div>
+			<div className='app-version'>version 1.0.4</div>
 			{/* <div className='auth-button-labels'>Authorizations</div> */}
 			<div className='auth-button-row'>
 				<button
 					onClick={handleAuthClick}
 					disabled={isBotConnected}
 					className={
-						isTwitchAuthorized ? 'auth-button-authorized' : 'auth-button-default'
+						isTwitchAuthorized
+							? 'auth-button-authorized'
+							: 'auth-button-default'
 					}
 				>
 					<span className='button-content'>
@@ -54,12 +67,27 @@ const TitleBar = ({
 					onClick={handleSpotifyAuthClick}
 					disabled={isBotConnected}
 					className={
-						isSpotifyAuthorized ? 'auth-button-authorized' : 'auth-button-default'
+						isSpotifyAuthorized
+							? 'auth-button-authorized'
+							: 'auth-button-default'
 					}
 				>
 					<span className='button-content'>
 						<SpotifyIcon size={20} />
 						{/* {isTwitchAuthorized ? 'Authorized' : 'Authorize'} */}
+					</span>
+				</button>
+				<button
+					onClick={handleDiscordAuthClick}
+					disabled={isBotConnected}
+					className={
+						isDiscordAuthorized
+							? 'auth-button-authorized'
+							: 'auth-button-default'
+					}
+				>
+					<span className='button-content'>
+						<DiscordIcon size={20} />
 					</span>
 				</button>
 				<div className='auth-button-label'>Linked Accounts</div>
