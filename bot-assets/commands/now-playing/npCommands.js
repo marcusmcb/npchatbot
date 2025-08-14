@@ -49,10 +49,7 @@ const handleDefault = (
 	obs,
 	obsClearDisplayTime,
 	config
-) => {
-	console.log("Current Playlist Summary: ")
-	console.log(getCurrentPlaylistSummary())
-	console.log("---------------------------")
+) => {	
 	const currentTrackPlaying = reportData.track_log[0].track_id
 	const message = `Now playing: ${currentTrackPlaying}`
 	npSongsQueried.push({ name: currentTrackPlaying })
@@ -291,7 +288,8 @@ const npCommands = async (
 		// replace createLiveReport call with the user's
 		// Serato Live Playlist data stored as 
 
-		const reportData = await createLiveReport(url)
+		const reportData = getCurrentPlaylistSummary()
+		// const reportData = await createLiveReport(url)
 		if (reportData === undefined) {
 			twitchClient.say(channel, NO_LIVE_DATA_MESSAGE)
 			return

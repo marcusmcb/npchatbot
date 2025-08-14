@@ -250,7 +250,7 @@ const trackCurrentSongPlaying = async (config, url, twitchClient, wss) => {
 			// full Serato Live Playlist data
 
 			const reportData = await createLiveReport(url)
-			console.log('---- Report Data Created ----')
+			console.log('---- Playlist report data updated ----')
 			setCurrentPlaylistSummary(reportData)
 
 			// return the current song playing if the Auto ID feature is enabled

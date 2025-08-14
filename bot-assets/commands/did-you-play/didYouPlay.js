@@ -5,6 +5,7 @@ const {
 	ERROR_MESSAGE,
 } = require('../../constants/constants')
 const { dypSearchTerms } = require('../../command-use/commandUse')
+const { getCurrentPlaylistSummary } = require("../../command-use/commandUse")
 
 const dypCommand = async (channel, tags, args, twitchClient, obs, url, config) => {
 	const obsClearDisplayTime = config.obsClearDisplayTime
@@ -17,11 +18,12 @@ const dypCommand = async (channel, tags, args, twitchClient, obs, url, config) =
 		)
 	} else {
 		try {
-			const reportData = await createLiveReport(url)
-			if (reportData === undefined) {
+			const data = getCurrentPlaylistSummary()
+			// const data = await createLiveReport(url)
+			if (data === undefined) {
 				twitchClient.say(channel, NO_LIVE_DATA_MESSAGE)
 				return
-			} else if (reportData.total_tracks_played < 4) {
+			} else if (data.total_tracks_played < 4) {
 				twitchClient.say(
 					channel,
 					`${config.twitchChannelName} hasn't played enough music in this stream to search just yet.`
@@ -31,13 +33,13 @@ const dypCommand = async (channel, tags, args, twitchClient, obs, url, config) =
 				let searchResults = []
 				let searchTerm = `${args}`.replaceAll(',', ' ')				
 				dypSearchTerms.push({ name: searchTerm})
-				for (let i = 0; i < reportData.track_log.length; i++) {
+				for (let i = 0; i < data.track_log.length; i++) {
 					if (
-						reportData.track_log[i].track_id
+						data.track_log[i].track_id
 							.toLowerCase()
 							.includes(searchTerm.toLowerCase())
 					) {
-						searchResults.push(reportData.track_log[i])
+						searchResults.push(data.track_log[i])
 					}
 				}
 				console.log("SEARCH RESULTS: ", searchResults)				
