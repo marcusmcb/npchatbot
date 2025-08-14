@@ -36,7 +36,7 @@ const {
 // discord auth handler
 const {
 	getDiscordAuthUrl,
-	exchangeCodeForDiscordToken,
+	initDiscordAuthToken,
 } = require('./auth/discord/handleDiscordAuth')
 
 // serato live playlist status validation
@@ -142,58 +142,23 @@ const discordHttpServer = http.createServer(async (req, res) => {
 			res.end('Discord authorization failed.')
 			return
 		}
+
 		if (!code) {
 			console.log('No authorization code received.')
 			res.writeHead(400, { 'Content-Type': 'text/plain' })
 			res.end('No authorization code received.')
 			return
 		}
-		try {
-			console.log('Exchanging Discord code for token...')
-			console.log('-------------------------------')
-			console.log('Auth Code: ', code)
-			console.log('-------------------------------')
 
-			// exchange auth code for token
-
-			// set discordAccessToken, discordRefreshToken
-			// and discordAuthorizationCode in users.db
-
-			const tokenData = await exchangeCodeForDiscordToken(code)
-			if (tokenData) console.log('Token Data: ', tokenData)
-			console.log('-------------------------------')
-			// Store Discord tokens in NeDB users database
-			db.users.update(
-				{},
-				{
-					$set: {
-						discord: {
-							accessToken: tokenData.access_token,
-							refreshToken: tokenData.refresh_token,
-							authorizationCode: code,
-							webhook_url: tokenData.webhook.url,
-							channel_id: tokenData.webhook.channel_id,
-							guild_id: tokenData.webhook.guild_id,
-							webhook_id: tokenData.webhook.id,
-						},
-					},
-				},
-				{ multi: true },
-				(err) => {
-					if (err) {
-						console.error('Error saving Discord tokens:', err)
-					} else {
-						console.log('Discord tokens saved to database.')
-					}
-				}
-			)
-			mainWindow.webContents.send('discord-auth-success', tokenData)
-			res.writeHead(200, { 'Content-Type': 'text/plain' })
-			res.end('Discord authorization successful! You may close this window.')
-		} catch (err) {
-			res.writeHead(500, { 'Content-Type': 'text/plain' })
-			res.end('Error exchanging Discord code for token.')
+		if (code) {
+			await initDiscordAuthToken(code, wss, mainWindow)
+			setTimeout(() => {
+				console.log('Discord auth token initialized.')
+			}, 100)
 		}
+
+		res.writeHead(200, { 'Content-Type': 'text/plain' })
+		res.end('Discord authorization successful! You may close this window.')
 	} else {
 		res.writeHead(404, { 'Content-Type': 'text/plain' })
 		res.end('Not Found')

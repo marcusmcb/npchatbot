@@ -53,7 +53,9 @@ const TitleBar = ({
 					onClick={handleAuthClick}
 					disabled={isBotConnected}
 					className={
-						isTwitchAuthorized ? 'auth-button-authorized' : 'auth-button-default'
+						isTwitchAuthorized
+							? 'auth-button-authorized'
+							: 'auth-button-default'
 					}
 				>
 					<span className='button-content'>
@@ -65,7 +67,9 @@ const TitleBar = ({
 					onClick={handleSpotifyAuthClick}
 					disabled={isBotConnected}
 					className={
-						isSpotifyAuthorized ? 'auth-button-authorized' : 'auth-button-default'
+						isSpotifyAuthorized
+							? 'auth-button-authorized'
+							: 'auth-button-default'
 					}
 				>
 					<span className='button-content'>
@@ -77,7 +81,9 @@ const TitleBar = ({
 					onClick={handleDiscordAuthClick}
 					disabled={isBotConnected}
 					className={
-						isDiscordAuthorized ? 'auth-button-authorized' : 'auth-button-default'
+						isDiscordAuthorized
+							? 'auth-button-authorized'
+							: 'auth-button-default'
 					}
 				>
 					<span className='button-content'>

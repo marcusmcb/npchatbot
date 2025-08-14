@@ -134,6 +134,12 @@ const App = (): JSX.Element => {
 				console.log('**** Spotify Auth Successful ****')
 				setIsSpotifyAuthorized(true)
 			}
+			if (
+				event.data === 'npChatbot successfully linked to your Discord channel'
+			) {
+				console.log('**** Discord Auth Successful ****')
+				setIsDiscordAuthorized(true)
+			}
 		},
 		() => {
 			// console.log('WebSocket is open now.')
@@ -210,7 +216,7 @@ const App = (): JSX.Element => {
 		setCurrentReportIndex,
 		setReportData,
 		setIsReportReady
-	)	
+	)
 
 	// hook to update report data when current report index changes
 	useEffect(() => {
@@ -249,18 +255,18 @@ const App = (): JSX.Element => {
 	}, [])
 
 	// Listen for Discord authorization success
-	useEffect(() => {
-		const handleDiscordAuthSuccess = () => {
-			setIsDiscordAuthorized(true)
-		}
-		window.electron.ipcRenderer.on(
-			'discord-auth-successful',
-			handleDiscordAuthSuccess
-		)
-		return () => {
-			window.electron.ipcRenderer.removeAllListeners('discord-auth-successful')
-		}
-	}, [])
+	// useEffect(() => {
+	// 	const handleDiscordAuthSuccess = () => {
+	// 		setIsDiscordAuthorized(true)
+	// 	}
+	// 	window.electron.ipcRenderer.on(
+	// 		'discord-auth-success',
+	// 		handleDiscordAuthSuccess
+	// 	)
+	// 	return () => {
+	// 		window.electron.ipcRenderer.removeAllListeners('discord-auth-successful')
+	// 	}
+	// }, [])
 
 	// method to validate that the user's Serato Live Playlist
 	// is public and can be accessed by npChatbot
