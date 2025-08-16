@@ -174,6 +174,7 @@ discordHttpServer.listen(DISCORD_HTTP_PORT, () => {
 // http server and port for Spotify auth
 const HTTP_PORT = 5001
 
+// Spotify auth callback server
 const httpServer = http.createServer(async (req, res) => {
 	if (req.url.startsWith('/auth/spotify/callback')) {
 		const urlObj = new URL(req.url, `http://127.0.0.1:${HTTP_PORT}`)
