@@ -6,7 +6,7 @@ declare global {
 			ipcRenderer: {
 				send: (channel: string, data?: any) => void
 				on: (channel: string, func: (...args: any[]) => void) => void
-				once: (channel: string, func: (...args: any[]) => void) => void // Add this line
+				once: (channel: string, func: (...args: any[]) => void) => void
 				removeAllListeners: (channel: string) => void
 			}
 		}
