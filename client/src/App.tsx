@@ -55,27 +55,34 @@ const App = (): JSX.Element => {
 		isAutoIDCleanupEnabled: false,
 	})
 
+	// app-level state value
 	const [error, setError] = useState('')
-	const [isObsResponseEnabled, setIsObsResponseEnabled] = useState(false)
-	const [isIntervalEnabled, setIsIntervalEnabled] = useState(false)
 	const [showTooltip, setShowTooltip] = useState<string | null>(null)
 	const [isBotConnected, setIsBotConnected] = useState(false)
-	const [isTwitchAuthorized, setIsTwitchAuthorized] = useState(false)
-	const [isSpotifyAuthorized, setIsSpotifyAuthorized] = useState(false)
-	const [isDiscordAuthorized, setIsDiscordAuthorized] = useState(false) // default false
-	const [isSpotifyEnabled, setIsSpotifyEnabled] = useState(false)
 	const [isConnectionReady, setIsConnectionReady] = useState(false)
-	const [isAutoIDEnabled, setIsAutoIDEnabled] = useState(false)
-	const [isAutoIDCleanupEnabled, setIsAutoIDCleanupEnabled] = useState(false)
-	const [continueLastPlaylist, setContinueLastPlaylist] = useState(false)
 	const [messageQueue, setMessageQueue] = useState<string[]>([])
 	const [currentMessage, setCurrentMessage] = useState<string | null>(null)
-	const [isReportEnabled, setIsReportEnabled] = useState(false)
-	const [reportData, setReportData] = useState<ReportData | null>(null)
-	const [isReportReady, setIsReportReady] = useState(false)
-	const [reportView, setReportView] = useState(false)
 	const [initialFormData, setInitialFormData] = useState(formData)
 	const [isFormModified, setIsFormModified] = useState(false)
+
+	// user-level state values (refactor using Context)
+	const [isObsResponseEnabled, setIsObsResponseEnabled] = useState(false)
+	const [isIntervalEnabled, setIsIntervalEnabled] = useState(false)		
+	const [isTwitchAuthorized, setIsTwitchAuthorized] = useState(false)
+	const [isSpotifyAuthorized, setIsSpotifyAuthorized] = useState(false)
+	const [isDiscordAuthorized, setIsDiscordAuthorized] = useState(false)
+	const [isSpotifyEnabled, setIsSpotifyEnabled] = useState(false)	
+	const [isAutoIDEnabled, setIsAutoIDEnabled] = useState(false)
+	const [isAutoIDCleanupEnabled, setIsAutoIDCleanupEnabled] = useState(false)
+	const [continueLastPlaylist, setContinueLastPlaylist] = useState(false)	
+	const [isReportEnabled, setIsReportEnabled] = useState(false)
+	const [isReportReady, setIsReportReady] = useState(false)
+	const [reportData, setReportData] = useState<ReportData | null>(null)	
+	const [reportView, setReportView] = useState(false)
+	const [playlistSummaries, setPlaylistSummaries] = useState<ReportData[]>([])
+	const [currentReportIndex, setCurrentReportIndex] = useState(0)
+	
+	// state for initial user preferences
 	const [initialPreferences, setInitialPreferences] = useState({
 		isObsResponseEnabled,
 		isIntervalEnabled,
@@ -86,10 +93,7 @@ const App = (): JSX.Element => {
 		continueLastPlaylist,
 		obsClearDisplayTime: formData.obsClearDisplayTime,
 		intervalMessageDuration: formData.intervalMessageDuration,
-	})
-
-	const [playlistSummaries, setPlaylistSummaries] = useState<ReportData[]>([])
-	const [currentReportIndex, setCurrentReportIndex] = useState(0)
+	})	
 
 	const ipcRenderer = window.electron.ipcRenderer
 
