@@ -11,8 +11,10 @@ const handleDiscordShare = async (
 		sessionDate: sessionDate ? sessionDate.toISOString() : null,
 	}
 	ipcRenderer.send('share-playlist-to-discord', payload)
+	console.log("ipcRender Discord request sent.")
 	ipcRenderer.once('share-playlist-to-discord-response', (response: any) => {
 		if (response && response.success) {
+			console.log("Successfully shared to Discord:", response)
 			setCurrentDiscordMessage('Successfully Shared')
 			setTimeout(() => {
 				setCurrentDiscordMessage(null)
