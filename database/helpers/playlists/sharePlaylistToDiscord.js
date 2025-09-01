@@ -1,5 +1,4 @@
-const fetch = (...args) =>
-	import('node-fetch').then((mod) => mod.default(...args))
+const fetch = require('node-fetch')
 
 const sharePlaylistToDiscord = async (
 	spotifyURL,
@@ -8,6 +7,7 @@ const sharePlaylistToDiscord = async (
 	sessionDate,
 	event
 ) => {
+	logToFile('*** sharePlaylistToDiscord CALLED ***')
 	try {
 		const formattedDate = sessionDate
 			? new Date(sessionDate).toLocaleDateString(undefined, {

@@ -274,9 +274,9 @@ ipcMain.on('update-connection-state', (event, state) => {
 	isConnected = state
 })
 
-ipcMain.on('share-playlist-to-discord', async (event, payload) => {
+ipcMain.on('share-playlist-to-discord', async (event, payload) => {	
 	const { spotifyURL, sessionDate } = payload || {}
-	const userData = await getUserData(db)
+	const userData = await getUserData(db)	
 	const twitchChannelName = userData?.twitchChannelName
 	const webhookURL = userData?.discord?.webhook_url
 	await sharePlaylistToDiscord(
