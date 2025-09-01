@@ -91,17 +91,18 @@ let isConnected = false
 // server config and middleware
 const server = express()
 const PORT = process.env.PORT || 5002
+const DISCORD_HTTP_PORT = 5003
 server.use(bodyParser.json())
 server.use(cors())
 
 const isDev = !app.isPackaged
-// const isDev = true;
+
 process.env.NODE_ENV = isDev ? 'development' : 'production'
 
 // socket config for auth responses
 const wss = new WebSocket.Server({ port: 8080 })
 
-// Add waitForServer before createWindow
+// add waitForServer before createWindow
 const waitForServer = async (url, timeout = 15000) => {
 	const start = Date.now()
 	while (Date.now() - start < timeout) {
@@ -122,10 +123,8 @@ const startServer = () => {
 	})
 }
 
-// Discord auth callback PORT value
-const DISCORD_HTTP_PORT = 5003
-
 // Discord auth callback server
+// TO DO: move into standalone handleDiscordAuth method
 const discordHttpServer = http.createServer(async (req, res) => {
 	if (req.url.startsWith('/auth/discord/callback')) {
 		const urlObj = new URL(req.url, `http://127.0.0.1:${DISCORD_HTTP_PORT}`)
@@ -172,6 +171,7 @@ discordHttpServer.listen(DISCORD_HTTP_PORT, () => {
 const HTTP_PORT = 5001
 
 // Spotify auth callback server
+// TO DO: move into standalone handleSpotifyAuth method
 const httpServer = http.createServer(async (req, res) => {
 	if (req.url.startsWith('/auth/spotify/callback')) {
 		const urlObj = new URL(req.url, `http://127.0.0.1:${HTTP_PORT}`)
@@ -291,14 +291,8 @@ ipcMain.on('share-playlist-to-discord', async (event, payload) => {
 // ipc handler to return user's playlist summary data
 ipcMain.on('get-playlist-summaries', async (event, arg) => {
 	const playlistSummaries = await getPlaylistSummaries()
-	if (playlistSummaries && playlistSummaries.length > 0) {
-		console.log('Playlist summaries retrieved successfully')
-		console.log('----------------------------------')
-		const playlistSummaryData = await getPlaylistSummaryData(playlistSummaries)
-		console.log(
-			`${playlistSummaryData.commonTracks.length} common tracks found across playlists.`
-		)
-		console.log('----------------------------------')
+	if (playlistSummaries && playlistSummaries.length > 0) {		
+		const playlistSummaryData = await getPlaylistSummaryData(playlistSummaries)		
 		event.reply('get-playlist-summaries-response', playlistSummaries)
 	} else {
 		console.log('No playlist summaries found.')
