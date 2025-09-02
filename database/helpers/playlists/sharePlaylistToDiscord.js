@@ -6,8 +6,7 @@ const sharePlaylistToDiscord = async (
 	twitchChannelName,
 	sessionDate,
 	event
-) => {
-	logToFile('*** sharePlaylistToDiscord CALLED ***')
+) => {	
 	try {
 		const formattedDate = sessionDate
 			? new Date(sessionDate).toLocaleDateString(undefined, {
