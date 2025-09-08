@@ -15,6 +15,8 @@ const useGetUserData = (
 	setIsTwitchAuthorized: React.Dispatch<React.SetStateAction<boolean>>,
 	setIsConnectionReady: React.Dispatch<React.SetStateAction<boolean>>,
 	setIsDiscordAuthorized: React.Dispatch<React.SetStateAction<boolean>>,
+	setObsDisplayClearTime: React.Dispatch<React.SetStateAction<number>>,
+	setIntervalMessageDuration: React.Dispatch<React.SetStateAction<number>>,
 	addMessageToQueue: (message: string) => void
 ) => {
 	useEffect(() => {
@@ -41,9 +43,13 @@ const useGetUserData = (
 						isAutoIDEnabled: response.data.isAutoIDEnabled,
 						isAutoIDCleanupEnabled: response.data.isAutoIDCleanupEnabled,
 						continueLastPlaylist: response.data.continueLastPlaylist,
+						setObsDisplayClearTime: response.data.obsClearDisplayTime,
+						setIntervalMessageDuration: response.data.intervalMessageDuration,
 					})
 					setIsObsResponseEnabled(response.data.isObsResponseEnabled)
+					setObsDisplayClearTime(response.data.obsClearDisplayTime)
 					setIsIntervalEnabled(response.data.isIntervalEnabled)
+					setIntervalMessageDuration(response.data.intervalMessageDuration)
 					setIsReportEnabled(response.data.isReportEnabled)
 					setIsSpotifyEnabled(response.data.isSpotifyEnabled)
 					setIsAutoIDEnabled(response.data.isAutoIDEnabled)

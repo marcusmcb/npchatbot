@@ -81,7 +81,9 @@ const App = (): JSX.Element => {
 	const [reportView, setReportView] = useState(false)
 	const [playlistSummaries, setPlaylistSummaries] = useState<ReportData[]>([])
 	const [currentReportIndex, setCurrentReportIndex] = useState(0)
-	
+	const [obsClearDisplayTime, setObsClearDisplayTime] = useState(5)	
+	const [intervalMessageDuration, setIntervalMessageDuration] = useState(15)
+
 	// state for initial user preferences
 	const [initialPreferences, setInitialPreferences] = useState({
 		isObsResponseEnabled,
@@ -91,8 +93,8 @@ const App = (): JSX.Element => {
 		isAutoIDEnabled,
 		isAutoIDCleanupEnabled,
 		continueLastPlaylist,
-		obsClearDisplayTime: formData.obsClearDisplayTime,
-		intervalMessageDuration: formData.intervalMessageDuration,
+		obsClearDisplayTime, 
+		intervalMessageDuration, 
 	})	
 
 	const ipcRenderer = window.electron.ipcRenderer
@@ -209,8 +211,10 @@ const App = (): JSX.Element => {
 		setIsSpotifyAuthorized,
 		setIsTwitchAuthorized,
 		setIsConnectionReady,
-		setIsDiscordAuthorized,
-		addMessageToQueue
+		setIsDiscordAuthorized,		
+		setObsClearDisplayTime,
+		setIntervalMessageDuration,
+		addMessageToQueue,
 	)
 
 	// hook to fetch playlist summaries and set initial report index
