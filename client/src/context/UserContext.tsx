@@ -1,4 +1,4 @@
-import React, { createContext, useContext } from 'react'
+import { createContext, useContext } from 'react'
 
 export type UserContextType = {
 	// Preferences and state
@@ -27,6 +27,8 @@ export type UserContextType = {
 	setIsSpotifyAuthorized: (v: boolean) => void
 	isDiscordAuthorized: boolean
 	setIsDiscordAuthorized: (v: boolean) => void
+	// Hydration status
+	isUserContextReady: boolean
 	// Add more as needed
 }
 

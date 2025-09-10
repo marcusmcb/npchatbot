@@ -10,12 +10,13 @@ import { BotProcessResponse, AuthSuccess } from './types'
 import { ReportData } from './types'
 
 import useWebSocket from './hooks/useWebSocket'
-import useGetUserData from './hooks/useGetUserData'
+// import useGetUserData from './hooks/useGetUserData'
 import useGetPlaylistData from './hooks/useGetPlaylistData'
 import useMessageQueue from './hooks/useMessageQueue'
 import useTooltipVisibility from './hooks/useTooltipVisibility'
 import useFormModified from './hooks/useFormModified'
 import fetchPlaylistSummaries from './utils/fetchPlaylistSummaries'
+import { useUserContext } from './context/UserContext'
 
 import handleConnect from './utils/handleConnect'
 import handleDisconnect from './utils/handleDisconnect'
@@ -25,6 +26,41 @@ import validateLivePlaylist from './utils/validateLivePlaylist'
 import './App.css'
 
 const App = (): JSX.Element => {
+	const userContext = useUserContext()
+	useEffect(() => {
+		console.log('User Context in App.tsx: ', userContext)
+	}, [userContext])
+
+	const {
+		isUserContextReady,
+		// preferences
+		isObsResponseEnabled,
+		setIsObsResponseEnabled,
+		isIntervalEnabled,
+		setIsIntervalEnabled,
+		isReportEnabled,
+		setIsReportEnabled,
+		isSpotifyEnabled,
+		setIsSpotifyEnabled,
+		isAutoIDEnabled,
+		setIsAutoIDEnabled,
+		isAutoIDCleanupEnabled,
+		setIsAutoIDCleanupEnabled,
+		continueLastPlaylist,
+		setContinueLastPlaylist,
+		obsClearDisplayTime,
+		setObsClearDisplayTime,
+		intervalMessageDuration,
+		setIntervalMessageDuration,
+		// authorizations
+		isTwitchAuthorized,
+		setIsTwitchAuthorized,
+		isSpotifyAuthorized,
+		setIsSpotifyAuthorized,
+		isDiscordAuthorized,
+		setIsDiscordAuthorized,
+	} = userContext
+	
 	/* TYPES */
 
 	// interface AuthSuccess {
@@ -65,24 +101,24 @@ const App = (): JSX.Element => {
 	const [initialFormData, setInitialFormData] = useState(formData)
 	const [isFormModified, setIsFormModified] = useState(false)
 
-	// user-level state values (refactor using Context)
-	const [isObsResponseEnabled, setIsObsResponseEnabled] = useState(false)
-	const [isIntervalEnabled, setIsIntervalEnabled] = useState(false)		
-	const [isTwitchAuthorized, setIsTwitchAuthorized] = useState(false)
-	const [isSpotifyAuthorized, setIsSpotifyAuthorized] = useState(false)
-	const [isDiscordAuthorized, setIsDiscordAuthorized] = useState(false)
-	const [isSpotifyEnabled, setIsSpotifyEnabled] = useState(false)	
-	const [isAutoIDEnabled, setIsAutoIDEnabled] = useState(false)
-	const [isAutoIDCleanupEnabled, setIsAutoIDCleanupEnabled] = useState(false)
-	const [continueLastPlaylist, setContinueLastPlaylist] = useState(false)	
-	const [isReportEnabled, setIsReportEnabled] = useState(false)
+	// user-level state values now come from Context
+	// const [isObsResponseEnabled, setIsObsResponseEnabled] = useState(false)
+	// const [isIntervalEnabled, setIsIntervalEnabled] = useState(false)
+	// const [isTwitchAuthorized, setIsTwitchAuthorized] = useState(false)
+	// const [isSpotifyAuthorized, setIsSpotifyAuthorized] = useState(false)
+	// const [isDiscordAuthorized, setIsDiscordAuthorized] = useState(false)
+	// const [isSpotifyEnabled, setIsSpotifyEnabled] = useState(false)
+	// const [isAutoIDEnabled, setIsAutoIDEnabled] = useState(false)
+	// const [isAutoIDCleanupEnabled, setIsAutoIDCleanupEnabled] = useState(false)
+	// const [continueLastPlaylist, setContinueLastPlaylist] = useState(false)
+	// const [isReportEnabled, setIsReportEnabled] = useState(false)
 	const [isReportReady, setIsReportReady] = useState(false)
-	const [reportData, setReportData] = useState<ReportData | null>(null)	
+	const [reportData, setReportData] = useState<ReportData | null>(null)
 	const [reportView, setReportView] = useState(false)
 	const [playlistSummaries, setPlaylistSummaries] = useState<ReportData[]>([])
 	const [currentReportIndex, setCurrentReportIndex] = useState(0)
-	const [obsClearDisplayTime, setObsClearDisplayTime] = useState(5)	
-	const [intervalMessageDuration, setIntervalMessageDuration] = useState(15)
+	// const [obsClearDisplayTime, setObsClearDisplayTime] = useState(5)
+	// const [intervalMessageDuration, setIntervalMessageDuration] = useState(15)
 
 	// state for initial user preferences
 	const [initialPreferences, setInitialPreferences] = useState({
@@ -93,9 +129,37 @@ const App = (): JSX.Element => {
 		isAutoIDEnabled,
 		isAutoIDCleanupEnabled,
 		continueLastPlaylist,
-		obsClearDisplayTime, 
-		intervalMessageDuration, 
-	})	
+		obsClearDisplayTime,
+		intervalMessageDuration,
+	})
+
+	// Update initial preferences snapshot after user context hydrates
+	useEffect(() => {
+		if (isUserContextReady) {
+			setInitialPreferences({
+				isObsResponseEnabled,
+				isIntervalEnabled,
+				isReportEnabled,
+				isSpotifyEnabled,
+				isAutoIDEnabled,
+				isAutoIDCleanupEnabled,
+				continueLastPlaylist,
+				obsClearDisplayTime,
+				intervalMessageDuration,
+			})
+		}
+	}, [
+		isUserContextReady,
+		isObsResponseEnabled,
+		isIntervalEnabled,
+		isReportEnabled,
+		isSpotifyEnabled,
+		isAutoIDEnabled,
+		isAutoIDCleanupEnabled,
+		continueLastPlaylist,
+		obsClearDisplayTime,
+		intervalMessageDuration,
+	])
 
 	const ipcRenderer = window.electron.ipcRenderer
 
@@ -197,25 +261,25 @@ const App = (): JSX.Element => {
 	)
 
 	// hook to load initial user data and preferences
-	useGetUserData(
-		setFormData,
-		setInitialFormData,
-		setInitialPreferences,
-		setIsObsResponseEnabled,
-		setIsIntervalEnabled,
-		setIsReportEnabled,
-		setIsSpotifyEnabled,
-		setIsAutoIDEnabled,
-		setIsAutoIDCleanupEnabled,
-		setContinueLastPlaylist,
-		setIsSpotifyAuthorized,
-		setIsTwitchAuthorized,
-		setIsConnectionReady,
-		setIsDiscordAuthorized,		
-		setObsClearDisplayTime,
-		setIntervalMessageDuration,
-		addMessageToQueue,
-	)
+	// useGetUserData(
+	// 	setFormData,
+	// 	setInitialFormData,
+	// 	setInitialPreferences,
+	// 	setIsObsResponseEnabled,
+	// 	setIsIntervalEnabled,
+	// 	setIsReportEnabled,
+	// 	setIsSpotifyEnabled,
+	// 	setIsAutoIDEnabled,
+	// 	setIsAutoIDCleanupEnabled,
+	// 	setContinueLastPlaylist,
+	// 	setIsSpotifyAuthorized,
+	// 	setIsTwitchAuthorized,
+	// 	setIsConnectionReady,
+	// 	setIsDiscordAuthorized,
+	// 	setObsClearDisplayTime,
+	// 	setIntervalMessageDuration,
+	// 	addMessageToQueue
+	// )
 
 	// hook to fetch playlist summaries and set initial report index
 	useGetPlaylistData(
@@ -225,6 +289,8 @@ const App = (): JSX.Element => {
 		setReportData,
 		setIsReportReady
 	)
+
+	// Do not early-return here; keep hooks order stable across renders.
 
 	// hook to update report data when current report index changes
 	useEffect(() => {

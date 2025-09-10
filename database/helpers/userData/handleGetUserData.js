@@ -4,7 +4,9 @@
 const fs = require('fs')
 const db = require('../../database')
 
-const handleGetUserData = async (event, arg) => {
+const handleGetUserData = async () => {
+	console.log("Handle Get User Data called")
+	console.log("-------------------------------")
 	if (fs.existsSync(db.users.filename)) {
 		try {
 			const user = await new Promise((resolve, reject) => {
@@ -18,29 +20,38 @@ const handleGetUserData = async (event, arg) => {
 			})
 
 			if (user) {
+				console.log('User data retrieved')
+				console.log("-------------------------------")
 				const responseObject = {
 					success: true,
 					data: user,
 				}
-				event.reply('getUserDataResponse', responseObject)
+				console.log("User Data Sent: ", responseObject)
+				console.log("-------------------------------")				
+				return responseObject
 			} else {
-				event.reply('getUserDataResponse', {
+				console.log('No user found in database.')
+				const errorObject = {
 					success: false,
 					error: 'No user found',
-				})
+				}
+				return errorObject
 			}
 		} catch (error) {
 			console.error('Error fetching user data:', error)
-			event.reply('getUserDataResponse', {
+			const errorObject = {
 				success: false,
 				error: 'Error fetching user data',
-			})
+			}			
+			return errorObject
 		}
 	} else {
-		event.reply('getUserDataResponse', {
+		const errorObject = {
 			success: false,
-			error: 'users.db was not found',
-		})
+			error: 'No user data was found.',
+		}
+		return errorObject
+		
 	}
 }
 

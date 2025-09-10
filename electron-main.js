@@ -226,8 +226,22 @@ ipcMain.on('open-auth-settings', (event, url) => {
 	shell.openExternal(url)
 })
 
+// Debug: mirror renderer logs into main process
+ipcMain.on('renderer-log', (_event, message) => {
+	console.log('[renderer]', message)
+})
+
 ipcMain.on('get-user-data', async (event, arg) => {
-	handleGetUserData(event, arg)
+	console.log("Get User Data Called")
+	console.log("-------------------------------")
+	const response = await handleGetUserData()	
+	event.reply('getUserDataResponse', response)
+})
+
+// Promise-based handler for renderer invoke
+ipcMain.handle('get-user-data', async (_event, _arg) => {
+	const response = await handleGetUserData()
+	return response
 })
 
 // is this listener being used?
@@ -396,8 +410,9 @@ const createWindow = async () => {
 	mainWindow.loadURL(appURL)
 	mainWindow.once('ready-to-show', () => {
 		mainWindow.show()
+		mainWindow.webContents.openDevTools();
 	})
-	// mainWindow.webContents.openDevTools();
+	
 
 	mainWindow.on('close', (event) => {
 		if (isConnected) {
