@@ -114,8 +114,11 @@ export type CredentialsPanelProps = {
 		twitchChannelName: string
 		twitchChatbotName: string
 		seratoDisplayName: string
-		obsWebsocketAddress?: string
-		obsWebsocketPassword?: string
+	obsWebsocketAddress?: string
+	obsWebsocketPassword?: string
+	obsClearDisplayTime: string
+	intervalMessageDuration: string
+	userEmailAddress: string
 	}
 	handleInputChange: (event: React.ChangeEvent<HTMLInputElement>) => void
 	showTooltip: string | null

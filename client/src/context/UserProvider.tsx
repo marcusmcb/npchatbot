@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { UserContext, UserContextType } from './UserContext'
 
 export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
@@ -18,6 +18,46 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
 	const [isSpotifyAuthorized, setIsSpotifyAuthorized] = useState(false)
 	const [isDiscordAuthorized, setIsDiscordAuthorized] = useState(false)
 	const [isUserContextReady, setIsUserContextReady] = useState(false)
+	const [isConnectionReady, setIsConnectionReady] = useState(false)
+
+	// Form data managed in context
+	const [formData, _setFormData] = useState<UserContextType['formData']>({
+		_id: '',
+		twitchChannelName: '',
+		twitchChatbotName: '',
+		twitchRefreshToken: '',
+		spotifyRefreshToken: '',
+		seratoDisplayName: '',
+		obsWebsocketAddress: '',
+		obsWebsocketPassword: '',
+		intervalMessageDuration: '',
+		obsClearDisplayTime: '',
+		userEmailAddress: '',
+		isObsResponseEnabled: false,
+		isIntervalEnabled: false,
+		isReportEnabled: false,
+		isSpotifyEnabled: false,
+		continueLastPlaylist: false,
+		isAutoIDEnabled: false,
+		isAutoIDCleanupEnabled: false,
+	})
+
+	const [initialFormData, setInitialFormData] = useState(formData)
+	const [initialPreferences, setInitialPreferences] = useState({
+		isObsResponseEnabled,
+		isIntervalEnabled,
+		isReportEnabled,
+		isSpotifyEnabled,
+		isAutoIDEnabled,
+		isAutoIDCleanupEnabled,
+		continueLastPlaylist,
+		obsClearDisplayTime,
+		intervalMessageDuration,
+	})
+
+	const setFormData: UserContextType['setFormData'] = (patch) => {
+		_setFormData((prev) => ({ ...prev, ...patch }))
+	}
 
 	useEffect(() => {
 		if (!window.electron || !window.electron.ipcRenderer) {
@@ -37,6 +77,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
 				return
 			}
 			const userData = response.data
+			// hydrate preferences
 			if (typeof userData.isObsResponseEnabled === 'boolean')
 				setIsObsResponseEnabled(userData.isObsResponseEnabled)
 			if (typeof userData.isIntervalEnabled === 'boolean')
@@ -66,6 +107,47 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
 			if (typeof userData.spotifyAuthorizationCode === 'string')
 				setIsSpotifyAuthorized(!!userData.spotifyAuthorizationCode)
 			if (typeof userData.discord === 'object') setIsDiscordAuthorized(true)
+
+			// hydrate form data (normalize numbers to strings for inputs if needed)
+			const hydratedForm: UserContextType['formData'] = {
+				_id: userData._id || '',
+				twitchChannelName: userData.twitchChannelName || '',
+				twitchChatbotName: userData.twitchChatbotName || '',
+				twitchRefreshToken: userData.twitchRefreshToken || '',
+				spotifyRefreshToken: userData.spotifyRefreshToken || '',
+				seratoDisplayName: userData.seratoDisplayName || '',
+				obsWebsocketAddress: userData.obsWebsocketAddress || '',
+				obsWebsocketPassword: userData.obsWebsocketPassword || '',
+				intervalMessageDuration: String(userData.intervalMessageDuration ?? ''),
+				obsClearDisplayTime: String(userData.obsClearDisplayTime ?? ''),
+				userEmailAddress: userData.userEmailAddress || '',
+				isObsResponseEnabled: !!userData.isObsResponseEnabled,
+				isIntervalEnabled: !!userData.isIntervalEnabled,
+				isReportEnabled: !!userData.isReportEnabled,
+				isSpotifyEnabled: !!userData.isSpotifyEnabled,
+				continueLastPlaylist: !!userData.continueLastPlaylist,
+				isAutoIDEnabled: !!userData.isAutoIDEnabled,
+				isAutoIDCleanupEnabled: !!userData.isAutoIDCleanupEnabled,
+			}
+			_setFormData(hydratedForm)
+			// compute connection ready based on required fields
+			const ready =
+				!!hydratedForm.twitchChannelName &&
+				!!hydratedForm.twitchChatbotName &&
+				!!hydratedForm.seratoDisplayName
+			setIsConnectionReady(ready)
+			setInitialFormData(hydratedForm)
+			setInitialPreferences({
+				isObsResponseEnabled: !!userData.isObsResponseEnabled,
+				isIntervalEnabled: !!userData.isIntervalEnabled,
+				isReportEnabled: !!userData.isReportEnabled,
+				isSpotifyEnabled: !!userData.isSpotifyEnabled,
+				isAutoIDEnabled: !!userData.isAutoIDEnabled,
+				isAutoIDCleanupEnabled: !!userData.isAutoIDCleanupEnabled,
+				continueLastPlaylist: !!userData.continueLastPlaylist,
+				obsClearDisplayTime: Number(userData.obsClearDisplayTime ?? 0),
+				intervalMessageDuration: Number(userData.intervalMessageDuration ?? 0),
+			})
 			setIsUserContextReady(true)
 		}
 
@@ -100,6 +182,73 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
 		}
 	}, [])
 
+	// Update isConnectionReady when required fields change
+	useEffect(() => {
+		const ready =
+			!!formData.twitchChannelName &&
+			!!formData.twitchChatbotName &&
+			!!formData.seratoDisplayName
+		setIsConnectionReady(ready)
+	}, [
+		formData.twitchChannelName,
+		formData.twitchChatbotName,
+		formData.seratoDisplayName,
+	])
+
+	// Compute dirty state
+	const isPrefsDirty = useMemo(() => {
+		return (
+			isObsResponseEnabled !== initialPreferences.isObsResponseEnabled ||
+			isIntervalEnabled !== initialPreferences.isIntervalEnabled ||
+			isReportEnabled !== initialPreferences.isReportEnabled ||
+			isSpotifyEnabled !== initialPreferences.isSpotifyEnabled ||
+			isAutoIDEnabled !== initialPreferences.isAutoIDEnabled ||
+			isAutoIDCleanupEnabled !== initialPreferences.isAutoIDCleanupEnabled ||
+			continueLastPlaylist !== initialPreferences.continueLastPlaylist ||
+			obsClearDisplayTime !== initialPreferences.obsClearDisplayTime ||
+			intervalMessageDuration !== initialPreferences.intervalMessageDuration
+		)
+	}, [
+		isObsResponseEnabled,
+		isIntervalEnabled,
+		isReportEnabled,
+		isSpotifyEnabled,
+		isAutoIDEnabled,
+		isAutoIDCleanupEnabled,
+		continueLastPlaylist,
+		obsClearDisplayTime,
+		intervalMessageDuration,
+		initialPreferences,
+	])
+
+	const isFormDirty = useMemo(() => {
+		return JSON.stringify(formData) !== JSON.stringify(initialFormData)
+	}, [formData, initialFormData])
+
+	const isFormModified = isPrefsDirty || isFormDirty
+
+	const commitInitial: UserContextType['commitInitial'] = (
+		nextFormData,
+		nextPreferences
+	) => {
+		if (nextFormData) setInitialFormData(nextFormData)
+		else setInitialFormData(formData)
+		if (nextPreferences)
+			setInitialPreferences(nextPreferences)
+		else
+			setInitialPreferences({
+				isObsResponseEnabled,
+				isIntervalEnabled,
+				isReportEnabled,
+				isSpotifyEnabled,
+				isAutoIDEnabled,
+				isAutoIDCleanupEnabled,
+				continueLastPlaylist,
+				obsClearDisplayTime,
+				intervalMessageDuration,
+			})
+	}
+
 	const contextValue: UserContextType = {
 		isObsResponseEnabled,
 		setIsObsResponseEnabled,
@@ -126,6 +275,13 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
 		isDiscordAuthorized,
 		setIsDiscordAuthorized,
 		isUserContextReady,
+		isConnectionReady,
+		formData,
+		setFormData,
+		initialFormData,
+		initialPreferences,
+		isFormModified,
+		commitInitial,
 	}
 
 	return (

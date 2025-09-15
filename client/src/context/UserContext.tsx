@@ -29,6 +29,57 @@ export type UserContextType = {
 	setIsDiscordAuthorized: (v: boolean) => void
 	// Hydration status
 	isUserContextReady: boolean
+	// Connection readiness
+	isConnectionReady: boolean
+	// Form data and modification tracking
+	formData: {
+		_id: string
+		twitchChannelName: string
+		twitchChatbotName: string
+		twitchRefreshToken: string
+		spotifyRefreshToken: string
+		seratoDisplayName: string
+		obsWebsocketAddress: string
+		obsWebsocketPassword: string
+		intervalMessageDuration: string
+		obsClearDisplayTime: string
+		userEmailAddress: string
+		isObsResponseEnabled: boolean
+		isIntervalEnabled: boolean
+		isReportEnabled: boolean
+		isSpotifyEnabled: boolean
+		continueLastPlaylist: boolean
+		isAutoIDEnabled: boolean
+		isAutoIDCleanupEnabled: boolean
+	}
+	setFormData: (patch: Partial<UserContextType['formData']>) => void
+	initialFormData: UserContextType['formData']
+	initialPreferences: {
+		isObsResponseEnabled: boolean
+		isIntervalEnabled: boolean
+		isReportEnabled: boolean
+		isSpotifyEnabled: boolean
+		isAutoIDEnabled: boolean
+		isAutoIDCleanupEnabled: boolean
+		continueLastPlaylist: boolean
+		obsClearDisplayTime: number
+		intervalMessageDuration: number
+	}
+	isFormModified: boolean
+	commitInitial: (
+		nextFormData?: UserContextType['formData'],
+		nextPreferences?: {
+			isObsResponseEnabled: boolean
+			isIntervalEnabled: boolean
+			isReportEnabled: boolean
+			isSpotifyEnabled: boolean
+			isAutoIDEnabled: boolean
+			isAutoIDCleanupEnabled: boolean
+			continueLastPlaylist: boolean
+			obsClearDisplayTime: number
+			intervalMessageDuration: number
+		}
+	) => void
 	// Add more as needed
 }
 

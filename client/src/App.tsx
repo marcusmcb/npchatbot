@@ -14,7 +14,7 @@ import useWebSocket from './hooks/useWebSocket'
 import useGetPlaylistData from './hooks/useGetPlaylistData'
 import useMessageQueue from './hooks/useMessageQueue'
 import useTooltipVisibility from './hooks/useTooltipVisibility'
-import useFormModified from './hooks/useFormModified'
+// import useFormModified from './hooks/useFormModified'
 import fetchPlaylistSummaries from './utils/fetchPlaylistSummaries'
 import { useUserContext } from './context/UserContext'
 
@@ -33,6 +33,7 @@ const App = (): JSX.Element => {
 
 	const {
 		isUserContextReady,
+		isConnectionReady,
 		// preferences
 		isObsResponseEnabled,
 		setIsObsResponseEnabled,
@@ -59,6 +60,11 @@ const App = (): JSX.Element => {
 		setIsSpotifyAuthorized,
 		isDiscordAuthorized,
 		setIsDiscordAuthorized,
+		// form and modification tracking
+		formData,
+		setFormData,
+		isFormModified,
+		commitInitial,
 	} = userContext
 	
 	/* TYPES */
@@ -70,36 +76,13 @@ const App = (): JSX.Element => {
 
 	/* STATE VALUES */
 
-	const [formData, setFormData] = useState({
-		_id: '',
-		twitchChannelName: '',
-		twitchChatbotName: '',
-		twitchRefreshToken: '',
-		spotifyRefreshToken: '',
-		seratoDisplayName: '',
-		obsWebsocketAddress: '',
-		obsWebsocketPassword: '',
-		intervalMessageDuration: '',
-		obsClearDisplayTime: '',
-		userEmailAddress: '',
-		isObsResponseEnabled: false,
-		isIntervalEnabled: false,
-		isReportEnabled: false,
-		isSpotifyEnabled: false,
-		continueLastPlaylist: false,
-		isAutoIDEnabled: false,
-		isAutoIDCleanupEnabled: false,
-	})
-
 	// app-level state value
 	const [error, setError] = useState('')
 	const [showTooltip, setShowTooltip] = useState<string | null>(null)
 	const [isBotConnected, setIsBotConnected] = useState(false)
-	const [isConnectionReady, setIsConnectionReady] = useState(false)
+	// connection readiness now comes from context
 	const [messageQueue, setMessageQueue] = useState<string[]>([])
 	const [currentMessage, setCurrentMessage] = useState<string | null>(null)
-	const [initialFormData, setInitialFormData] = useState(formData)
-	const [isFormModified, setIsFormModified] = useState(false)
 
 	// user-level state values now come from Context
 	// const [isObsResponseEnabled, setIsObsResponseEnabled] = useState(false)
@@ -120,46 +103,7 @@ const App = (): JSX.Element => {
 	// const [obsClearDisplayTime, setObsClearDisplayTime] = useState(5)
 	// const [intervalMessageDuration, setIntervalMessageDuration] = useState(15)
 
-	// state for initial user preferences
-	const [initialPreferences, setInitialPreferences] = useState({
-		isObsResponseEnabled,
-		isIntervalEnabled,
-		isReportEnabled,
-		isSpotifyEnabled,
-		isAutoIDEnabled,
-		isAutoIDCleanupEnabled,
-		continueLastPlaylist,
-		obsClearDisplayTime,
-		intervalMessageDuration,
-	})
 
-	// Update initial preferences snapshot after user context hydrates
-	useEffect(() => {
-		if (isUserContextReady) {
-			setInitialPreferences({
-				isObsResponseEnabled,
-				isIntervalEnabled,
-				isReportEnabled,
-				isSpotifyEnabled,
-				isAutoIDEnabled,
-				isAutoIDCleanupEnabled,
-				continueLastPlaylist,
-				obsClearDisplayTime,
-				intervalMessageDuration,
-			})
-		}
-	}, [
-		isUserContextReady,
-		isObsResponseEnabled,
-		isIntervalEnabled,
-		isReportEnabled,
-		isSpotifyEnabled,
-		isAutoIDEnabled,
-		isAutoIDCleanupEnabled,
-		continueLastPlaylist,
-		obsClearDisplayTime,
-		intervalMessageDuration,
-	])
 
 	const ipcRenderer = window.electron.ipcRenderer
 
@@ -181,7 +125,7 @@ const App = (): JSX.Element => {
 	// handle user input changes
 	const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		const { name, value } = event.target
-		setFormData((prevFormData) => ({ ...prevFormData, [name]: value }))
+		setFormData({ [name]: value } as any)
 	}
 
 	/* EFFECT HOOKS */
@@ -245,20 +189,7 @@ const App = (): JSX.Element => {
 		setCurrentMessage
 	)
 
-	// hook to check current form data against initial form data
-	useFormModified(
-		formData,
-		initialFormData,
-		isObsResponseEnabled,
-		isIntervalEnabled,
-		isReportEnabled,
-		isSpotifyEnabled,
-		isAutoIDEnabled,
-		isAutoIDCleanupEnabled,
-		continueLastPlaylist,
-		initialPreferences,
-		setIsFormModified
-	)
+	// modification tracking is provided by context (isFormModified)
 
 	// hook to load initial user data and preferences
 	// useGetUserData(
@@ -304,11 +235,10 @@ const App = (): JSX.Element => {
 	useEffect(() => {
 		const handleAuthSuccess = (response: AuthSuccess) => {
 			console.log('Auth success:', response)
-			setFormData((prevFormData) => ({
-				...prevFormData,
+			setFormData({
 				_id: response._id,
 				twitchRefreshToken: response.twitchRefreshToken,
-			}))
+			})
 		}
 		window.electron.ipcRenderer.on('auth-successful', handleAuthSuccess)
 		return () => {
@@ -392,18 +322,15 @@ const App = (): JSX.Element => {
 	const handleSubmitWrapper = async (
 		event: React.FormEvent<HTMLFormElement>
 	) => {
-		handleSubmit(
+			handleSubmit(
 			event,
 			formData,
 			ipcRenderer,
 			addMessageToQueue,
 			setCurrentMessage,
 			setError,
-			setFormData,
-			setInitialFormData,
-			setInitialPreferences,
-			setIsFormModified,
-			setIsConnectionReady,
+				(data: any) => setFormData(data),
+				commitInitial,
 			isReportEnabled,
 			isIntervalEnabled,
 			isObsResponseEnabled,
@@ -413,6 +340,7 @@ const App = (): JSX.Element => {
 			continueLastPlaylist,
 			isValidEmail
 		)
+			// commitInitial will be called inside handleSubmit on success
 	}
 
 	// helper method to reload playlist summaries

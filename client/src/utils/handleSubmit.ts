@@ -3,13 +3,10 @@ const handleSubmit = async (
 	formData: any,
 	ipcRenderer: any,
 	addMessageToQueue: (message: string) => void,
-  setCurrentMessage: (message: string) => void,
+	setCurrentMessage: (message: string) => void,
 	setError: (error: string) => void,
 	setFormData: (data: any) => void,
-	setInitialFormData: (data: any) => void,
-	setInitialPreferences: (preferences: any) => void,
-	setIsFormModified: (modified: boolean) => void,
-	setIsConnectionReady: (ready: boolean) => void,
+	commitInitial: (nextFormData?: any, nextPreferences?: any) => void,
 	isReportEnabled: boolean,
 	isIntervalEnabled: boolean,
 	isObsResponseEnabled: boolean,
@@ -68,20 +65,35 @@ const handleSubmit = async (
 		if (response && response.success) {
 			addMessageToQueue(response.message)
 			setFormData(response.data)
-			setInitialFormData(response.data)
-			setInitialPreferences({
-				isObsResponseEnabled: response.data.isObsResponseEnabled,
-				isIntervalEnabled: response.data.isIntervalEnabled,
-				isReportEnabled: response.data.isReportEnabled,
-				isSpotifyEnabled: response.data.isSpotifyEnabled,
-				isAutoIDEnabled: response.data.isAutoIDEnabled,
-				isAutoIDCleanupEnabled: response.data.isAutoIDCleanupEnabled,
-				continueLastPlaylist: response.data.continueLastPlaylist,
-				obsClearDisplayTime: response.data.obsClearDisplayTime,
-				intervalMessageDuration: response.data.intervalMessageDuration,
-			})
-			setIsFormModified(false)
-			setIsConnectionReady(true)
+			// Commit new snapshots in context on successful save
+			commitInitial(
+				{
+					...response.data,
+					// ensure text inputs remain strings
+					intervalMessageDuration: String(
+						response.data.intervalMessageDuration ?? ''
+					),
+					obsClearDisplayTime: String(
+						response.data.obsClearDisplayTime ?? ''
+					),
+				},
+				{
+					isObsResponseEnabled: !!response.data.isObsResponseEnabled,
+					isIntervalEnabled: !!response.data.isIntervalEnabled,
+					isReportEnabled: !!response.data.isReportEnabled,
+					isSpotifyEnabled: !!response.data.isSpotifyEnabled,
+					isAutoIDEnabled: !!response.data.isAutoIDEnabled,
+					isAutoIDCleanupEnabled: !!response.data.isAutoIDCleanupEnabled,
+					continueLastPlaylist: !!response.data.continueLastPlaylist,
+					obsClearDisplayTime: Number(
+						response.data.obsClearDisplayTime ?? 0
+					),
+					intervalMessageDuration: Number(
+						response.data.intervalMessageDuration ?? 0
+					),
+				}
+			)
+			// isConnectionReady is derived from formData in context; no setter needed here
 		} else if (response && response.error) {
 			console.log('Update error: ', response.error)
 			setCurrentMessage('')
