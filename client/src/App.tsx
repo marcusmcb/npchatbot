@@ -31,49 +31,30 @@ const App = (): JSX.Element => {
 	// }, [userContext])
 
 	const {
-		isUserContextReady,
-		isConnectionReady,
-		// preferences
 		isObsResponseEnabled,
-		setIsObsResponseEnabled,
 		isIntervalEnabled,
-		setIsIntervalEnabled,
 		isReportEnabled,
-		setIsReportEnabled,
 		isSpotifyEnabled,
-		setIsSpotifyEnabled,
 		isAutoIDEnabled,
-		setIsAutoIDEnabled,
 		isAutoIDCleanupEnabled,
-		setIsAutoIDCleanupEnabled,
 		continueLastPlaylist,
-		setContinueLastPlaylist,
-		obsClearDisplayTime,
-		setObsClearDisplayTime,
-		intervalMessageDuration,
-		setIntervalMessageDuration,
-		// authorizations
-		isTwitchAuthorized,
 		setIsTwitchAuthorized,
-		isSpotifyAuthorized,
 		setIsSpotifyAuthorized,
 		isDiscordAuthorized,
-		setIsDiscordAuthorized,
-		// form and modification tracking
+		setIsDiscordAuthorized,		
 		formData,
-		setFormData,
-		isFormModified,
+		setFormData,		
 		commitInitial,
-	} = userContext	
+	} = userContext
 
 	/* STATE VALUES */
 
 	const [error, setError] = useState('')
 	const [showTooltip, setShowTooltip] = useState<string | null>(null)
-	const [isBotConnected, setIsBotConnected] = useState(false)	
+	const [isBotConnected, setIsBotConnected] = useState(false)
 	const [messageQueue, setMessageQueue] = useState<string[]>([])
 	const [currentMessage, setCurrentMessage] = useState<string | null>(null)
-	
+
 	const [isReportReady, setIsReportReady] = useState(false)
 	const [reportData, setReportData] = useState<ReportData | null>(null)
 	const [reportView, setReportView] = useState(false)
@@ -162,7 +143,7 @@ const App = (): JSX.Element => {
 		setMessageQueue,
 		currentMessage,
 		setCurrentMessage
-	)	
+	)
 
 	// hook to fetch playlist summaries and set initial report index
 	useGetPlaylistData(
@@ -171,9 +152,7 @@ const App = (): JSX.Element => {
 		setCurrentReportIndex,
 		setReportData,
 		setIsReportReady
-	)
-
-	// Do not early-return here; keep hooks order stable across renders.
+	)	
 
 	// hook to update report data when current report index changes
 	useEffect(() => {
@@ -208,7 +187,7 @@ const App = (): JSX.Element => {
 		return () => {
 			window.electron.ipcRenderer.removeAllListeners('botProcessResponse')
 		}
-	}, [])	
+	}, [])
 
 	// method to validate that the user's Serato Live Playlist
 	// is public and can be accessed by npChatbot
@@ -260,15 +239,15 @@ const App = (): JSX.Element => {
 	const handleSubmitWrapper = async (
 		event: React.FormEvent<HTMLFormElement>
 	) => {
-			handleSubmit(
+		handleSubmit(
 			event,
 			formData,
 			ipcRenderer,
 			addMessageToQueue,
 			setCurrentMessage,
 			setError,
-				(data: any) => setFormData(data),
-				commitInitial,
+			(data: any) => setFormData(data),
+			commitInitial,
 			isReportEnabled,
 			isIntervalEnabled,
 			isObsResponseEnabled,
@@ -278,7 +257,7 @@ const App = (): JSX.Element => {
 			continueLastPlaylist,
 			isValidEmail
 		)
-			// commitInitial will be called inside handleSubmit on success
+		// commitInitial will be called inside handleSubmit on success
 	}
 
 	// helper method to reload playlist summaries
@@ -286,7 +265,7 @@ const App = (): JSX.Element => {
 	const reloadPlaylistSummaries = (deletedIndex: number) => {
 		fetchPlaylistSummaries().then((playlistSummary) => {
 			if (playlistSummary && playlistSummary.length > 0) {
-				setPlaylistSummaries(playlistSummary as ReportData[])				
+				setPlaylistSummaries(playlistSummary as ReportData[])
 				const newIndex = deletedIndex > 0 ? deletedIndex - 1 : 0
 				setCurrentReportIndex(newIndex)
 				setReportData(playlistSummary[newIndex] as ReportData)
@@ -307,9 +286,7 @@ const App = (): JSX.Element => {
 					<></>
 				) : (
 					<>
-						<TitleBar
-							isBotConnected={isBotConnected}
-						/>
+						<TitleBar isBotConnected={isBotConnected} />
 						<MessagePanel
 							message={currentMessage || ''}
 							error={error}

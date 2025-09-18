@@ -18,10 +18,6 @@ const SessionPanel: React.FC<SessionPanelProps> = (props) => {
 	const [uptimeSeconds, setUptimeSeconds] = useState(0)
 	const { isTwitchAuthorized, isConnectionReady } = useUserContext()
 
-	const resetUptime = () => {
-		setUptimeSeconds(0)
-	}
-
 	useEffect(() => {
 		let interval: NodeJS.Timeout
 
@@ -40,6 +36,10 @@ const SessionPanel: React.FC<SessionPanelProps> = (props) => {
 			}
 		}
 	}, [props.isBotConnected])
+
+	const resetUptime = () => {
+		setUptimeSeconds(0)
+	}
 
 	const formatUptime = (totalSeconds: number) => {
 		const hours = Math.floor(totalSeconds / 3600)
@@ -68,9 +68,7 @@ const SessionPanel: React.FC<SessionPanelProps> = (props) => {
 					type='submit'
 					onClick={props.handleConnect}
 					disabled={
-						props.isBotConnected ||
-						!isTwitchAuthorized ||
-						!isConnectionReady
+						props.isBotConnected || !isTwitchAuthorized || !isConnectionReady
 					}
 				>
 					{!props.isBotConnected ? 'Connect' : 'Connected'}
