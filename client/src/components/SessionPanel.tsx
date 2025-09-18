@@ -8,6 +8,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { SessionPanelProps } from '../types'
+import { useUserContext } from '../context/UserContext'
 import '../App.css'
 import './styles/sessionpanel.css'
 
@@ -15,6 +16,7 @@ const ipcRenderer = window.electron.ipcRenderer
 
 const SessionPanel: React.FC<SessionPanelProps> = (props) => {
 	const [uptimeSeconds, setUptimeSeconds] = useState(0)
+	const { isTwitchAuthorized, isConnectionReady } = useUserContext()
 
 	const resetUptime = () => {
 		setUptimeSeconds(0)
@@ -67,8 +69,8 @@ const SessionPanel: React.FC<SessionPanelProps> = (props) => {
 					onClick={props.handleConnect}
 					disabled={
 						props.isBotConnected ||
-						!props.isTwitchAuthorized ||
-						!props.isConnectionReady
+						!isTwitchAuthorized ||
+						!isConnectionReady
 					}
 				>
 					{!props.isBotConnected ? 'Connect' : 'Connected'}

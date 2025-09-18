@@ -28,8 +28,6 @@ export interface SessionPanelProps {
 	setReportView: (value: boolean) => void
 	reportView: boolean
 	isBotConnected: boolean
-	isTwitchAuthorized: boolean
-	isConnectionReady: boolean
 	isReportReady: boolean
 	reportData: ReportData | null
 	playlistSummaries: ReportData[]

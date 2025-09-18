@@ -352,8 +352,6 @@ const App = (): JSX.Element => {
 							handleConnect={handleConnectWrapper}
 							handleDisconnect={handleDisconnectWrapper}
 							isBotConnected={isBotConnected}
-							isTwitchAuthorized={isTwitchAuthorized}
-							isConnectionReady={isConnectionReady}
 							reportData={reportData || ({} as ReportData)}
 							isReportReady={isReportReady}
 							setReportView={setReportView}
