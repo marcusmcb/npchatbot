@@ -12,41 +12,43 @@ add option to resume last Spotify playlist on startup
 
 import '../App.css'
 import './styles/preferencespanel.css'
+import { useUserContext } from '../context/UserContext'
 
 type PreferencesPanelProps = {
-	formData: {
-		twitchChannelName: string
-		twitchChatbotName: string
-		seratoDisplayName: string
-		obsWebsocketAddress?: string
-		obsWebsocketPassword?: string
-		obsClearDisplayTime: string
-		intervalMessageDuration: string
-		userEmailAddress: string
-	}
-	isObsResponseEnabled: boolean
-	isTwitchAuthorized: boolean
-	setIsObsResponseEnabled: (value: boolean) => void
-	isIntervalEnabled: boolean
-	setIsIntervalEnabled: (value: boolean) => void
-	isReportEnabled: boolean
-	setIsReportEnabled: (value: boolean) => void
-	isSpotifyEnabled: boolean
-	setIsSpotifyEnabled: (value: boolean) => void
-	isAutoIDEnabled: boolean
-	setIsAutoIDEnabled: (value: boolean) => void
-	isAutoIDCleanupEnabled: boolean
-	setIsAutoIDCleanupEnabled: (value: boolean) => void
-	isSpotifyAuthorized: boolean
-	handleInputChange: (event: React.ChangeEvent<HTMLInputElement>) => void
 	showTooltip: string | null
 	setShowTooltip: (value: string | null) => void
 	isBotConnected: boolean
-	continueLastPlaylist: boolean
-	setContinueLastPlaylist: (value: boolean) => void
 }
 
 const PreferencesPanel: React.FC<PreferencesPanelProps> = (props) => {
+	const {
+		// form
+		formData,
+		setFormData,
+		// auth
+		isTwitchAuthorized,
+		isSpotifyAuthorized,
+		// prefs
+		isSpotifyEnabled,
+		setIsSpotifyEnabled,
+		continueLastPlaylist,
+		setContinueLastPlaylist,
+		isAutoIDEnabled,
+		setIsAutoIDEnabled,
+		isAutoIDCleanupEnabled,
+		setIsAutoIDCleanupEnabled,
+		isObsResponseEnabled,
+		setIsObsResponseEnabled,
+		isIntervalEnabled,
+		setIsIntervalEnabled,
+		isReportEnabled,
+		setIsReportEnabled,
+	} = useUserContext()
+
+	const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+		const { name, value } = event.target
+		setFormData({ [name]: value } as any)
+	}
 	return (
 		<div className='app-container-column'>
 			<div className='app-form-title'>Preferences:</div>
@@ -55,12 +57,12 @@ const PreferencesPanel: React.FC<PreferencesPanelProps> = (props) => {
 			<div className='toggle-field spotify-prefs-element'>
 				<input
 					type='checkbox'
-					disabled={!props.isSpotifyAuthorized || props.isBotConnected}
+					disabled={!isSpotifyAuthorized || props.isBotConnected}
 					id='spotifyPlaylistEnabled'
-					checked={props.isSpotifyEnabled}
-					onChange={() => props.setIsSpotifyEnabled(!props.isSpotifyEnabled)}
+					checked={isSpotifyEnabled}
+					onChange={() => setIsSpotifyEnabled(!isSpotifyEnabled)}
 					className={
-						!props.isSpotifyAuthorized || props.isBotConnected
+						!isSpotifyAuthorized || props.isBotConnected
 							? 'disabled-toggle'
 							: ''
 					}
@@ -69,7 +71,7 @@ const PreferencesPanel: React.FC<PreferencesPanelProps> = (props) => {
 				<label
 					htmlFor='spotifyPlaylistEnabled'
 					className={
-						(!props.isSpotifyEnabled || props.isBotConnected
+						(!isSpotifyEnabled || props.isBotConnected
 							? 'disabled-label'
 							: '') + (props.isBotConnected ? ' greyed-out-label' : '')
 					}
@@ -97,18 +99,16 @@ const PreferencesPanel: React.FC<PreferencesPanelProps> = (props) => {
 				<input
 					type='checkbox'
 					disabled={
-						!props.isSpotifyAuthorized ||
-						!props.isSpotifyEnabled ||
+						!isSpotifyAuthorized ||
+						!isSpotifyEnabled ||
 						props.isBotConnected
 					}
 					id='spotifyPlaylistEnabled'
-					checked={props.continueLastPlaylist}
-					onChange={() =>
-						props.setContinueLastPlaylist(!props.continueLastPlaylist)
-					}
+					checked={continueLastPlaylist}
+					onChange={() => setContinueLastPlaylist(!continueLastPlaylist)}
 					className={
-						!props.isSpotifyAuthorized ||
-						!props.isSpotifyEnabled ||
+						!isSpotifyAuthorized ||
+						!isSpotifyEnabled ||
 						props.isBotConnected
 							? 'disabled-toggle'
 							: ''
@@ -118,12 +118,12 @@ const PreferencesPanel: React.FC<PreferencesPanelProps> = (props) => {
 				<label
 					htmlFor='continueLastPlaylist'
 					className={
-						(!props.isSpotifyAuthorized ||
-						!props.isSpotifyEnabled ||
+						(!isSpotifyAuthorized ||
+						!isSpotifyEnabled ||
 						props.isBotConnected
 							? 'disabled-label'
 							: '') +
-						(!props.isSpotifyEnabled || props.isBotConnected
+						(!isSpotifyEnabled || props.isBotConnected
 							? ' greyed-out-label'
 							: '')
 					}
@@ -150,17 +150,17 @@ const PreferencesPanel: React.FC<PreferencesPanelProps> = (props) => {
 			<div className='toggle-field'>
 				<input
 					type='checkbox'
-					disabled={!props.isTwitchAuthorized || props.isBotConnected}
+					disabled={!isTwitchAuthorized || props.isBotConnected}
 					id='autoIDEnabled'
-					checked={props.isAutoIDEnabled}
+					checked={isAutoIDEnabled}
 					onChange={() => {
-						props.setIsAutoIDEnabled(!props.isAutoIDEnabled)
+						setIsAutoIDEnabled(!isAutoIDEnabled)
 						// if (props.isAutoIDCleanupEnabled) {
 						// 	props.setIsAutoIDCleanupEnabled(false)
 						// }
 					}}
 					className={
-						!props.isTwitchAuthorized || props.isBotConnected
+						!isTwitchAuthorized || props.isBotConnected
 							? 'disabled-toggle'
 							: ''
 					}
@@ -169,7 +169,7 @@ const PreferencesPanel: React.FC<PreferencesPanelProps> = (props) => {
 				<label
 					htmlFor='autoIDEnabled'
 					className={
-						(!props.isAutoIDEnabled || props.isBotConnected
+						(!isAutoIDEnabled || props.isBotConnected
 							? 'disabled-label'
 							: '') + (props.isBotConnected ? ' greyed-out-label' : '')
 					}
@@ -195,18 +195,16 @@ const PreferencesPanel: React.FC<PreferencesPanelProps> = (props) => {
 				<input
 					type='checkbox'
 					disabled={
-						!props.isTwitchAuthorized ||
-						!props.isAutoIDEnabled ||
+						!isTwitchAuthorized ||
+						!isAutoIDEnabled ||
 						props.isBotConnected
 					}
 					id='autoIDCleanupEnabled'
-					checked={props.isAutoIDCleanupEnabled}
-					onChange={() =>
-						props.setIsAutoIDCleanupEnabled(!props.isAutoIDCleanupEnabled)
-					}
+					checked={isAutoIDCleanupEnabled}
+					onChange={() => setIsAutoIDCleanupEnabled(!isAutoIDCleanupEnabled)}
 					className={
-						!props.isTwitchAuthorized ||
-						!props.isAutoIDEnabled ||
+						!isTwitchAuthorized ||
+						!isAutoIDEnabled ||
 						props.isBotConnected
 							? 'disabled-toggle'
 							: ''
@@ -216,12 +214,12 @@ const PreferencesPanel: React.FC<PreferencesPanelProps> = (props) => {
 				<label
 					htmlFor='autoIDCleanupEnabled'
 					className={
-						(!props.isAutoIDEnabled ||
-						!props.isAutoIDCleanupEnabled ||
+						(!isAutoIDEnabled ||
+						!isAutoIDCleanupEnabled ||
 						props.isBotConnected
 							? 'disabled-label'
 							: '') +
-						(props.isBotConnected || !props.isAutoIDEnabled
+						(props.isBotConnected || !isAutoIDEnabled
 							? ' greyed-out-label'
 							: '')
 					}
@@ -249,18 +247,18 @@ const PreferencesPanel: React.FC<PreferencesPanelProps> = (props) => {
 				<input
 					type='checkbox'
 					id='obsResponseToggle'
-					checked={props.isObsResponseEnabled}
+					checked={isObsResponseEnabled}
 					disabled={
-						!props.isTwitchAuthorized ||
-						!props.formData.obsWebsocketAddress ||
+						!isTwitchAuthorized ||
+						!formData.obsWebsocketAddress ||
 						props.isBotConnected
 					}
 					onChange={() => {
-						props.setIsObsResponseEnabled(!props.isObsResponseEnabled)
+						setIsObsResponseEnabled(!isObsResponseEnabled)
 					}}
 					className={
-						!props.isTwitchAuthorized ||
-						!props.formData.obsWebsocketAddress ||
+						!isTwitchAuthorized ||
+						!formData.obsWebsocketAddress ||
 						props.isBotConnected
 							? 'disabled-toggle'
 							: ''
@@ -269,10 +267,10 @@ const PreferencesPanel: React.FC<PreferencesPanelProps> = (props) => {
 				<label
 					htmlFor='obsResponseToggle'
 					className={
-						(!props.isObsResponseEnabled || props.isBotConnected
+						(!isObsResponseEnabled || props.isBotConnected
 							? 'disabled-label'
 							: '') +
-						(!props.isObsResponseEnabled || props.isBotConnected
+						(!isObsResponseEnabled || props.isBotConnected
 							? 'greyed-out-label'
 							: '')
 					}
@@ -285,7 +283,7 @@ const PreferencesPanel: React.FC<PreferencesPanelProps> = (props) => {
 				<label
 					htmlFor='obs-clear-display-time'
 					className={
-						!props.isObsResponseEnabled || props.isBotConnected
+						!isObsResponseEnabled || props.isBotConnected
 							? 'disabled-label'
 							: ''
 					}
@@ -295,17 +293,17 @@ const PreferencesPanel: React.FC<PreferencesPanelProps> = (props) => {
 
 				<input
 					className={
-						!props.isObsResponseEnabled || props.isBotConnected
+						!isObsResponseEnabled || props.isBotConnected
 							? 'pref-input disabled-label'
 							: 'pref-input'
 					}
 					type='text'
 					id='obs-clear-display-time'
 					name='obsClearDisplayTime'
-					value={props.formData.obsClearDisplayTime}
-					onChange={props.handleInputChange}
+					value={formData.obsClearDisplayTime}
+					onChange={handleInputChange}
 					// placeholder='enter time in seconds'
-					disabled={!props.isObsResponseEnabled}
+					disabled={!isObsResponseEnabled}
 				/>
 				<span
 					className={`question-icon ${
@@ -327,12 +325,12 @@ const PreferencesPanel: React.FC<PreferencesPanelProps> = (props) => {
 			<div className='toggle-field interval-prefs-element'>
 				<input
 					type='checkbox'
-					disabled={!props.isTwitchAuthorized || props.isBotConnected}
+					disabled={!isTwitchAuthorized || props.isBotConnected}
 					id='intervalMessageToggle'
-					checked={props.isIntervalEnabled}
-					onChange={() => props.setIsIntervalEnabled(!props.isIntervalEnabled)}
+					checked={isIntervalEnabled}
+					onChange={() => setIsIntervalEnabled(!isIntervalEnabled)}
 					className={
-						!props.isTwitchAuthorized || props.isBotConnected
+						!isTwitchAuthorized || props.isBotConnected
 							? 'disabled-toggle'
 							: ''
 					}
@@ -341,7 +339,7 @@ const PreferencesPanel: React.FC<PreferencesPanelProps> = (props) => {
 				<label
 					htmlFor='intervalMessageToggle'
 					className={
-						(!props.isIntervalEnabled || props.isBotConnected
+						(!isIntervalEnabled || props.isBotConnected
 							? 'disabled-label'
 							: '') + (props.isBotConnected ? ' greyed-out-label' : '')
 					}
@@ -353,7 +351,7 @@ const PreferencesPanel: React.FC<PreferencesPanelProps> = (props) => {
 				<label
 					htmlFor='obs-interval-duration'
 					className={
-						!props.isIntervalEnabled || props.isBotConnected
+						!isIntervalEnabled || props.isBotConnected
 							? 'disabled-label'
 							: ''
 					}
@@ -363,17 +361,17 @@ const PreferencesPanel: React.FC<PreferencesPanelProps> = (props) => {
 
 				<input
 					className={
-						!props.isIntervalEnabled || props.isBotConnected
+						!isIntervalEnabled || props.isBotConnected
 							? 'disabled-label pref-input'
 							: 'pref-input'
 					}
 					type='text'
 					id='obs-interval-duration'
 					name='intervalMessageDuration'
-					value={props.formData.intervalMessageDuration}
-					onChange={props.handleInputChange}
+					value={formData.intervalMessageDuration}
+					onChange={handleInputChange}
 					// placeholder='enter time in minutes'
-					disabled={!props.isIntervalEnabled || props.isBotConnected}
+					disabled={!isIntervalEnabled || props.isBotConnected}
 				/>
 				<span
 					className={`question-icon ${

@@ -343,24 +343,6 @@ const App = (): JSX.Element => {
 								isBotConnected={isBotConnected}
 							/>
 							<PreferencesPanel
-								formData={formData}
-								isTwitchAuthorized={isTwitchAuthorized}
-								isObsResponseEnabled={isObsResponseEnabled}
-								isSpotifyEnabled={isSpotifyEnabled}
-								isSpotifyAuthorized={isSpotifyAuthorized}
-								isAutoIDEnabled={isAutoIDEnabled}
-								isAutoIDCleanupEnabled={isAutoIDCleanupEnabled}
-								setIsAutoIDEnabled={setIsAutoIDEnabled}
-								setIsAutoIDCleanupEnabled={setIsAutoIDCleanupEnabled}
-								setIsSpotifyEnabled={setIsSpotifyEnabled}
-								continueLastPlaylist={continueLastPlaylist}
-								setContinueLastPlaylist={setContinueLastPlaylist}
-								setIsObsResponseEnabled={setIsObsResponseEnabled}
-								isIntervalEnabled={isIntervalEnabled}
-								setIsIntervalEnabled={setIsIntervalEnabled}
-								isReportEnabled={isReportEnabled}
-								setIsReportEnabled={setIsReportEnabled}
-								handleInputChange={handleInputChange}
 								showTooltip={showTooltip}
 								setShowTooltip={setShowTooltip}
 								isBotConnected={isBotConnected}
