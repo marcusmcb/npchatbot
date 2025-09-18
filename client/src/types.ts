@@ -102,28 +102,18 @@ export interface ReportDataProps {
 export type CredentialsFieldConfig = {
 	id: string
 	label: string
-	name: keyof CredentialsPanelProps['formData']
+	name:
+		| 'twitchChannelName'
+		| 'twitchChatbotName'
+		| 'seratoDisplayName'
+		| 'obsWebsocketAddress'
+		| 'obsWebsocketPassword'
 	placeholder?: string
 }
 
 export type CredentialsPanelProps = {
-	formData: {
-		twitchChannelName: string
-		twitchChatbotName: string
-		seratoDisplayName: string
-	obsWebsocketAddress?: string
-	obsWebsocketPassword?: string
-	obsClearDisplayTime: string
-	intervalMessageDuration: string
-	userEmailAddress: string
-	}
-	handleInputChange: (event: React.ChangeEvent<HTMLInputElement>) => void
 	showTooltip: string | null
 	setShowTooltip: (value: string | null) => void
 	handleSubmit: (event: React.FormEvent<HTMLFormElement>) => void
 	isBotConnected: boolean
-	isObsResponseEnabled: boolean
-	isTwitchAuthorized: boolean
-	isSpotifyAuthorized: boolean
-	isFormModified: boolean
 }

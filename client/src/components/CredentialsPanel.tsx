@@ -1,5 +1,6 @@
 import React from 'react'
 import { CredentialsPanelProps, CredentialsFieldConfig } from '../types'
+import { useUserContext } from '../context/UserContext'
 import '../App.css'
 import './styles/credentialspanel.css'
 
@@ -97,6 +98,18 @@ const InputField: React.FC<{
 
 const CredentialsPanel: React.FC<CredentialsPanelProps> = (props) => {
 	const [hideSensitiveFields, setHideSensitiveFields] = React.useState(true)
+	const {
+		formData,
+		setFormData,
+		isObsResponseEnabled,
+		isTwitchAuthorized,
+		isFormModified,
+	} = useUserContext()
+
+	const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+		const { name, value } = event.target
+		setFormData({ [name]: value } as any)
+	}
 
 	return (
 		<div className='app-container-column'>
@@ -106,12 +119,12 @@ const CredentialsPanel: React.FC<CredentialsPanelProps> = (props) => {
 					<InputField
 						key={field.id}
 						fieldConfig={field}
-						value={props.formData[field.name]}
-						handleInputChange={props.handleInputChange}
+						value={(formData as any)[field.name]}
+						handleInputChange={handleInputChange}
 						showTooltip={props.showTooltip}
 						setShowTooltip={props.setShowTooltip}
 						hideSensitiveFields={hideSensitiveFields}
-						isObsResponseEnabled={props.isObsResponseEnabled}
+						isObsResponseEnabled={isObsResponseEnabled}
 						isBotConnected={props.isBotConnected}
 					/>
 				))}
@@ -119,9 +132,9 @@ const CredentialsPanel: React.FC<CredentialsPanelProps> = (props) => {
 				<div className='button-row'>
 					<button
 						className={`default-button ${
-							props.isFormModified ? 'button-modified' : ''
+							isFormModified ? 'button-modified' : ''
 						}`}
-						disabled={props.isBotConnected || !props.isTwitchAuthorized}
+						disabled={props.isBotConnected || !isTwitchAuthorized}
 						type='submit'
 					>
 						Update

@@ -25,9 +25,10 @@ import './App.css'
 
 const App = (): JSX.Element => {
 	const userContext = useUserContext()
-	useEffect(() => {
-		console.log('User Context in App.tsx: ', userContext)
-	}, [userContext])
+
+	// useEffect(() => {
+	// 	console.log('User Context in App.tsx: ', userContext)
+	// }, [userContext])
 
 	const {
 		isUserContextReady,
@@ -63,18 +64,10 @@ const App = (): JSX.Element => {
 		setFormData,
 		isFormModified,
 		commitInitial,
-	} = userContext
-	
-	/* TYPES */
-
-	// interface AuthSuccess {
-	// 	_id: string
-	// 	twitchRefreshToken: string
-	// }
+	} = userContext	
 
 	/* STATE VALUES */
 
-	// app-level state value
 	const [error, setError] = useState('')
 	const [showTooltip, setShowTooltip] = useState<string | null>(null)
 	const [isBotConnected, setIsBotConnected] = useState(false)	
@@ -293,8 +286,7 @@ const App = (): JSX.Element => {
 	const reloadPlaylistSummaries = (deletedIndex: number) => {
 		fetchPlaylistSummaries().then((playlistSummary) => {
 			if (playlistSummary && playlistSummary.length > 0) {
-				setPlaylistSummaries(playlistSummary as ReportData[])
-				// If there is a playlist to the left, show it; otherwise, show the right one
+				setPlaylistSummaries(playlistSummary as ReportData[])				
 				const newIndex = deletedIndex > 0 ? deletedIndex - 1 : 0
 				setCurrentReportIndex(newIndex)
 				setReportData(playlistSummary[newIndex] as ReportData)
@@ -345,16 +337,10 @@ const App = (): JSX.Element => {
 					<div className='app-container'>
 						<div className='creds-prefs-panel'>
 							<CredentialsPanel
-								formData={formData}
-								handleInputChange={handleInputChange}
 								showTooltip={showTooltip}
 								setShowTooltip={setShowTooltip}
 								handleSubmit={handleSubmitWrapper}
 								isBotConnected={isBotConnected}
-								isObsResponseEnabled={isObsResponseEnabled}
-								isTwitchAuthorized={isTwitchAuthorized}
-								isSpotifyAuthorized={isSpotifyAuthorized}
-								isFormModified={isFormModified}
 							/>
 							<PreferencesPanel
 								formData={formData}
