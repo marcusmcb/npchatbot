@@ -10,11 +10,9 @@ import { BotProcessResponse, AuthSuccess } from './types'
 import { ReportData } from './types'
 
 import useWebSocket from './hooks/useWebSocket'
-// import useGetUserData from './hooks/useGetUserData'
 import useGetPlaylistData from './hooks/useGetPlaylistData'
 import useMessageQueue from './hooks/useMessageQueue'
 import useTooltipVisibility from './hooks/useTooltipVisibility'
-// import useFormModified from './hooks/useFormModified'
 import fetchPlaylistSummaries from './utils/fetchPlaylistSummaries'
 import { useUserContext } from './context/UserContext'
 
@@ -79,31 +77,15 @@ const App = (): JSX.Element => {
 	// app-level state value
 	const [error, setError] = useState('')
 	const [showTooltip, setShowTooltip] = useState<string | null>(null)
-	const [isBotConnected, setIsBotConnected] = useState(false)
-	// connection readiness now comes from context
+	const [isBotConnected, setIsBotConnected] = useState(false)	
 	const [messageQueue, setMessageQueue] = useState<string[]>([])
 	const [currentMessage, setCurrentMessage] = useState<string | null>(null)
-
-	// user-level state values now come from Context
-	// const [isObsResponseEnabled, setIsObsResponseEnabled] = useState(false)
-	// const [isIntervalEnabled, setIsIntervalEnabled] = useState(false)
-	// const [isTwitchAuthorized, setIsTwitchAuthorized] = useState(false)
-	// const [isSpotifyAuthorized, setIsSpotifyAuthorized] = useState(false)
-	// const [isDiscordAuthorized, setIsDiscordAuthorized] = useState(false)
-	// const [isSpotifyEnabled, setIsSpotifyEnabled] = useState(false)
-	// const [isAutoIDEnabled, setIsAutoIDEnabled] = useState(false)
-	// const [isAutoIDCleanupEnabled, setIsAutoIDCleanupEnabled] = useState(false)
-	// const [continueLastPlaylist, setContinueLastPlaylist] = useState(false)
-	// const [isReportEnabled, setIsReportEnabled] = useState(false)
+	
 	const [isReportReady, setIsReportReady] = useState(false)
 	const [reportData, setReportData] = useState<ReportData | null>(null)
 	const [reportView, setReportView] = useState(false)
 	const [playlistSummaries, setPlaylistSummaries] = useState<ReportData[]>([])
 	const [currentReportIndex, setCurrentReportIndex] = useState(0)
-	// const [obsClearDisplayTime, setObsClearDisplayTime] = useState(5)
-	// const [intervalMessageDuration, setIntervalMessageDuration] = useState(15)
-
-
 
 	const ipcRenderer = window.electron.ipcRenderer
 
@@ -187,30 +169,7 @@ const App = (): JSX.Element => {
 		setMessageQueue,
 		currentMessage,
 		setCurrentMessage
-	)
-
-	// modification tracking is provided by context (isFormModified)
-
-	// hook to load initial user data and preferences
-	// useGetUserData(
-	// 	setFormData,
-	// 	setInitialFormData,
-	// 	setInitialPreferences,
-	// 	setIsObsResponseEnabled,
-	// 	setIsIntervalEnabled,
-	// 	setIsReportEnabled,
-	// 	setIsSpotifyEnabled,
-	// 	setIsAutoIDEnabled,
-	// 	setIsAutoIDCleanupEnabled,
-	// 	setContinueLastPlaylist,
-	// 	setIsSpotifyAuthorized,
-	// 	setIsTwitchAuthorized,
-	// 	setIsConnectionReady,
-	// 	setIsDiscordAuthorized,
-	// 	setObsClearDisplayTime,
-	// 	setIntervalMessageDuration,
-	// 	addMessageToQueue
-	// )
+	)	
 
 	// hook to fetch playlist summaries and set initial report index
 	useGetPlaylistData(
@@ -256,21 +215,7 @@ const App = (): JSX.Element => {
 		return () => {
 			window.electron.ipcRenderer.removeAllListeners('botProcessResponse')
 		}
-	}, [])
-
-	// Listen for Discord authorization success
-	// useEffect(() => {
-	// 	const handleDiscordAuthSuccess = () => {
-	// 		setIsDiscordAuthorized(true)
-	// 	}
-	// 	window.electron.ipcRenderer.on(
-	// 		'discord-auth-success',
-	// 		handleDiscordAuthSuccess
-	// 	)
-	// 	return () => {
-	// 		window.electron.ipcRenderer.removeAllListeners('discord-auth-successful')
-	// 	}
-	// }, [])
+	}, [])	
 
 	// method to validate that the user's Serato Live Playlist
 	// is public and can be accessed by npChatbot
@@ -371,9 +316,6 @@ const App = (): JSX.Element => {
 				) : (
 					<>
 						<TitleBar
-							isTwitchAuthorized={isTwitchAuthorized}
-							isSpotifyAuthorized={isSpotifyAuthorized}
-							isDiscordAuthorized={isDiscordAuthorized}
 							isBotConnected={isBotConnected}
 						/>
 						<MessagePanel

@@ -2,17 +2,19 @@ import SpotifyIcon from './icons/spotify/SpotifyIcon'
 import TwitchIcon from './icons/twitch/TwitchIcon'
 import DiscordIcon from './icons/discord/DiscordIcon'
 import { TitleBarProps } from '../types'
+import { useUserContext } from '../context/UserContext'
 import '../App.css'
 import './styles/titlebar.css'
 
 const ipcRenderer = window.electron.ipcRenderer
 
-const TitleBar = ({
-	isTwitchAuthorized,
-	isSpotifyAuthorized,
-	isBotConnected,
-	isDiscordAuthorized,
-}: TitleBarProps): JSX.Element => {
+const TitleBar = ({ isBotConnected }: TitleBarProps): JSX.Element => {
+	const {
+		isTwitchAuthorized,
+		isSpotifyAuthorized,
+		isDiscordAuthorized,
+	} = useUserContext()
+	
 	const handleAuthClick = () => {
 		if (!isTwitchAuthorized) {
 			ipcRenderer.send('open-twitch-auth-url')
