@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, useRef } from 'react'
 import { UserContext, UserContextType } from './UserContext'
 
 export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
@@ -19,6 +19,8 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
 	const [isDiscordAuthorized, setIsDiscordAuthorized] = useState(false)
 	const [isUserContextReady, setIsUserContextReady] = useState(false)
 	const [isConnectionReady, setIsConnectionReady] = useState(false)
+	const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
+	const isCommittingRef = useRef(false)
 
 	// Form data managed in context
 	const [formData, _setFormData] = useState<UserContextType['formData']>({
@@ -57,6 +59,8 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
 
 	const setFormData: UserContextType['setFormData'] = (patch) => {
 		_setFormData((prev) => ({ ...prev, ...patch }))
+		// after hydration, any user edit marks dirty (but ignore during commit)
+		if (isUserContextReady && !isCommittingRef.current) setHasUnsavedChanges(true)
 	}
 
 	useEffect(() => {
@@ -195,7 +199,11 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
 		formData.seratoDisplayName,
 	])
 
-	// Compute dirty state
+// No need to listen for connect/disconnect messages; they shouldn't affect dirty state
+
+/* removed effect that listened to connection-state messages (they are sent to main only) */
+
+	// Compute dirty state (structural checks kept for safety, but UI relies on hasUnsavedChanges)
 	const isPrefsDirty = useMemo(() => {
 		return (
 			isObsResponseEnabled !== initialPreferences.isObsResponseEnabled ||
@@ -204,9 +212,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
 			isSpotifyEnabled !== initialPreferences.isSpotifyEnabled ||
 			isAutoIDEnabled !== initialPreferences.isAutoIDEnabled ||
 			isAutoIDCleanupEnabled !== initialPreferences.isAutoIDCleanupEnabled ||
-			continueLastPlaylist !== initialPreferences.continueLastPlaylist ||
-			obsClearDisplayTime !== initialPreferences.obsClearDisplayTime ||
-			intervalMessageDuration !== initialPreferences.intervalMessageDuration
+			continueLastPlaylist !== initialPreferences.continueLastPlaylist
 		)
 	}, [
 		isObsResponseEnabled,
@@ -216,26 +222,115 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
 		isAutoIDEnabled,
 		isAutoIDCleanupEnabled,
 		continueLastPlaylist,
-		obsClearDisplayTime,
-		intervalMessageDuration,
 		initialPreferences,
 	])
 
 	const isFormDirty = useMemo(() => {
-		return JSON.stringify(formData) !== JSON.stringify(initialFormData)
+		// Only consider user-editable credential fields for dirty-checking
+		const editableKeys: Array<keyof UserContextType['formData']> = [
+			'twitchChannelName',
+			'twitchChatbotName',
+			'seratoDisplayName',
+			'obsWebsocketAddress',
+			'obsWebsocketPassword',
+			'intervalMessageDuration',
+			'obsClearDisplayTime',
+			'userEmailAddress',
+		]
+		for (const key of editableKeys) {
+			if ((formData as any)[key] !== (initialFormData as any)[key]) return true
+		}
+		return false
 	}, [formData, initialFormData])
 
-	const isFormModified = isPrefsDirty || isFormDirty
+	const isFormModified = hasUnsavedChanges
+
+	// Debug: log what's causing dirty state
+	useEffect(() => {
+		const diffs: string[] = []
+		if (isPrefsDirty) {
+			if (isObsResponseEnabled !== initialPreferences.isObsResponseEnabled)
+				diffs.push('pref:isObsResponseEnabled')
+			if (isIntervalEnabled !== initialPreferences.isIntervalEnabled)
+				diffs.push('pref:isIntervalEnabled')
+			if (isReportEnabled !== initialPreferences.isReportEnabled)
+				diffs.push('pref:isReportEnabled')
+			if (isSpotifyEnabled !== initialPreferences.isSpotifyEnabled)
+				diffs.push('pref:isSpotifyEnabled')
+			if (isAutoIDEnabled !== initialPreferences.isAutoIDEnabled)
+				diffs.push('pref:isAutoIDEnabled')
+			if (isAutoIDCleanupEnabled !== initialPreferences.isAutoIDCleanupEnabled)
+				diffs.push('pref:isAutoIDCleanupEnabled')
+			if (continueLastPlaylist !== initialPreferences.continueLastPlaylist)
+				diffs.push('pref:continueLastPlaylist')
+		}
+		if (isFormDirty) {
+			const editableKeys: Array<keyof UserContextType['formData']> = [
+				'twitchChannelName',
+				'twitchChatbotName',
+				'seratoDisplayName',
+				'obsWebsocketAddress',
+				'obsWebsocketPassword',
+				'intervalMessageDuration',
+				'obsClearDisplayTime',
+				'userEmailAddress',
+			]
+			for (const k of editableKeys) {
+				if ((formData as any)[k] !== (initialFormData as any)[k]) {
+					diffs.push(`form:${String(k)}`)
+				}
+			}
+		}
+		try {
+			window.electron.logToMain?.(
+				`[DirtyCheck] modified=${isFormModified} diffs=${diffs.join(',')}`
+			)
+		} catch {}
+		console.debug('[DirtyCheck]', { isFormModified, diffs })
+	}, [
+		isFormModified,
+		isPrefsDirty,
+		isFormDirty,
+		isObsResponseEnabled,
+		isIntervalEnabled,
+		isReportEnabled,
+		isSpotifyEnabled,
+		isAutoIDEnabled,
+		isAutoIDCleanupEnabled,
+		continueLastPlaylist,
+		formData,
+		initialFormData,
+		initialPreferences,
+	])
 
 	const commitInitial: UserContextType['commitInitial'] = (
 		nextFormData,
 		nextPreferences
 	) => {
-		if (nextFormData) setInitialFormData(nextFormData)
-		else setInitialFormData(formData)
-		if (nextPreferences)
+		isCommittingRef.current = true
+		if (nextFormData) {
+			// Normalize numeric inputs to strings in snapshot for stable comparisons
+			const normalized = {
+				...nextFormData,
+				intervalMessageDuration: String(
+					nextFormData.intervalMessageDuration ?? ''
+				),
+				obsClearDisplayTime: String(nextFormData.obsClearDisplayTime ?? ''),
+			} as UserContextType['formData']
+			setInitialFormData(normalized)
+		} else {
+			setInitialFormData({
+				...formData,
+				intervalMessageDuration: String(formData.intervalMessageDuration ?? ''),
+				obsClearDisplayTime: String(formData.obsClearDisplayTime ?? ''),
+			})
+		}
+		if (nextPreferences) {
 			setInitialPreferences(nextPreferences)
-		else
+			// Align live numeric states with committed snapshot
+			setObsClearDisplayTime(nextPreferences.obsClearDisplayTime)
+			setIntervalMessageDuration(nextPreferences.intervalMessageDuration)
+		} else
 			setInitialPreferences({
 				isObsResponseEnabled,
 				isIntervalEnabled,
@@ -247,27 +342,44 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
 				obsClearDisplayTime,
 				intervalMessageDuration,
 			})
+
+		// If we only received formData, update numeric states from it
+		if (!nextPreferences && nextFormData) {
+			const nextObs = Number(nextFormData.obsClearDisplayTime || 0)
+			const nextInterval = Number(nextFormData.intervalMessageDuration || 0)
+			setObsClearDisplayTime(nextObs)
+			setIntervalMessageDuration(nextInterval)
+		}
+		// After committing snapshots, clear unsaved flag
+		setHasUnsavedChanges(false)
+		isCommittingRef.current = false
+	}
+
+	// Wrap preference setters to mark dirty after hydration
+	const markDirtySetter = (setter: (v: any) => void) => (v: any) => {
+		setter(v)
+		if (isUserContextReady && !isCommittingRef.current) setHasUnsavedChanges(true)
 	}
 
 	const contextValue: UserContextType = {
 		isObsResponseEnabled,
-		setIsObsResponseEnabled,
+		setIsObsResponseEnabled: markDirtySetter(setIsObsResponseEnabled),
 		isIntervalEnabled,
-		setIsIntervalEnabled,
+		setIsIntervalEnabled: markDirtySetter(setIsIntervalEnabled),
 		isReportEnabled,
-		setIsReportEnabled,
+		setIsReportEnabled: markDirtySetter(setIsReportEnabled),
 		isSpotifyEnabled,
-		setIsSpotifyEnabled,
+		setIsSpotifyEnabled: markDirtySetter(setIsSpotifyEnabled),
 		isAutoIDEnabled,
-		setIsAutoIDEnabled,
+		setIsAutoIDEnabled: markDirtySetter(setIsAutoIDEnabled),
 		isAutoIDCleanupEnabled,
-		setIsAutoIDCleanupEnabled,
+		setIsAutoIDCleanupEnabled: markDirtySetter(setIsAutoIDCleanupEnabled),
 		continueLastPlaylist,
-		setContinueLastPlaylist,
+		setContinueLastPlaylist: markDirtySetter(setContinueLastPlaylist),
 		obsClearDisplayTime,
-		setObsClearDisplayTime,
+		setObsClearDisplayTime: markDirtySetter(setObsClearDisplayTime),
 		intervalMessageDuration,
-		setIntervalMessageDuration,
+		setIntervalMessageDuration: markDirtySetter(setIntervalMessageDuration),
 		isTwitchAuthorized,
 		setIsTwitchAuthorized,
 		isSpotifyAuthorized,

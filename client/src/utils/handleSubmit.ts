@@ -64,19 +64,18 @@ const handleSubmit = async (
 		console.log(response)
 		if (response && response.success) {
 			addMessageToQueue(response.message)
-			setFormData(response.data)
+			const nextForm = {
+				...response.data,
+				// ensure text inputs remain strings
+				intervalMessageDuration: String(
+					response.data.intervalMessageDuration ?? ''
+				),
+				obsClearDisplayTime: String(response.data.obsClearDisplayTime ?? ''),
+			}
+			setFormData(nextForm)
 			// Commit new snapshots in context on successful save
 			commitInitial(
-				{
-					...response.data,
-					// ensure text inputs remain strings
-					intervalMessageDuration: String(
-						response.data.intervalMessageDuration ?? ''
-					),
-					obsClearDisplayTime: String(
-						response.data.obsClearDisplayTime ?? ''
-					),
-				},
+				nextForm,
 				{
 					isObsResponseEnabled: !!response.data.isObsResponseEnabled,
 					isIntervalEnabled: !!response.data.isIntervalEnabled,
