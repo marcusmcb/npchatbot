@@ -209,7 +209,7 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
 												reportData.spotify_link
 											)
 											ipcRenderer.send(
-												'open-spotify-url',
+												'open-spotify-link',
 												reportData.spotify_link
 											)
 										}}

@@ -86,7 +86,7 @@ const App = (): JSX.Element => {
 
 	/* EFFECT HOOKS */
 
-	// hook for successful twitch auth callback
+	// hook for to listen for successful authorization callbacks
 	useWebSocket(
 		'ws://localhost:8080',
 		(event) => {
@@ -127,7 +127,7 @@ const App = (): JSX.Element => {
 			addMessageToQueue(event.data)
 		},
 		() => {
-			// console.log('Spotify WebSocket is open now.')
+			console.log('Spotify WebSocket is open now.')
 		},
 		(event) => {
 			console.error('Spotify WebSocket error:', event)

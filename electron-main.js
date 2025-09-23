@@ -25,6 +25,7 @@ const {
 	initSpotifyAuthToken,
 } = require('./auth/spotify/createSpotifyAccessToken')
 const { setSpotifyUserId } = require('./auth/spotify/setSpotifyUserId')
+const { startSpotifyCallbackServer } = require('./auth/spotify/spotifyCallbackServer')
 const { handleTwitchAuth } = require('./auth/twitch/handleTwitchAuth')
 const {
 	handleGetUserData,
@@ -38,6 +39,7 @@ const {
 	getDiscordAuthUrl,
 	initDiscordAuthToken,
 } = require('./auth/discord/handleDiscordAuth')
+const { startDiscordCallbackServer } = require('./auth/discord/discordCallbackServer')
 
 // serato live playlist status validation
 const {
@@ -102,6 +104,10 @@ process.env.NODE_ENV = isDev ? 'development' : 'production'
 // socket config for auth responses
 const wss = new WebSocket.Server({ port: 8080 })
 
+// http server and port for Spotify auth
+const HTTP_PORT = 5001
+
+
 // add waitForServer before createWindow
 const waitForServer = async (url, timeout = 15000) => {
 	const start = Date.now()
@@ -123,100 +129,31 @@ const startServer = () => {
 	})
 }
 
-// Discord auth callback server
-// TO DO: move into standalone handleDiscordAuth method
-const discordHttpServer = http.createServer(async (req, res) => {
-	if (req.url.startsWith('/auth/discord/callback')) {
-		const urlObj = new URL(req.url, `http://127.0.0.1:${DISCORD_HTTP_PORT}`)
-		const code = urlObj.searchParams.get('code')
-		const error = urlObj.searchParams.get('error')
-		const state = urlObj.searchParams.get('state')
+// start Discord auth callback server
+let discordCallbackServer = null
 
-		if (error) {
-			console.log('Discord Auth Error:', error)
-			res.writeHead(400, { 'Content-Type': 'text/plain' })
-			res.end('Discord authorization failed.')
-			return
-		}
+try {
+	discordCallbackServer = startDiscordCallbackServer({
+		port: DISCORD_HTTP_PORT,
+		wss,
+		getMainWindow: () => mainWindow,
+	})
+} catch (e) {
+	console.error('Failed to start Discord callback server:', e)
+}
 
-		if (!code) {
-			console.log('No authorization code received.')
-			res.writeHead(400, { 'Content-Type': 'text/plain' })
-			res.end('No authorization code received.')
-			return
-		}
+// start Spotify auth callback server
+let spotifyCallbackServer = null
 
-		if (code) {
-			await initDiscordAuthToken(code, wss, mainWindow)
-			setTimeout(() => {
-				console.log('Discord auth token initialized.')
-			}, 100)
-		}
-
-		res.writeHead(200, { 'Content-Type': 'text/plain' })
-		res.end('Discord authorization successful! You may close this window.')
-	} else {
-		res.writeHead(404, { 'Content-Type': 'text/plain' })
-		res.end('Not Found')
-	}
-})
-
-discordHttpServer.listen(DISCORD_HTTP_PORT, () => {
-	console.log(
-		`Discord auth callback HTTP server running on port ${DISCORD_HTTP_PORT}`
-	)
-})
-
-// http server and port for Spotify auth
-const HTTP_PORT = 5001
-
-// Spotify auth callback server
-// TO DO: move into standalone handleSpotifyAuth method
-const httpServer = http.createServer(async (req, res) => {
-	if (req.url.startsWith('/auth/spotify/callback')) {
-		const urlObj = new URL(req.url, `http://127.0.0.1:${HTTP_PORT}`)
-		const code = urlObj.searchParams.get('code')
-		const error = urlObj.searchParams.get('error')
-		const state = urlObj.searchParams.get('state')
-
-		console.log('Received Spotify auth callback:', { code, error, state })
-
-		if (error) {
-			console.error('Spotify Auth Error:', error)
-			res.writeHead(400, { 'Content-Type': 'text/plain' })
-			res.end('Authorization failed. Please try again.')
-			return
-		}
-
-		if (!code) {
-			console.error('No authorization code received.')
-			res.writeHead(400, { 'Content-Type': 'text/plain' })
-			res.end('No authorization code received.')
-			return
-		}
-
-		console.log('Received authorization code:', code)
-
-		if (code) {
-			await initSpotifyAuthToken(code, wss, mainWindow)
-			setTimeout(async () => {
-				await setSpotifyUserId()
-			}, 100)
-		}
-
-		mainWindow.webContents.send('close-spotify-auth-window')
-
-		res.writeHead(200, { 'Content-Type': 'text/plain' })
-		res.end('Authorization successful! You may close this window.')
-	} else {
-		res.writeHead(404, { 'Content-Type': 'text/plain' })
-		res.end('Not Found')
-	}
-})
-
-httpServer.listen(HTTP_PORT, () => {
-	console.log(`Spotify auth callback HTTP server running on port ${HTTP_PORT}`)
-})
+try {
+	spotifyCallbackServer = startSpotifyCallbackServer({
+		port: HTTP_PORT,
+		wss,
+		getMainWindow: () => mainWindow,
+	})
+} catch (e) {
+	console.error('Failed to start Spotify callback server:', e)
+}
 
 server.get('/', (req, res) => {
 	res.send('NPChatbot is up and running')
@@ -226,10 +163,10 @@ ipcMain.on('open-auth-settings', (event, url) => {
 	shell.openExternal(url)
 })
 
-// Debug: mirror renderer logs into main process
-ipcMain.on('renderer-log', (_event, message) => {
-	console.log('[renderer]', message)
-})
+// // Debug: mirror renderer logs into main process
+// ipcMain.on('renderer-log', (_event, message) => {
+// 	console.log('[renderer]', message)
+// })
 
 ipcMain.on('get-user-data', async (event, arg) => {
 	console.log("Get User Data Called")
@@ -238,7 +175,6 @@ ipcMain.on('get-user-data', async (event, arg) => {
 	event.reply('getUserDataResponse', response)
 })
 
-// Promise-based handler for renderer invoke
 ipcMain.handle('get-user-data', async (_event, _arg) => {
 	const response = await handleGetUserData()
 	return response
@@ -249,7 +185,7 @@ ipcMain.on('userDataUpdated', () => {
 	mainWindow.webContents.send('userDataUpdated')
 })
 
-ipcMain.on('open-spotify-url', (event, spotifyUrl) => {
+ipcMain.on('open-spotify-link', (event, spotifyUrl) => {
 	shell.openExternal(spotifyUrl)
 })
 
@@ -459,6 +395,24 @@ app.on('before-quit', () => {
 		serverInstance.close(() => {
 			console.log('Server closed.')
 		})
+	}
+	if (discordCallbackServer) {
+		try {
+			discordCallbackServer.close(() => {
+				console.log('Discord callback server closed.')
+			})
+		} catch (e) {
+			console.error('Error closing Discord callback server:', e)
+		}
+	}
+	if (spotifyCallbackServer) {
+		try {
+			spotifyCallbackServer.close(() => {
+				console.log('Spotify callback server closed.')
+			})
+		} catch (e) {
+			console.error('Error closing Spotify callback server:', e)
+		}
 	}
 })
 
