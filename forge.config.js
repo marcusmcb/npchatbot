@@ -19,6 +19,13 @@ module.exports = {
         dir: "./",
         out: "./dist",
         overwrite: true,
+        ignore: [
+          /__tests__/,
+          /coverage/,
+          /\\.test\\.js$/,
+          /\\.spec\\.js$/,
+          /jest\\.setup\\.js$/,
+        ],
       };
     } else if (process.platform === "darwin") {
       // MacOS-specific packagerConfig
@@ -35,6 +42,12 @@ module.exports = {
         dir: "./",
         icon: "./client/public/favicon/npicon.icns",
         overwrite: false, // Prevents app rebuild if just remaking the DMG
+        ignore: [
+          /__tests__/,
+          /coverage/,
+          /\\.test\\.js$/,
+          /\\.spec\\.js$/,
+        ],
       };
     } else {
       // Default to an empty configuration for unsupported platforms
