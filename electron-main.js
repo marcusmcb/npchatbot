@@ -1,15 +1,14 @@
 const fs = require('fs')
 const path = require('path')
 const https = require('https')
-const http = require('http')
 const bodyParser = require('body-parser')
 const cors = require('cors')
 const dotenv = require('dotenv')
 const WebSocket = require('ws')
 const express = require('express')
-const { app, BrowserWindow, ipcMain, shell, dialog } = require('electron')
-const fetch = (...args) =>
-	import('node-fetch').then((mod) => mod.default(...args))
+const { app, BrowserWindow, ipcMain, shell } = require('electron')
+const { createMainWindow } = require('./scripts/createMainWindow')
+const { waitForServer } = require('./scripts/waitForServer')
 
 // bot config/initialization, and utility methods
 const db = require('./database/database')
@@ -20,26 +19,21 @@ const { handleStopBotScript } = require('./bot-scripts/handleStopBotScript')
 const logToFile = require('./scripts/logger')
 
 // auth handlers and user data methods
-const { handleSpotifyAuth } = require('./auth/spotify/handleSpotifyAuth')
-const {
-	initSpotifyAuthToken,
-} = require('./auth/spotify/createSpotifyAccessToken')
-const { setSpotifyUserId } = require('./auth/spotify/setSpotifyUserId')
-const { startSpotifyCallbackServer } = require('./auth/spotify/spotifyCallbackServer')
 const { handleTwitchAuth } = require('./auth/twitch/handleTwitchAuth')
+const { handleSpotifyAuth } = require('./auth/spotify/handleSpotifyAuth')
+const { getDiscordAuthUrl } = require('./auth/discord/handleDiscordAuth')
+const {
+	startSpotifyCallbackServer,
+} = require('./auth/spotify/spotifyCallbackServer')
+const {
+	startDiscordCallbackServer,
+} = require('./auth/discord/discordCallbackServer')
 const {
 	handleGetUserData,
 } = require('./database/helpers/userData/handleGetUserData')
 const {
 	handleSubmitUserData,
 } = require('./database/helpers/userData/handleSubmitUserData')
-
-// discord auth handler
-const {
-	getDiscordAuthUrl,
-	initDiscordAuthToken,
-} = require('./auth/discord/handleDiscordAuth')
-const { startDiscordCallbackServer } = require('./auth/discord/discordCallbackServer')
 
 // serato live playlist status validation
 const {
@@ -93,34 +87,16 @@ let isConnected = false
 // server config and middleware
 const server = express()
 const PORT = process.env.PORT || 5002
+const SPOTIFY_HTTP_PORT = 5001
 const DISCORD_HTTP_PORT = 5003
 server.use(bodyParser.json())
 server.use(cors())
 
 const isDev = !app.isPackaged
-
 process.env.NODE_ENV = isDev ? 'development' : 'production'
 
 // socket config for auth responses
 const wss = new WebSocket.Server({ port: 8080 })
-
-// http server and port for Spotify auth
-const HTTP_PORT = 5001
-
-
-// add waitForServer before createWindow
-const waitForServer = async (url, timeout = 15000) => {
-	const start = Date.now()
-	while (Date.now() - start < timeout) {
-		try {
-			await fetch(url)
-			return true
-		} catch {
-			await new Promise((res) => setTimeout(res, 300))
-		}
-	}
-	return false
-}
 
 // utility method to start app server
 const startServer = () => {
@@ -147,7 +123,7 @@ let spotifyCallbackServer = null
 
 try {
 	spotifyCallbackServer = startSpotifyCallbackServer({
-		port: HTTP_PORT,
+		port: SPOTIFY_HTTP_PORT,
 		wss,
 		getMainWindow: () => mainWindow,
 	})
@@ -169,9 +145,9 @@ ipcMain.on('open-auth-settings', (event, url) => {
 // })
 
 ipcMain.on('get-user-data', async (event, arg) => {
-	console.log("Get User Data Called")
-	console.log("-------------------------------")
-	const response = await handleGetUserData()	
+	console.log('Get User Data Called')
+	console.log('-------------------------------')
+	const response = await handleGetUserData()
 	event.reply('getUserDataResponse', response)
 })
 
@@ -224,9 +200,9 @@ ipcMain.on('update-connection-state', (event, state) => {
 	isConnected = state
 })
 
-ipcMain.on('share-playlist-to-discord', async (event, payload) => {	
+ipcMain.on('share-playlist-to-discord', async (event, payload) => {
 	const { spotifyURL, sessionDate } = payload || {}
-	const userData = await getUserData(db)	
+	const userData = await getUserData(db)
 	const twitchChannelName = userData?.twitchChannelName
 	const webhookURL = userData?.discord?.webhook_url
 	await sharePlaylistToDiscord(
@@ -241,8 +217,8 @@ ipcMain.on('share-playlist-to-discord', async (event, payload) => {
 // ipc handler to return user's playlist summary data
 ipcMain.on('get-playlist-summaries', async (event, arg) => {
 	const playlistSummaries = await getPlaylistSummaries()
-	if (playlistSummaries && playlistSummaries.length > 0) {		
-		const playlistSummaryData = await getPlaylistSummaryData(playlistSummaries)		
+	if (playlistSummaries && playlistSummaries.length > 0) {
+		const playlistSummaryData = await getPlaylistSummaryData(playlistSummaries)
 		event.reply('get-playlist-summaries-response', playlistSummaries)
 	} else {
 		console.log('No playlist summaries found.')
@@ -311,80 +287,39 @@ ipcMain.on('stop-bot-script', async (event, arg) => {
 	console.log('--------------------------------------')
 })
 
-// create the main application window
-const createWindow = async () => {
-	mainWindow = new BrowserWindow({
-		width: 1130,
-		height: 525,
-		titleBarStyle: 'hidden',
-		titleBarOverlay: {
-			color: 'rgb(49, 49, 49)',
-			symbolColor: 'white',
-		},
-		resizable: false,
-		webPreferences: {
-			preload: path.join(__dirname, './scripts/preload.js'),
-			nodeIntegration: false,
-			contextIsolation: true,
-		},
-		icon: path.join(__dirname, './client/public/favicon.ico'),
-	})
+// create the main application window via helper
+const initMainWindow = async () => {
+	const preloadPath = path.join(__dirname, './scripts/preload.js')
+	const iconPath = path.join(__dirname, './client/public/favicon.ico')
+	const appHtmlFilePath = path.join(__dirname, './client/build/index.html')
 
-	const appURL = isDev
-		? 'http://127.0.0.1:3000'
-		: `file://${path.join(__dirname, './client/build/index.html')}`
-
-	if (isDev) {
-		// wait for client dev server to be ready before loading
-		const ready = await waitForServer('http://127.0.0.1:3000')
-		if (!ready) {
-			console.error('Client dev server did not start in time.')
-			return
-		}
-	}
-
-	mainWindow.loadURL(appURL)
-	mainWindow.once('ready-to-show', () => {
-		mainWindow.show()
-		mainWindow.webContents.openDevTools();
-	})
-	
-
-	mainWindow.on('close', (event) => {
-		if (isConnected) {
-			event.preventDefault()
-			const response = dialog.showMessageBoxSync(mainWindow, {
-				type: 'warning',
-				buttons: ['Cancel', 'Close'],
-				defaultId: 0,
-				title: 'Closing npChatbot...',
-				message:
-					'npChatbot is currently connected to your Twitch channel. Are you sure you want to close it?',
-			})
-
-			if (response === 1) {
-				tmiInstance = null
-				botProcess = false
-				isConnected = false
-				app.quit()
-			}
-		} else {
-			// if not connected, quit immediately
+	mainWindow = await createMainWindow({
+		isDev,
+		getIsConnected: () => isConnected,
+		onForceClose: () => {
+			tmiInstance = null
+			botProcess = false
+			isConnected = false
 			app.quit()
-		}
+		},
+		preloadPath,
+		iconPath,
+		waitForServer,
+		devServerUrl: 'http://127.0.0.1:3000',
+		appHtmlFilePath,
 	})
 }
 
 // use the async createWindow everywhere
 app.on('activate', async () => {
 	if (BrowserWindow.getAllWindows().length === 0) {
-		await createWindow()
+		await initMainWindow()
 	}
 })
 
 app.on('ready', async () => {
 	startServer()
-	await createWindow()
+	await initMainWindow()
 })
 
 app.on('before-quit', () => {
