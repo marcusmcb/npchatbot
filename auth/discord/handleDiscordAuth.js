@@ -1,4 +1,4 @@
-const fetch = require('node-fetch')
+const axios = require('axios')
 const querystring = require('querystring')
 const db = require('../../database/database')
 const WebSocket = require('ws')
@@ -36,15 +36,16 @@ const exchangeCodeForDiscordToken = async (code) => {
 		console.log('Token exchange params: ', params)
 		console.log('-------------------------------')
 
-		const response = await fetch('https://discord.com/api/oauth2/token', {
-			method: 'POST',
-			body: params,
-			headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-		})
-		return response.json()
+		const response = await axios.post(
+			'https://discord.com/api/oauth2/token',
+			params.toString(),
+			{ headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
+		)
+		return response.data
 	} catch (error) {
-		console.error('Error exchanging Discord code for token:', error)
-		console.log('-------------------------------')
+			console.error('Error exchanging Discord code for token:', error)
+			console.log('-------------------------------')
+			return error?.response?.data || { error: error.message }
 	}
 }
 
