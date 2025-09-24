@@ -22,7 +22,7 @@ describe('handleTwitchAuth (happy path)', () => {
   it('fires initTwitchAuthToken after will-navigate with code and sends IPC on close', async () => {
     // Mock the Twitch token module before requiring the handler so the destructured import is mocked.
     const initMock = jest.fn()
-    jest.doMock('../auth/twitch/createTwitchAccessToken', () => ({
+    jest.doMock('../../auth/twitch/createTwitchAccessToken', () => ({
       initTwitchAuthToken: initMock,
     }))
 
@@ -63,7 +63,7 @@ describe('handleTwitchAuth (happy path)', () => {
     // Now import the handler under test in an isolated module context
     let handleTwitchAuth
     await jest.isolateModulesAsync(async () => {
-      ;({ handleTwitchAuth } = require('../auth/twitch/handleTwitchAuth'))
+      ;({ handleTwitchAuth } = require('../../auth/twitch/handleTwitchAuth'))
     })
 
     // Test doubles for mainWindow and wss

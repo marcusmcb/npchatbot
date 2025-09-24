@@ -1,8 +1,8 @@
 const axios = require('axios')
 const MockAdapter = require('axios-mock-adapter')
 
-const { initTwitchAuthToken } = require('../auth/twitch/createTwitchAccessToken')
-const db = require('../database/database')
+const { initTwitchAuthToken } = require('../../auth/twitch/createTwitchAccessToken')
+const db = require('../../database/database')
 
 process.env.TWITCH_CLIENT_ID = 'test-client-id'
 process.env.TWITCH_CLIENT_SECRET = 'test-client-secret'

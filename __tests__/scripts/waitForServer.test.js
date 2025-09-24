@@ -1,5 +1,5 @@
 const http = require('http')
-const { waitForServer } = require('../scripts/waitForServer')
+const { waitForServer } = require('../../scripts/waitForServer')
 
 describe('waitForServer', () => {
   test('resolves when server is ready', async () => {
