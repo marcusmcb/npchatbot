@@ -217,7 +217,7 @@ ipcMain.on('share-playlist-to-discord', async (event, payload) => {
 ipcMain.on('get-playlist-summaries', async (event, arg) => {
 	const playlistSummaries = await getPlaylistSummaries()
 	if (playlistSummaries && playlistSummaries.length > 0) {
-		const playlistSummaryData = await getPlaylistSummaryData(playlistSummaries)
+		// const playlistSummaryData = await getPlaylistSummaryData(playlistSummaries)
 		event.reply('get-playlist-summaries-response', playlistSummaries)
 	} else {
 		console.log('No playlist summaries found.')

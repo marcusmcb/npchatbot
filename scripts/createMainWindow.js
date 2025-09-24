@@ -58,7 +58,7 @@ const createMainWindow = async ({
 	mainWindow.once('ready-to-show', () => {
 		mainWindow.show()
 		// Match existing behavior: open devtools
-		mainWindow.webContents.openDevTools()
+		// mainWindow.webContents.openDevTools()
 	})
 
 	mainWindow.on('close', (event) => {
