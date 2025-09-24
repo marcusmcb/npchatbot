@@ -9,6 +9,7 @@ const { URL } = require('url')
  * @param {number} [timeout=15000] - Total timeout in milliseconds
  * @returns {Promise<boolean>} true if server responded before timeout, else false
  */
+
 const waitForServer = async (urlStr, timeout = 15000) => {
 	const start = Date.now()
 	const url = new URL(urlStr)

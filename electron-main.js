@@ -156,7 +156,6 @@ ipcMain.handle('get-user-data', async (_event, _arg) => {
 	return response
 })
 
-// is this listener being used?
 ipcMain.on('userDataUpdated', () => {
 	mainWindow.webContents.send('userDataUpdated')
 })
@@ -184,7 +183,7 @@ ipcMain.on('open-spotify-auth-url', async (event, arg) => {
 })
 
 ipcMain.on('open-discord-auth-url', async (event, arg) => {
-	const state = 'npchatbot-' + Date.now() // You can generate a random state for security
+	const state = 'npchatbot-' + Date.now()
 	const discordAuthUrl = getDiscordAuthUrl(state)
 	shell.openExternal(discordAuthUrl)
 })

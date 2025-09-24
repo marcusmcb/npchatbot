@@ -1,5 +1,4 @@
 // Jest global setup mocks for modules that expect Electron runtime
-
 // Mock the 'electron' module so code requiring app.getPath doesn't crash in Jest
 jest.mock('electron', () => {
   const os = require('os')
