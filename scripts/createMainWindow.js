@@ -15,71 +15,72 @@ const { app, BrowserWindow, dialog } = require('electron')
  * @param {string} params.appHtmlFilePath - Absolute path to the built index.html for production
  * @returns {Promise<BrowserWindow>} The created BrowserWindow instance
  */
-async function createMainWindow({
-  isDev,
-  getIsConnected,
-  onForceClose,
-  preloadPath,
-  iconPath,
-  waitForServer,
-  devServerUrl,
-  appHtmlFilePath,
-}) {
-  const mainWindow = new BrowserWindow({
-    width: 1130,
-    height: 525,
-    titleBarStyle: 'hidden',
-    titleBarOverlay: {
-      color: 'rgb(49, 49, 49)',
-      symbolColor: 'white',
-    },
-    resizable: false,
-    webPreferences: {
-      preload: preloadPath,
-      nodeIntegration: false,
-      contextIsolation: true,
-    },
-    icon: iconPath,
-  })
 
-  const appURL = isDev ? devServerUrl : `file://${appHtmlFilePath}`
+const createMainWindow = async ({
+	isDev,
+	getIsConnected,
+	onForceClose,
+	preloadPath,
+	iconPath,
+	waitForServer,
+	devServerUrl,
+	appHtmlFilePath,
+}) => {
+	const mainWindow = new BrowserWindow({
+		width: 1130,
+		height: 525,
+		titleBarStyle: 'hidden',
+		titleBarOverlay: {
+			color: 'rgb(49, 49, 49)',
+			symbolColor: 'white',
+		},
+		resizable: false,
+		webPreferences: {
+			preload: preloadPath,
+			nodeIntegration: false,
+			contextIsolation: true,
+		},
+		icon: iconPath,
+	})
 
-  if (isDev) {
-    const ready = await waitForServer(devServerUrl)
-    if (!ready) {
-      console.error('Client dev server did not start in time.')
-      return mainWindow
-    }
-  }
+	const appURL = isDev ? devServerUrl : `file://${appHtmlFilePath}`
 
-  mainWindow.loadURL(appURL)
+	if (isDev) {
+		const ready = await waitForServer(devServerUrl)
+		if (!ready) {
+			console.error('Client dev server did not start in time.')
+			return mainWindow
+		}
+	}
 
-  mainWindow.once('ready-to-show', () => {
-    mainWindow.show()
-    // Match existing behavior: open devtools
-    mainWindow.webContents.openDevTools()
-  })
+	mainWindow.loadURL(appURL)
 
-  mainWindow.on('close', (event) => {
-    if (getIsConnected && getIsConnected()) {
-      event.preventDefault()
-      const response = dialog.showMessageBoxSync(mainWindow, {
-        type: 'warning',
-        buttons: ['Cancel', 'Close'],
-        defaultId: 0,
-        title: 'Closing npChatbot...',
-        message:
-          'npChatbot is currently connected to your Twitch channel. Are you sure you want to close it?',
-      })
-      if (response === 1) {
-        if (onForceClose) onForceClose()
-      }
-    } else {
-      app.quit()
-    }
-  })
+	mainWindow.once('ready-to-show', () => {
+		mainWindow.show()
+		// Match existing behavior: open devtools
+		mainWindow.webContents.openDevTools()
+	})
 
-  return mainWindow
+	mainWindow.on('close', (event) => {
+		if (getIsConnected && getIsConnected()) {
+			event.preventDefault()
+			const response = dialog.showMessageBoxSync(mainWindow, {
+				type: 'warning',
+				buttons: ['Cancel', 'Close'],
+				defaultId: 0,
+				title: 'Closing npChatbot...',
+				message:
+					'npChatbot is currently connected to your Twitch channel. Are you sure you want to close it?',
+			})
+			if (response === 1) {
+				if (onForceClose) onForceClose()
+			}
+		} else {
+			app.quit()
+		}
+	})
+
+	return mainWindow
 }
 
 module.exports = { createMainWindow }
