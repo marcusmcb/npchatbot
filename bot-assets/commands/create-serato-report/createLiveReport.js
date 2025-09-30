@@ -17,29 +17,38 @@ const createLiveReport = async (url) => {
 
 		let tracksPlayed = []
 		let trackTimestamps = []
-		let startTimeParsed
+	let startTimeParsed
 
 		// parse the start time into a Date object
 		if (starttime) {
 			const [time, period] = starttime.split(/(am|pm)/i)
 			const timeParts = time.split(':').map(Number)
-			const hours =
-				period.toLowerCase() === 'pm' ? timeParts[0] + 12 : timeParts[0]
+			// Normalize 12-hour to 24-hour: 12 AM -> 0, 12 PM -> 12
+			let hours = timeParts[0] % 12
+			if (period && period.toLowerCase() === 'pm') hours += 12
 			const minutes = timeParts[1] || 0
+
+			// Base start time on today initially
 			startTimeParsed = new Date()
-			startTimeParsed.setHours(hours, minutes, 0, 0) // Set start time
-			// --- TEMPORARY FIX: Add 1 hour to compensate for website anomaly ---
-			startTimeParsed.setHours(startTimeParsed.getHours() + 1)
-			// ---------------------------------------------------------------
-			console.log('Start Time Parsed (with +1hr anomaly fix): ', startTimeParsed)
-			console.log("----------------------------")
+			startTimeParsed.setSeconds(0, 0)
+			startTimeParsed.setHours(hours, minutes, 0, 0)
+
+			const now = new Date()
+			// If the parsed start time is in the future relative to now,
+			// it likely started the previous day (crossed midnight). Adjust date back one day.
+			if (startTimeParsed > now) {
+				startTimeParsed.setDate(startTimeParsed.getDate() - 1)
+			}
+
+			// Note: removed prior "+1 hour anomaly" adjustment to avoid skewing duration.
 		} else {
 			throw new Error('Start time is missing or invalid.')
 		}
 
-		// calculate the set length
+		// calculate the set length (ensure non-negative)
 		const now = new Date()
-		const durationMs = now - startTimeParsed
+		let durationMs = now.getTime() - startTimeParsed.getTime()
+		if (durationMs < 0) durationMs = 0
 		const hours = Math.floor(durationMs / (1000 * 60 * 60))
 		const minutes = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60))
 		const seconds = Math.floor((durationMs % (1000 * 60)) / 1000)
@@ -152,7 +161,7 @@ const createLiveReport = async (url) => {
 		// format start time
 		let starttimeFormatted
 		if (startTimeParsed) {
-			// Format the adjusted start time (with +1 hour fix) for display
+			// Format the start time for display
 			let hours = startTimeParsed.getHours()
 			const minutes = startTimeParsed.getMinutes()
 			const period = hours >= 12 ? 'PM' : 'AM'
@@ -166,8 +175,8 @@ const createLiveReport = async (url) => {
 			throw new Error('Start time is missing or invalid.')
 		}
 
-		const currentDate = new Date()
-		const playlistDate = formatDateWithSuffix(currentDate)
+		// Set playlist date to the start date (not "now") so cross-midnight sessions reflect the day they began
+		const playlistDate = formatDateWithSuffix(startTimeParsed)
 
 		// find the shortest track from the past hour
 		const validTracks = trackLog.filter(

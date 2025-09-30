@@ -56,6 +56,9 @@ const {
 const {
 	getPlaylistSummaryData,
 } = require('./database/helpers/playlistSummaries/getPlaylistSummaryData')
+const {
+	repairPlaylistSummaries,
+} = require('./database/helpers/playlistSummaries/repairPlaylistSummaries')
 const { addPlaylist } = require('./database/helpers/playlists/addPlaylist')
 const {
 	sharePlaylistToDiscord,
@@ -230,6 +233,24 @@ ipcMain.on('get-playlist-summaries', async (event, arg) => {
 	} else {
 		console.log('No playlist summaries found.')
 		event.reply('get-playlist-summaries-response', [])
+	}
+})
+
+// Optional: IPC to repair existing summaries if needed
+ipcMain.on('repair-playlist-summaries', async (event) => {
+	try {
+		const result = await repairPlaylistSummaries()
+		console.log('Repair result:', result)
+		event.reply('repair-playlist-summaries-response', {
+			success: true,
+			result,
+		})
+	} catch (e) {
+		console.error('Repair failed:', e)
+		event.reply('repair-playlist-summaries-response', {
+			success: false,
+			error: e?.message || String(e),
+		})
 	}
 })
 
