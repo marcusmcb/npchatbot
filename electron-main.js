@@ -139,10 +139,18 @@ ipcMain.on('open-auth-settings', (event, url) => {
 	shell.openExternal(url)
 })
 
-// // Debug: mirror renderer logs into main process
-// ipcMain.on('renderer-log', (_event, message) => {
-// 	console.log('[renderer]', message)
-// })
+// Debug: mirror renderer logs into main process
+ipcMain.on('renderer-log', (_event, message) => {
+	try {
+		if (typeof message === 'object') {
+			console.log('[renderer]\n' + JSON.stringify(message, null, 2))
+		} else {
+			console.log('[renderer]', message)
+		}
+	} catch (e) {
+		console.log('[renderer]', message)
+	}
+})
 
 ipcMain.on('get-user-data', async (event, arg) => {
 	console.log('Get User Data Called')

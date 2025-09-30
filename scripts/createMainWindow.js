@@ -57,8 +57,14 @@ const createMainWindow = async ({
 
 	mainWindow.once('ready-to-show', () => {
 		mainWindow.show()
-		// Match existing behavior: open devtools
-		// mainWindow.webContents.openDevTools()
+		// Open DevTools automatically in development for renderer logs
+		if (isDev) {
+			try {
+				mainWindow.webContents.openDevTools({ mode: 'detach' })
+			} catch (e) {
+				console.warn('Failed to open DevTools automatically:', e)
+			}
+		}
 	})
 
 	mainWindow.on('close', (event) => {

@@ -29,6 +29,8 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
 		string | null
 	>(null)
 
+	// (Removed) explicit navigation logging at user's request
+
 	// Helper to render set length with colored numbers
 	const renderSetLength = () => {
 		if (!reportData) return null
@@ -79,13 +81,15 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
 
 	const handleLeftArrowClick = () => {
 		if (currentReportIndex < playlistSummaries.length - 1) {
-			setCurrentReportIndex(currentReportIndex + 1)
+			const nextIndex = currentReportIndex + 1
+			setCurrentReportIndex(nextIndex)
 		}
 	}
 
 	const handleRightArrowClick = () => {
 		if (currentReportIndex > 0) {
-			setCurrentReportIndex(currentReportIndex - 1)
+			const nextIndex = currentReportIndex - 1
+			setCurrentReportIndex(nextIndex)
 		}
 	}
 

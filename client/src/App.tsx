@@ -161,6 +161,26 @@ const App = (): JSX.Element => {
 		}
 	}, [currentReportIndex, playlistSummaries])
 
+	// Dev-only: log reportData whenever it changes (and mirror to main)
+	useEffect(() => {
+		if (process.env.NODE_ENV !== 'development') return
+		if (reportData) {
+			const payload = {
+				source: 'App',
+				msg: 'reportData updated',
+				index: currentReportIndex,
+				reportData,
+			}
+			console.log('[ReportData]', {
+				index: currentReportIndex,
+				reportData,
+			})
+			try {
+				window.electron.ipcRenderer.send('renderer-log', payload)
+			} catch {}
+		}
+	}, [reportData, currentReportIndex])
+
 	// hook to initially set user id in state
 	// once the app has been authorized via Twitch
 	useEffect(() => {
