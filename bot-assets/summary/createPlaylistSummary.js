@@ -83,21 +83,65 @@ function computeSetLengthFromMeta(sessionDate, playlistDateStr, setStartTimeStr)
 	return { hours, minutes, seconds }
 }
 
+function formatTime12Hour(date) {
+	if (!(date instanceof Date) || isNaN(date.getTime())) return null
+	let h = date.getHours()
+	const m = date.getMinutes()
+	const period = h >= 12 ? 'PM' : 'AM'
+	h = h % 12
+	h = h === 0 ? 12 : h
+	return `${h}:${m.toString().padStart(2, '0')} ${period}`
+}
+
 // add most played artists to the playlist summary
 
 const createPlaylistSummary = async (summaryData) => {    
 
 	const sessionDate = new Date()
 
-	// Prefer duration from meta (session_date, playlist_date, set_start_time)
-	const metaComputed = computeSetLengthFromMeta(
-		sessionDate,
-		summaryData.playlist_date,
-		summaryData.set_start_time
-	)
-	// Fallback to track-log derived duration (may only reflect last hour of data)
-	const logComputed = computeSetLengthFromTrackLog(summaryData.track_log)
-	const computedSetLength = metaComputed || logComputed
+	// Choose a single canonical start date/time for this summary
+	// 1) If upstream provided a corrected ISO timestamp, prefer it (authoritative)
+	// 2) Otherwise parse clock + playlist_date as-is. The displayed set_start_time has already
+	//    been corrected (+1h) at scrape time.
+	let canonicalStartDate = null
+	if (summaryData.set_start_iso) {
+		const d = new Date(summaryData.set_start_iso)
+		if (!isNaN(d.getTime())) canonicalStartDate = d
+	}
+	if (!canonicalStartDate) {
+		const parsedStart = parseStartDateTime(
+			summaryData.playlist_date,
+			summaryData.set_start_time
+		)
+		if (parsedStart && !isNaN(parsedStart.getTime())) {
+			canonicalStartDate = parsedStart
+		}
+	}
+
+	const correctedSetStartTime = canonicalStartDate
+		? formatTime12Hour(canonicalStartDate)
+		: summaryData.set_start_time
+
+	// Prefer duration from canonical start if available, else fall back to meta compute
+	let computedSetLength = null
+	if (canonicalStartDate) {
+		let durationMs = Math.max(0, sessionDate.getTime() - canonicalStartDate.getTime())
+		if (durationMs > 24 * 3600 * 1000) durationMs = 24 * 3600 * 1000
+		const hours = Math.floor(durationMs / (1000 * 60 * 60))
+		const minutes = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60))
+		const seconds = Math.floor((durationMs % (1000 * 60)) / 1000)
+		computedSetLength = { hours, minutes, seconds }
+	} else {
+		// Prefer duration from meta (session_date, playlist_date, corrected clock)
+		const metaComputed = computeSetLengthFromMeta(
+			sessionDate,
+			summaryData.playlist_date,
+			correctedSetStartTime
+		)
+		// Fallback to track-log derived duration (may only reflect last hour of data)
+		const logComputed = computeSetLengthFromTrackLog(summaryData.track_log)
+		computedSetLength = metaComputed || logComputed
+	}
 
 	const setLengthHours = computedSetLength.hours
 	const setLengthMinutes = computedSetLength.minutes
@@ -106,8 +150,9 @@ const createPlaylistSummary = async (summaryData) => {
 	const finalSummaryData = {
 		session_date: sessionDate,
 		dj_name: summaryData.dj_name,
-		set_start_time: summaryData.set_start_time,
+		set_start_time: correctedSetStartTime,
 		playlist_date: summaryData.playlist_date,
+		set_start_iso: canonicalStartDate ? canonicalStartDate.toISOString() : undefined,
 		average_track_length_minutes: summaryData.average_track_length.minutes,
 		average_track_length_seconds: summaryData.average_track_length.seconds,
 		total_tracks_played: summaryData.total_tracks_played,

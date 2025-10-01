@@ -33,14 +33,17 @@ const createLiveReport = async (url) => {
 			startTimeParsed.setSeconds(0, 0)
 			startTimeParsed.setHours(hours, minutes, 0, 0)
 
+			// Apply known scrape bug correction: scraped start time is 1 hour earlier than actual
+			// Example: scraped "1:23 PM" -> actual should be "2:23 PM"
+			startTimeParsed.setHours(startTimeParsed.getHours() + 1)
+
 			const now = new Date()
-			// If the parsed start time is in the future relative to now,
+			// If the corrected start time is in the future relative to now,
 			// it likely started the previous day (crossed midnight). Adjust date back one day.
 			if (startTimeParsed > now) {
 				startTimeParsed.setDate(startTimeParsed.getDate() - 1)
 			}
 
-			// Note: removed prior "+1 hour anomaly" adjustment to avoid skewing duration.
 		} else {
 			throw new Error('Start time is missing or invalid.')
 		}
@@ -197,6 +200,7 @@ const createLiveReport = async (url) => {
 		const seratoLiveReport = {
 			dj_name: playlistArtistName,
 			set_start_time: starttimeFormatted,
+			set_start_iso: startTimeParsed ? startTimeParsed.toISOString() : undefined,
 			set_length: {
 				hours,
 				minutes,
