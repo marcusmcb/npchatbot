@@ -4,7 +4,7 @@ const {
 } = require('../command-use/commandUse')
 
 // Compute set length from track_log timestamps (last-hour robustness)
-function computeSetLengthFromTrackLog(trackLog = []) {
+const computeSetLengthFromTrackLog = (trackLog = []) => {
 	const times = trackLog
 		.map((t) => {
 			if (!t || !t.timestamp || t.timestamp === 'N/A') return null
@@ -29,7 +29,7 @@ function computeSetLengthFromTrackLog(trackLog = []) {
 	return { hours, minutes, seconds }
 }
 
-function monthIndexFromName(name = '') {
+const monthIndexFromName = (name = '') => {
 	const months = [
 		'january','february','march','april','may','june',
 		'july','august','september','october','november','december',
@@ -37,7 +37,7 @@ function monthIndexFromName(name = '') {
 	return months.indexOf(String(name).toLowerCase())
 }
 
-function parseStartDateTime(playlistDateStr, setStartTimeStr) {
+const parseStartDateTime = (playlistDateStr, setStartTimeStr) => {
 	if (!playlistDateStr || !setStartTimeStr) return null
 	// Example playlistDateStr: "Saturday, September 27th, 2025"
 	const m = playlistDateStr.match(/^[A-Za-z]+,\s+([A-Za-z]+)\s+(\d+)(?:st|nd|rd|th)?,\s+(\d{4})$/)
@@ -62,7 +62,7 @@ function parseStartDateTime(playlistDateStr, setStartTimeStr) {
 	return new Date(year, monthIdx, day, hours24, minutes, 0, 0)
 }
 
-function computeSetLengthFromMeta(sessionDate, playlistDateStr, setStartTimeStr) {
+const computeSetLengthFromMeta = (sessionDate, playlistDateStr, setStartTimeStr) => {
 	const session = sessionDate instanceof Date ? sessionDate : new Date(sessionDate)
 	const start0 = parseStartDateTime(playlistDateStr, setStartTimeStr)
 	if (!start0 || isNaN(session.getTime())) return null
@@ -83,7 +83,7 @@ function computeSetLengthFromMeta(sessionDate, playlistDateStr, setStartTimeStr)
 	return { hours, minutes, seconds }
 }
 
-function formatTime12Hour(date) {
+const formatTime12Hour = (date) => {
 	if (!(date instanceof Date) || isNaN(date.getTime())) return null
 	let h = date.getHours()
 	const m = date.getMinutes()
@@ -96,9 +96,7 @@ function formatTime12Hour(date) {
 // add most played artists to the playlist summary
 
 const createPlaylistSummary = async (summaryData) => {    
-
 	const sessionDate = new Date()
-
 	// Choose a single canonical start date/time for this summary
 	// 1) If upstream provided a corrected ISO timestamp, prefer it (authoritative)
 	// 2) Otherwise parse clock + playlist_date as-is. The displayed set_start_time has already
