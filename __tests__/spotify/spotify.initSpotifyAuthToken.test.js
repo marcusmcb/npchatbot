@@ -36,7 +36,10 @@ describe('initSpotifyAuthToken', () => {
     expect(findOneSpy).toHaveBeenCalled()
     expect(insertSpy).toHaveBeenCalled()
     const insertedDoc = insertSpy.mock.calls[0][0]
-    expect(insertedDoc).toMatchObject({ spotifyAccessToken: 'acc', spotifyRefreshToken: 'ref', spotifyAuthorizationCode: 'code123' })
+  // Tokens should no longer be persisted into the DB (keystore-only)
+  expect(insertedDoc).not.toHaveProperty('spotifyAccessToken')
+  expect(insertedDoc).not.toHaveProperty('spotifyRefreshToken')
+  expect(insertedDoc).not.toHaveProperty('spotifyAuthorizationCode')
 
     const authSuccess = mainWindow.webContents.sent.find(e => e.channel === 'auth-successful')
     expect(authSuccess).toBeTruthy()
@@ -53,9 +56,11 @@ describe('initSpotifyAuthToken', () => {
     await initSpotifyAuthToken('codeXYZ', wss, mainWindow)
     await new Promise((r) => setTimeout(r, 0))
 
-    expect(findOneSpy).toHaveBeenCalled()
-    expect(updateSpy).toHaveBeenCalled()
-    expect(mainWindow.webContents.sent.some(e => e.channel === 'auth-successful')).toBe(false)
+  expect(findOneSpy).toHaveBeenCalled()
+  // DB update should not persist raw tokens anymore
+  expect(updateSpy).not.toHaveBeenCalled()
+  // No renderer auth-successful message on update path
+  expect(mainWindow.webContents.sent.some(e => e.channel === 'auth-successful')).toBe(false)
     expect(wsClient.messages.some(m => m.includes('npChatbot successfully linked'))).toBe(true)
   })
 })

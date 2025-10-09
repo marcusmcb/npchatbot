@@ -18,13 +18,62 @@ const {
 const logToFile = require('../../../scripts/logger')
 const errorHandler = require('../errorHandler/errorHandler')
 const db = require('../../database')
+const { getToken } = require('../tokens')
 
 const handleSubmitUserData = async (event, arg, mainWindow) => {
 	let token
 	try {
-		const currentAccessToken = await getTwitchRefreshToken(
-			arg.twitchRefreshToken
+		// Prefer the refresh token stored in the OS keystore (keytar).
+		// Fall back to the client-provided arg.twitchRefreshToken only if keystore is empty.
+		const user = await new Promise((resolve, reject) =>
+			db.users.findOne({}, (err, doc) => (err ? reject(err) : resolve(doc)))
 		)
+		if (!user) {
+			const errorResponse = {
+				success: false,
+				error: 'No user found for token lookup',
+			}
+			event.reply('userDataResponse', errorResponse)
+			return
+		}
+
+		let refreshTokenFromKeystore = null
+		try {
+			// try immediate read
+			let blob = await getToken('twitch', user._id)
+			refreshTokenFromKeystore = blob && blob.refresh_token
+			// If keystore write may still be in-flight (auth insert path writes keystore async),
+			// poll briefly for the token to appear before falling back to client arg.
+			if (!refreshTokenFromKeystore) {
+				const timeoutMs = 800
+				const intervalMs = 100
+				const maxTries = Math.ceil(timeoutMs / intervalMs)
+				for (let i = 0; i < maxTries && !refreshTokenFromKeystore; i++) {
+					await new Promise((r) => setTimeout(r, intervalMs))
+					try {
+						blob = await getToken('twitch', user._id)
+						refreshTokenFromKeystore = blob && blob.refresh_token
+					} catch (e) {
+						// ignore transient keytar errors and keep polling
+					}
+				}
+			}
+		} catch (e) {
+			// keytar may not be available in some environments (tests); ignore and fall back
+			refreshTokenFromKeystore = null
+		}
+
+		const refreshToken = refreshTokenFromKeystore || arg.twitchRefreshToken
+		if (!refreshToken) {
+			const errorResponse = {
+				success: false,
+				error: errorHandler('No stored Twitch refresh token found'),
+			}
+			event.reply('userDataResponse', errorResponse)
+			return
+		}
+
+		const currentAccessToken = await getTwitchRefreshToken(refreshToken)
 		if (currentAccessToken.status === 400) {
 			const errorResponse = {
 				success: false,

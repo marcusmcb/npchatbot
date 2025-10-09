@@ -112,8 +112,7 @@ const initSpotifyAuthToken = async (code, wss, mainWindow) => {
 						authorization_code: code,
 						expires_in: token.expires_in,
 					})
-					// Keep a metadata flag in DB (no raw tokens) but also update legacy fields for tests
-					await updateAsync({ _id: user._id }, { $set: { spotifyStored: true, spotifyAccessToken: token.access_token, spotifyRefreshToken: token.refresh_token, spotifyAuthorizationCode: code } })
+					// Do NOT persist raw tokens in the DB anymore; keystore is the single source of truth
 					console.log('User updated successfully! (tokens stored in keytar)')
 					logToFile('User updated successfully! (tokens stored in keytar)')
 				} catch (e) {
@@ -122,17 +121,18 @@ const initSpotifyAuthToken = async (code, wss, mainWindow) => {
 				}
 			} else {
 				try {
-					const newDoc = await insertAsync({ spotifyAccessToken: token.access_token, spotifyRefreshToken: token.refresh_token, spotifyAuthorizationCode: code })
+					// create user without persisting sensitive tokens in the DB
+					const newDoc = await insertAsync({})
 					await storeToken('spotify', newDoc._id, {
 						access_token: token.access_token,
 						refresh_token: token.refresh_token,
 						authorization_code: code,
 						expires_in: token.expires_in,
 					})
-					await updateAsync({ _id: newDoc._id }, { $set: { spotifyStored: true } })
 					console.log('New user created and tokens stored in keytar')
 					logToFile('New user created and tokens stored in keytar')
-					mainWindow.webContents.send('auth-successful', { _id: newDoc._id, spotifyStored: true })
+					// notify renderer that auth succeeded, but do NOT include tokens or sensitive fields
+					mainWindow.webContents.send('auth-successful', { _id: newDoc._id })
 				} catch (e) {
 					console.error('Error creating new user or storing new user tokens in keytar:', e)
 					logToFile('Error creating new user or storing new user tokens in keytar:', e)

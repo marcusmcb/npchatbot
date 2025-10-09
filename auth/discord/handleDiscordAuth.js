@@ -84,23 +84,18 @@ const initDiscordAuthToken = async (code, wss, mainWindow) => {
 					} catch (e) {
 						console.error('Error storing Discord tokens in keytar:', e)
 					}
-					// update DB metadata and legacy fields
+					// update DB metadata only (no raw tokens)
 					await updateAsync({}, { $set: { discord: {
-						accessToken: tokenData.access_token,
-						refreshToken: tokenData.refresh_token,
-						authorizationCode: code,
 						webhook_url: tokenData.webhook?.url,
 						channel_id: tokenData.webhook?.channel_id,
 						guild_id: tokenData.webhook?.guild_id,
 						webhook_id: tokenData.webhook?.id,
 					} } })
-					console.log('Discord tokens stored (keytar + DB metadata).')
+					console.log('Discord tokens stored (keytar). DB updated with non-sensitive metadata.')
 				} else {
 					// no user: create new user with legacy fields, then store in keytar
+					// create a new user record without storing raw tokens
 					const newDoc = await insertAsync({ discord: {
-						accessToken: tokenData.access_token,
-						refreshToken: tokenData.refresh_token,
-						authorizationCode: code,
 						webhook_url: tokenData.webhook?.url,
 						channel_id: tokenData.webhook?.channel_id,
 						guild_id: tokenData.webhook?.guild_id,
@@ -116,7 +111,7 @@ const initDiscordAuthToken = async (code, wss, mainWindow) => {
 					} catch (e) {
 						console.error('Error storing new Discord tokens in keytar:', e)
 					}
-					console.log('New user created and Discord tokens stored.')
+					console.log('New user created and Discord tokens stored (keystore).')
 				}
 			} catch (err) {
 				console.error('Error persisting Discord tokens:', err)

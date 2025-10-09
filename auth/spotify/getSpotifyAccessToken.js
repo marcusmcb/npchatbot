@@ -67,6 +67,7 @@ const getSpotifyAccessToken = async () => {
 		console.log('-------------------------')
 
 			// Persist the new access token back into keytar if we have a user id and keytar is available
+			// Persist the new access token back into keytar if available. Do NOT write access tokens into DB.
 			if (user && user._id && tokenBlob) {
 				try {
 					await storeToken('spotify', user._id, {
@@ -77,10 +78,6 @@ const getSpotifyAccessToken = async () => {
 				} catch (e) {
 					// ignore keytar store errors in this flow
 				}
-			} else {
-				// legacy: persist the access token into the DB user record (for tests / older installs)
-				const q = user && user._id ? { _id: user._id } : {}
-				db.users.update(q, { $set: { spotifyAccessToken: newAccessToken, spotifyRefreshedAt: Date.now() } }, {}, () => {})
 			}
 
 			return newAccessToken

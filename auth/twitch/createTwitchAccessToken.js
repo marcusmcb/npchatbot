@@ -76,69 +76,30 @@ const initTwitchAuthToken = async (code, wss, mainWindow) => {
 				console.log('User found: ', user)
 				logToFile(`User found: ${JSON.stringify(user)}`)
 				logToFile(`* * * * * * * * * * * * * * * * * * *`)
-					// store token securely in OS keystore (do not block DB update)
-					storeToken('twitch', user._id, token).catch((e) => {
-						logToFile(`Error storing twitch token in keystore: ${e}`)
-						console.error('Error storing twitch token in keystore:', e)
-					})
-
-				// also keep legacy DB fields for compatibility/tests
-				db.users.update(
-					{ _id: user._id },
-					{
-						$set: {
-							twitchAccessToken: token.access_token,
-							twitchRefreshToken: token.refresh_token,
-							appAuthorizationCode: code,
-							twitchStored: true,
-						},
-					},
-					{},
-					(err, numReplaced) => {
-						if (err) {
-							console.error('Error updating the user:', err)
-							logToFile('Update Error updating the user:', err)
-							logToFile(`* * * * * * * * * * * * * * * * * * *`)
-							return
-						}
-						logToFile(
-							`Updated ${numReplaced} user(s) with new Twitch app token.`
-						)
-						logToFile(`* * * * * * * * * * * * * * * * * * *`)
-						console.log(
-							`Updated ${numReplaced} user(s) with new Twitch app token.`
-						)
-					}
-				)
+				// store token securely in OS keystore (do not block other operations)
+				storeToken('twitch', user._id, token).catch((e) => {
+					logToFile(`Error storing twitch token in keystore: ${e}`)
+					console.error('Error storing twitch token in keystore:', e)
+				})
 			} else {
 				// insert new user doc and store token in keystore
-				db.users.insert(
-					{
-						twitchAccessToken: token.access_token,
-						twitchRefreshToken: token.refresh_token,
-						appAuthorizationCode: code,
-						twitchStored: true,
-					},
-					async (err, newDoc) => {
-						if (err) {
-							console.error('Error creating new user: ', err)
-							logToFile('Insert Error creating new user: ', err)
-							logToFile(`* * * * * * * * * * * * * * * * * * *`)
-							return
-						}
-						// notify renderer immediately
-						mainWindow.webContents.send('auth-successful', {
-							_id: newDoc._id,
-							twitchRefreshToken: newDoc.twitchRefreshToken,
-						})
-
-						// store token securely in OS keystore under the new user id (do not block notification)
-						storeToken('twitch', newDoc._id, token).catch((e) => {
-							logToFile(`Error storing twitch token in keystore (insert): ${e}`)
-							console.error('Error storing twitch token in keystore (insert):', e)
-						})
+				// create a user record but DO NOT persist sensitive tokens in DB
+				db.users.insert({}, async (err, newDoc) => {
+					if (err) {
+						console.error('Error creating new user: ', err)
+						logToFile('Insert Error creating new user: ', err)
+						logToFile(`* * * * * * * * * * * * * * * * * *`)
+						return
 					}
-				)
+					// notify renderer immediately (without tokens)
+					mainWindow.webContents.send('auth-successful', { _id: newDoc._id })
+
+					// store token securely in OS keystore under the new user id (do not block notification)
+					storeToken('twitch', newDoc._id, token).catch((e) => {
+						logToFile(`Error storing twitch token in keystore (insert): ${e}`)
+						console.error('Error storing twitch token in keystore (insert):', e)
+					})
+				})
 			}
 		})
 		wss.clients.forEach(function each(client) {
