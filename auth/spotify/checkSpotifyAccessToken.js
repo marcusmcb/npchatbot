@@ -4,16 +4,23 @@ const getUserData = require('../../database/helpers/userData/getUserData')
 const {
 	getSpotifyAccessToken,
 } = require('../../auth/spotify/getSpotifyAccessToken')
+const { getToken } = require('../../database/helpers/tokens')
 
 const checkSpotifyAccessToken = async () => {
 	try {		
 		const user = await getUserData(db)
-		if (!user || !user.spotifyAccessToken) {
-			console.error('No stored access token found.')
+		if (!user) {
+			console.error('No user record found.')
 			return null
 		}
 
-		let accessToken = user.spotifyAccessToken
+		const tokenBlob = await getToken('spotify', user._id)
+		if (!tokenBlob || !tokenBlob.access_token) {
+			console.error('No stored access token found in keytar.')
+			return null
+		}
+
+		let accessToken = tokenBlob.access_token
 
 		// test the current access token with a simple request to Spotify
 		try {

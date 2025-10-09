@@ -2,6 +2,7 @@ const axios = require('axios')
 const db = require('../../database/database')
 const logToFile = require('../../scripts/logger')
 const WebSocket = require('ws')
+const { storeToken, getToken, deleteToken } = require('../../database/helpers/tokens')
 
 const exchangeCodeForToken = async (code) => {
 	// mainWindow.webContents.send('auth-code', { exchangeCodeForToken: code })
@@ -63,7 +64,7 @@ const initTwitchAuthToken = async (code, wss, mainWindow) => {
 			// and to try again or contact support
 		}
 
-		db.users.findOne({}, (err, user) => {
+		db.users.findOne({}, async (err, user) => {
 			if (err) {
 				console.error('Error finding the user:', err)
 				logToFile('Error finding the user:', err)
@@ -75,6 +76,13 @@ const initTwitchAuthToken = async (code, wss, mainWindow) => {
 				console.log('User found: ', user)
 				logToFile(`User found: ${JSON.stringify(user)}`)
 				logToFile(`* * * * * * * * * * * * * * * * * * *`)
+					// store token securely in OS keystore (do not block DB update)
+					storeToken('twitch', user._id, token).catch((e) => {
+						logToFile(`Error storing twitch token in keystore: ${e}`)
+						console.error('Error storing twitch token in keystore:', e)
+					})
+
+				// also keep legacy DB fields for compatibility/tests
 				db.users.update(
 					{ _id: user._id },
 					{
@@ -82,6 +90,7 @@ const initTwitchAuthToken = async (code, wss, mainWindow) => {
 							twitchAccessToken: token.access_token,
 							twitchRefreshToken: token.refresh_token,
 							appAuthorizationCode: code,
+							twitchStored: true,
 						},
 					},
 					{},
@@ -90,7 +99,7 @@ const initTwitchAuthToken = async (code, wss, mainWindow) => {
 							console.error('Error updating the user:', err)
 							logToFile('Update Error updating the user:', err)
 							logToFile(`* * * * * * * * * * * * * * * * * * *`)
-							return res.status(500).send('Database error during update.')
+							return
 						}
 						logToFile(
 							`Updated ${numReplaced} user(s) with new Twitch app token.`
@@ -102,22 +111,31 @@ const initTwitchAuthToken = async (code, wss, mainWindow) => {
 					}
 				)
 			} else {
+				// insert new user doc and store token in keystore
 				db.users.insert(
 					{
 						twitchAccessToken: token.access_token,
 						twitchRefreshToken: token.refresh_token,
 						appAuthorizationCode: code,
+						twitchStored: true,
 					},
-					(err, newDoc) => {
+					async (err, newDoc) => {
 						if (err) {
 							console.error('Error creating new user: ', err)
 							logToFile('Insert Error creating new user: ', err)
 							logToFile(`* * * * * * * * * * * * * * * * * * *`)
-							return res.status(500).send('Error adding auth code to user file')
+							return
 						}
+						// notify renderer immediately
 						mainWindow.webContents.send('auth-successful', {
 							_id: newDoc._id,
 							twitchRefreshToken: newDoc.twitchRefreshToken,
+						})
+
+						// store token securely in OS keystore under the new user id (do not block notification)
+						storeToken('twitch', newDoc._id, token).catch((e) => {
+							logToFile(`Error storing twitch token in keystore (insert): ${e}`)
+							console.error('Error storing twitch token in keystore (insert):', e)
 						})
 					}
 				)

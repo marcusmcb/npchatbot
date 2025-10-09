@@ -48,3 +48,23 @@ jest.mock('nedb', () => {
     }
   }
 })
+
+// Mock keytar so tests don't require native module rebuilds. Provide an in-memory store
+jest.mock('keytar', () => {
+  const store = new Map()
+  return {
+    setPassword: async (service, account, value) => {
+      const key = `${service}::${account}`
+      store.set(key, value)
+      return true
+    },
+    getPassword: async (service, account) => {
+      const key = `${service}::${account}`
+      return store.has(key) ? store.get(key) : null
+    },
+    deletePassword: async (service, account) => {
+      const key = `${service}::${account}`
+      return store.delete(key)
+    },
+  }
+})

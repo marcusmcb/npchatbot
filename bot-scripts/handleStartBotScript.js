@@ -19,6 +19,8 @@ const getUserData = require('../database/helpers/userData/getUserData')
 const OBSWebSocket = require('obs-websocket-js').default
 const obs = new OBSWebSocket()
 
+const { getToken: getKeystoreToken } = require('../database/helpers/tokens')
+
 const handleStartBotScript = async (event, arg, botProcess) => {
 	logToFile('startBotScript CALLED')
 	logToFile('*******************************')
@@ -48,9 +50,16 @@ const handleStartBotScript = async (event, arg, botProcess) => {
 
 	try {
 		// get a fresh access token and update the user.db file
-		const currentAccessToken = await getTwitchRefreshToken(
-			user.twitchRefreshToken
-		)
+		// prefer keystore token if available
+		let refreshToken = user.twitchRefreshToken
+		try {
+			const blob = await getKeystoreToken('twitch', user._id)
+			if (blob && blob.refresh_token) refreshToken = blob.refresh_token
+		} catch (e) {
+			console.error('Error reading twitch token from keystore:', e)
+		}
+
+		const currentAccessToken = await getTwitchRefreshToken(refreshToken)
 		if (currentAccessToken.status === 400) {
 			const errorResponse = {
 				success: false,

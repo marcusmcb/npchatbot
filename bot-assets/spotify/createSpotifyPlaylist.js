@@ -12,17 +12,21 @@ const createSpotifyPlaylist = async () => {
 			})
 		})
 
-		if (!user || !user.spotifyAccessToken || !user.spotifyUserId) {
-			logToFile('No stored access token or Spotify user ID found')
-			throw new Error('No stored access token or Spotify user ID found')
+		if (!user || !user.spotifyUserId) {
+			logToFile('No stored Spotify user ID found')
+			throw new Error('No stored Spotify user ID found')
 		} else {
 			logToFile('User data found for Spotify playlist creation')
 			logToFile('-------------------------')
 			console.log('User data found for Spotify playlist creation')
 			console.log('-------------------------')
 		}
-
-		const accessToken = user.spotifyAccessToken
+		const { checkSpotifyAccessToken } = require('../../auth/spotify/checkSpotifyAccessToken')
+		const accessToken = await checkSpotifyAccessToken()
+		if (!accessToken) {
+			logToFile('No valid Spotify access token available')
+			throw new Error('No valid Spotify access token available')
+		}
 		const spotifyUserId = user.spotifyUserId
 		const playlistName = `Twitch Stream Playlist - ${getCurrentDate()}`
 

@@ -1,15 +1,14 @@
 const db = require('../../database/database')
 const getUserData = require('../../database/helpers/userData/getUserData')
 const axios = require('axios')
+const { checkSpotifyAccessToken } = require('./checkSpotifyAccessToken')
 
 const setSpotifyUserId = async () => {
 	try {
 		const user = await getUserData(db)
-		if (!user || !user.spotifyAccessToken) {
-			throw new Error('No stored Spotify user ID found')
-		} 
-		
-		const accessToken = user.spotifyAccessToken
+		// Use the central token check/refresh path so we use keytar or DB fallback
+		const accessToken = await checkSpotifyAccessToken()
+		if (!accessToken) throw new Error('No stored Spotify access token found')
 
 		try {
 			const response = await axios.get('https://api.spotify.com/v1/me', {

@@ -42,6 +42,7 @@ const {
 
 // user data handler
 const getUserData = require('./database/helpers/userData/getUserData')
+const { getToken } = require('./database/helpers/tokens')
 
 /* PLAYLIST HANDLERS */
 const {
@@ -214,7 +215,18 @@ ipcMain.on('share-playlist-to-discord', async (event, payload) => {
 	const { spotifyURL, sessionDate } = payload || {}
 	const userData = await getUserData(db)
 	const twitchChannelName = userData?.twitchChannelName
-	const webhookURL = userData?.discord?.webhook_url
+	// Prefer webhook URL from keytar token blob if available, otherwise fall back to legacy DB field
+	let webhookURL = null
+	try {
+		if (userData && userData._id) {
+			const discordBlob = await getToken('discord', userData._id)
+			webhookURL = discordBlob?.webhook?.url || null
+		}
+	} catch (e) {
+		// keytar may not be available in some environments; fall back to DB
+		webhookURL = null
+	}
+	if (!webhookURL) webhookURL = userData?.discord?.webhook_url || null
 	await sharePlaylistToDiscord(
 		spotifyURL,
 		webhookURL,

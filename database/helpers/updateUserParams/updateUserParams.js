@@ -15,10 +15,20 @@ const updateUserData = async (db, event, arg) => {
 			throw new Error('User not found')
 		}
 
+		const { getToken: getKeystoreToken } = require('../../helpers/tokens')
+
+		let twitchRefreshToken = user.twitchRefreshToken
+		try {
+			const blob = await getKeystoreToken('twitch', user._id)
+			if (blob && blob.refresh_token) twitchRefreshToken = blob.refresh_token
+		} catch (e) {
+			console.error('Error reading twitch token from keystore:', e)
+		}
+
 		const updatedUser = {
 			_id: arg._id,
 			twitchAccessToken: user.twitchAccessToken,
-			twitchRefreshToken: user.twitchRefreshToken,
+			twitchRefreshToken: twitchRefreshToken,
 			appAuthorizationCode: user.appAuthorizationCode,
 			twitchChannelName: arg.twitchChannelName,
 			twitchChatbotName: arg.twitchChatbotName,

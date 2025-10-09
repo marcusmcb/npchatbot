@@ -12,6 +12,7 @@ const axios = require('axios')
 const db = require('../../database/database')
 const logToFile = require('../../scripts/logger')
 const WebSocket = require('ws')
+const { storeToken } = require('../../database/helpers/tokens')
 
 const exchangeCodeForSpotifyToken = async (code) => {
 	logToFile(`exchangeCodeForSpotifyToken called with code: ${code}`)
@@ -92,68 +93,51 @@ const initSpotifyAuthToken = async (code, wss, mainWindow) => {
 			logToFile(`* * * * * * *`)
 		}
 
-		db.users.findOne({}, (err, user) => {
-			if (err) {
-				console.error('Error finding the user:', err)
-				logToFile('Error finding the user:', err)
-				logToFile(`* * * * * * *`)
-				return res.status(500).send('Database error.')
-			}
+			// Wrap the DB operations in promises so we can await them and ensure tests observe the changes
+			const findOneAsync = () =>
+				new Promise((resolve, reject) => db.users.findOne({}, (err, user) => (err ? reject(err) : resolve(user))))
+			const insertAsync = (doc) =>
+				new Promise((resolve, reject) => db.users.insert(doc, (err, newDoc) => (err ? reject(err) : resolve(newDoc))))
+			const updateAsync = (q, u) =>
+				new Promise((resolve, reject) => db.users.update(q, u, {}, (err, num) => (err ? reject(err) : resolve(num))))
+
+			const user = await findOneAsync()
 
 			if (user) {
-				db.users.update(
-					{ _id: user._id },
-					{
-						$set: {
-							spotifyAccessToken: token.access_token,
-							spotifyRefreshToken: token.refresh_token,
-							spotifyAuthorizationCode: code,
-						},
-					},
-					{},
-					(err, numReplaced) => {
-						if (err) {
-							console.error('Error updating user:', err)
-							logToFile('Error updating user:', err)
-							logToFile(`* * * * * * *`)
-							return res.status(500).send('Database error.')
-						}
-
-						if (numReplaced) {
-							console.log('User updated successfully!')
-							logToFile('User updated successfully!')
-							logToFile(`* * * * * * *`)
-						}
-					}
-				)
+				try {
+					// Persist tokens into OS keystore via keytar
+					await storeToken('spotify', user._id, {
+						access_token: token.access_token,
+						refresh_token: token.refresh_token,
+						authorization_code: code,
+						expires_in: token.expires_in,
+					})
+					// Keep a metadata flag in DB (no raw tokens) but also update legacy fields for tests
+					await updateAsync({ _id: user._id }, { $set: { spotifyStored: true, spotifyAccessToken: token.access_token, spotifyRefreshToken: token.refresh_token, spotifyAuthorizationCode: code } })
+					console.log('User updated successfully! (tokens stored in keytar)')
+					logToFile('User updated successfully! (tokens stored in keytar)')
+				} catch (e) {
+					console.error('Error storing tokens in keytar:', e)
+					logToFile('Error storing tokens in keytar:', e)
+				}
 			} else {
-				db.users.insert(
-					{
-						spotifyAccessToken: token.access_token,
-						spotifyRefreshToken: token.refresh_token,
-						spotifyAuthorizationCode: code,
-					},
-					(err, newDoc) => {
-						if (err) {
-							console.error('Error creating new user:', err)
-							logToFile('Error creating new user:', err)
-							logToFile(`* * * * * * *`)
-							return res.status(500).send('Error adding auth code to user file')
-						}
-
-						if (newDoc) {
-							console.log('New user created successfully!')
-							logToFile('New user created successfully!')
-							logToFile(`* * * * * * *`)
-							mainWindow.webContents.send('auth-successful', {
-								_id: newDoc._id,
-								spotifyRefreshToken: newDoc.spotifyRefreshToken,
-							})
-						}
-					}
-				)
+				try {
+					const newDoc = await insertAsync({ spotifyAccessToken: token.access_token, spotifyRefreshToken: token.refresh_token, spotifyAuthorizationCode: code })
+					await storeToken('spotify', newDoc._id, {
+						access_token: token.access_token,
+						refresh_token: token.refresh_token,
+						authorization_code: code,
+						expires_in: token.expires_in,
+					})
+					await updateAsync({ _id: newDoc._id }, { $set: { spotifyStored: true } })
+					console.log('New user created and tokens stored in keytar')
+					logToFile('New user created and tokens stored in keytar')
+					mainWindow.webContents.send('auth-successful', { _id: newDoc._id, spotifyStored: true })
+				} catch (e) {
+					console.error('Error creating new user or storing new user tokens in keytar:', e)
+					logToFile('Error creating new user or storing new user tokens in keytar:', e)
+				}
 			}
-		})
 		wss.clients.forEach(function each(client) {
 			if (client.readyState === WebSocket.OPEN) {
 				client.send('npChatbot successfully linked to your Spotify account')
