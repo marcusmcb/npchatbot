@@ -22,9 +22,35 @@ const handleGetUserData = async () => {
 			if (user) {
 				console.log('User data retrieved')
 				console.log("-------------------------------")
+				// Do not expose raw tokens or sensitive fields to the renderer.
+				const userDataToSubmit = {
+					// copy safe fields only; fall back to empty/defaults where appropriate
+					_id: user._id,
+					twitchChannelName: user.twitchChannelName || '',
+					twitchChatbotName: user.twitchChatbotName || '',
+					seratoDisplayName: user.seratoDisplayName || '',
+					isObsResponseEnabled: !!user.isObsResponseEnabled,
+					isIntervalEnabled: !!user.isIntervalEnabled,
+					isSpotifyEnabled: !!user.isSpotifyEnabled,
+					continueLastPlaylist: !!user.continueLastPlaylist,
+					isAutoIDEnabled: !!user.isAutoIDEnabled,
+					isAutoIDCleanupEnabled: !!user.isAutoIDCleanupEnabled,
+					isReportEnabled: !!user.isReportEnabled,
+					intervalMessageDuration: String(user.intervalMessageDuration ?? ''),
+					obsClearDisplayTime: String(user.obsClearDisplayTime ?? ''),
+					userEmailAddress: user.userEmailAddress || '',
+					// Do expose non-sensitive discord webhook metadata if present
+					discord: user.discord ? {
+						webhook_url: user.discord.webhook_url || null,
+						channel_id: user.discord.channel_id || null,
+						guild_id: user.discord.guild_id || null,
+						webhook_id: user.discord.webhook_id || null,
+					} : null,
+				}
+
 				const responseObject = {
 					success: true,
-					data: user,
+					data: userDataToSubmit,
 				}
 				console.log("User Data Sent: ", responseObject)
 				console.log("-------------------------------")				

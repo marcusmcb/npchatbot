@@ -36,8 +36,7 @@ export type UserContextType = {
 		_id: string
 		twitchChannelName: string
 		twitchChatbotName: string
-		twitchRefreshToken: string
-		spotifyRefreshToken: string
+		// Refresh tokens are stored securely in the OS keystore and are not exposed to the renderer
 		seratoDisplayName: string
 		obsWebsocketAddress: string
 		obsWebsocketPassword: string

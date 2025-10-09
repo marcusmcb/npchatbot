@@ -27,9 +27,8 @@ const updateUserData = async (db, event, arg) => {
 
 		const updatedUser = {
 			_id: arg._id,
-			twitchAccessToken: user.twitchAccessToken,
-			twitchRefreshToken: twitchRefreshToken,
-			appAuthorizationCode: user.appAuthorizationCode,
+			// Do not set or persist raw tokens here; keystore is the source of truth for tokens.
+			// Persist only non-sensitive metadata.
 			twitchChannelName: arg.twitchChannelName,
 			twitchChatbotName: arg.twitchChatbotName,
 			seratoDisplayName: arg.seratoDisplayName,
@@ -67,12 +66,31 @@ const updateUserData = async (db, event, arg) => {
 		console.log('-----------------------------')
 		console.log('User data updated successfully')
 		console.log('-----------------------------')
-		event.reply('userDataUpdated', updatedUser)
+
+		// Sanitize the user object before emitting to renderer or returning from this helper
+		const sanitized = {
+			_id: updatedUser._id,
+			twitchChannelName: updatedUser.twitchChannelName || '',
+			twitchChatbotName: updatedUser.twitchChatbotName || '',
+			seratoDisplayName: updatedUser.seratoDisplayName || '',
+			isObsResponseEnabled: !!updatedUser.isObsResponseEnabled,
+			isIntervalEnabled: !!updatedUser.isIntervalEnabled,
+			isSpotifyEnabled: !!updatedUser.isSpotifyEnabled,
+			continueLastPlaylist: !!updatedUser.continueLastPlaylist,
+			isAutoIDEnabled: !!updatedUser.isAutoIDEnabled,
+			isAutoIDCleanupEnabled: !!updatedUser.isAutoIDCleanupEnabled,
+			isReportEnabled: !!updatedUser.isReportEnabled,
+			intervalMessageDuration: String(updatedUser.intervalMessageDuration ?? ''),
+			obsClearDisplayTime: String(updatedUser.obsClearDisplayTime ?? ''),
+			userEmailAddress: user.userEmailAddress || '',
+		}
+
+		event.reply('userDataUpdated', sanitized)
 
 		return {
 			success: true,
 			message: 'User data successfully updated',
-			data: updatedUser,
+			data: sanitized,
 		}
 	} catch (error) {
 		console.error('Error updating the user:', error)
