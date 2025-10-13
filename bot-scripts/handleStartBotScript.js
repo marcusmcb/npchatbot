@@ -49,15 +49,9 @@ const handleStartBotScript = async (event, arg, botProcess) => {
 	// })
 
 	try {
-		// get a fresh access token and update the user.db file
-		// prefer keystore token if available
-		let refreshToken = user.twitchRefreshToken
-		try {
-			const blob = await getKeystoreToken('twitch', user._id)
-			if (blob && blob.refresh_token) refreshToken = blob.refresh_token
-		} catch (e) {
-			console.error('Error reading twitch token from keystore:', e)
-		}
+		// Retrieve Twitch refresh token using centralized helper (keystore-first, DB fallback)
+		const { getRefreshToken } = require('../database/helpers/getRefreshToken')
+		const refreshToken = await getRefreshToken('twitch', user)
 
 		const currentAccessToken = await getTwitchRefreshToken(refreshToken)
 		if (currentAccessToken.status === 400) {

@@ -17,11 +17,11 @@ const updateUserData = async (db, event, arg) => {
 
 		const { getToken: getKeystoreToken } = require('../../helpers/tokens')
 
-		let twitchRefreshToken = user.twitchRefreshToken
+		// Read twitch refresh token from keystore if present. Do not persist tokens to DB here.
 		try {
-			const blob = await getKeystoreToken('twitch', user._id)
-			if (blob && blob.refresh_token) twitchRefreshToken = blob.refresh_token
+			await getKeystoreToken('twitch', user._id)
 		} catch (e) {
+			// ignore keystore read errors here; token usage happens elsewhere
 			console.error('Error reading twitch token from keystore:', e)
 		}
 

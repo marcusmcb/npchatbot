@@ -37,33 +37,9 @@ const handleSubmitUserData = async (event, arg, mainWindow) => {
 			return
 		}
 
-		let refreshTokenFromKeystore = null
-		try {
-			// try immediate read
-			let blob = await getToken('twitch', user._id)
-			refreshTokenFromKeystore = blob && blob.refresh_token
-			// If keystore write may still be in-flight (auth insert path writes keystore async),
-			// poll briefly for the token to appear before falling back to client arg.
-			if (!refreshTokenFromKeystore) {
-				const timeoutMs = 800
-				const intervalMs = 100
-				const maxTries = Math.ceil(timeoutMs / intervalMs)
-				for (let i = 0; i < maxTries && !refreshTokenFromKeystore; i++) {
-					await new Promise((r) => setTimeout(r, intervalMs))
-					try {
-						blob = await getToken('twitch', user._id)
-						refreshTokenFromKeystore = blob && blob.refresh_token
-					} catch (e) {
-						// ignore transient keytar errors and keep polling
-					}
-				}
-			}
-		} catch (e) {
-			// keytar may not be available in some environments (tests); ignore and fall back
-			refreshTokenFromKeystore = null
-		}
-
-		const refreshToken = refreshTokenFromKeystore || arg.twitchRefreshToken
+		// Use centralized helper which can poll keystore for a short time if token write is still in-flight
+	const { getRefreshToken } = require('../getRefreshToken')
+		const refreshToken = await getRefreshToken('twitch', user, { poll: true }) || arg.twitchRefreshToken
 		if (!refreshToken) {
 			const errorResponse = {
 				success: false,

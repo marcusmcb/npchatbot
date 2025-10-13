@@ -104,10 +104,10 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
 				typeof userData.intervalMessageDuration === 'string'
 			)
 				setIntervalMessageDuration(Number(userData.intervalMessageDuration))
-			if (typeof userData.appAuthorizationCode === 'string')
-				setIsTwitchAuthorized(!!userData.appAuthorizationCode)
-			if (typeof userData.spotifyAuthorizationCode === 'string')
-				setIsSpotifyAuthorized(!!userData.spotifyAuthorizationCode)
+			if (typeof userData.isTwitchAuthorized === 'boolean')
+				setIsTwitchAuthorized(userData.isTwitchAuthorized)
+			if (typeof userData.isSpotifyAuthorized === 'boolean')
+				setIsSpotifyAuthorized(userData.isSpotifyAuthorized)
 			if (typeof userData.discord === 'object') setIsDiscordAuthorized(true)
 
 			// hydrate form data (normalize numbers to strings for inputs if needed)

@@ -9,8 +9,9 @@ describe('getSpotifyAccessToken (refresh flow)', () => {
   it('refreshes access token and updates DB', async () => {
     // Arrange DB user with a refresh token
     jest.spyOn(db.users, 'update').mockImplementation((q, update, opts, cb) => cb(null, 1))
-    // Mock getUserData so a refresh token is available
-    jest.doMock('../../database/helpers/userData/getUserData', () => async () => ({ spotifyRefreshToken: 'refresh123' }))
+  // Mock getUserData to return a user id and mock the centralized getRefreshToken helper (keystore-first)
+  jest.doMock('../../database/helpers/userData/getUserData', () => async () => ({ _id: 'testuser' }))
+  jest.doMock('../../database/helpers/getRefreshToken', () => ({ getRefreshToken: async () => 'refresh123' }))
 
     await jest.isolateModulesAsync(async () => {
       const axios = require('axios')
@@ -26,7 +27,8 @@ describe('getSpotifyAccessToken (refresh flow)', () => {
 
   it('returns status on error', async () => {
     jest.spyOn(db.users, 'update').mockImplementation((q, update, opts, cb) => cb(null, 1))
-    jest.doMock('../../database/helpers/userData/getUserData', () => async () => ({ spotifyRefreshToken: 'refresh123' }))
+  jest.doMock('../../database/helpers/userData/getUserData', () => async () => ({ _id: 'testuser' }))
+  jest.doMock('../../database/helpers/getRefreshToken', () => ({ getRefreshToken: async () => 'refresh123' }))
 
     await jest.isolateModulesAsync(async () => {
       const axios = require('axios')

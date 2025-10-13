@@ -48,7 +48,7 @@ const TitleBar = ({ isBotConnected }: TitleBarProps): JSX.Element => {
 	return (
 		<div>
 			<div className='app-title'>npChatbot</div>
-			<div className='app-version'>version 1.0.4</div>
+			<div className='app-version'>version 1.1</div>
 			{/* <div className='auth-button-labels'>Authorizations</div> */}
 			<div className='auth-button-row'>
 				<button

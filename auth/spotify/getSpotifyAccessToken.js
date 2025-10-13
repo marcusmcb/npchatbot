@@ -8,29 +8,16 @@ const getSpotifyAccessToken = async () => {
 	logToFile('Refreshing Spotify access token...')
 	logToFile('-------------------------')
 	try {
-			const user = await getUserData(db)
-			if (!user) throw new Error('No user record found')
+			  const user = await getUserData(db)
+			  if (!user) throw new Error('No user record found')
 
-			// Try OS keystore first (keytar). If not present, fall back to legacy DB field(s)
-			let tokenBlob = null
-			if (user && user._id) {
-				try {
-					tokenBlob = await getToken('spotify', user._id)
-				} catch (e) {
-					// keytar may not be available in test environment; ignore and fall back
-					tokenBlob = null
-				}
-			}
+			  // Centralized helper will prefer keystore and fall back to legacy DB fields.
+			  const { getRefreshToken } = require('../../database/helpers/getRefreshToken')
+			  const refreshToken = await getRefreshToken('spotify', user)
 
-			const refreshToken =
-				(tokenBlob && tokenBlob.refresh_token) ||
-				user.spotifyRefreshToken ||
-				user.spotify_refresh_token ||
-				user.refresh_token
-
-			if (!refreshToken) {
+			  if (!refreshToken) {
 				throw new Error('No stored Spotify refresh token found (keytar or DB)')
-			}
+			  }
 		const authHeader = Buffer.from(
 			`${process.env.SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`
 		).toString('base64')
@@ -66,12 +53,14 @@ const getSpotifyAccessToken = async () => {
 		console.log('New Spotify access token:', newAccessToken)
 		console.log('-------------------------')
 
-			// Persist the new access token back into keytar if we have a user id and keytar is available
-			// Persist the new access token back into keytar if available. Do NOT write access tokens into DB.
-			if (user && user._id && tokenBlob) {
+			// Persist the new access token back into keytar if we have a user id and keytar is available.
+			// Do NOT write access tokens into DB.
+			if (user && user._id) {
 				try {
+					// write updated access_token to keystore while preserving any existing blob
+					const existing = await getToken('spotify', user._id).catch(() => null)
 					await storeToken('spotify', user._id, {
-						...(tokenBlob || {}),
+						...(existing || {}),
 						access_token: newAccessToken,
 						refreshed_at: Date.now(),
 					})

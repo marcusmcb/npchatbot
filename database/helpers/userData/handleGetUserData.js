@@ -48,6 +48,19 @@ const handleGetUserData = async () => {
 					} : null,
 				}
 
+				// Add safe authorization booleans by checking keystore for provider tokens.
+				// These are non-sensitive and indicate whether the app has tokens stored for the user.
+				try {
+					const { getToken } = require('../../helpers/tokens')
+					const twitchBlob = await getToken('twitch', user._id).catch(() => null)
+					const spotifyBlob = await getToken('spotify', user._id).catch(() => null)
+					userDataToSubmit.isTwitchAuthorized = !!(twitchBlob && (twitchBlob.refresh_token || twitchBlob.access_token))
+					userDataToSubmit.isSpotifyAuthorized = !!(spotifyBlob && (spotifyBlob.refresh_token || spotifyBlob.access_token))
+				} catch (e) {
+					userDataToSubmit.isTwitchAuthorized = false
+					userDataToSubmit.isSpotifyAuthorized = false
+				}
+
 				const responseObject = {
 					success: true,
 					data: userDataToSubmit,
