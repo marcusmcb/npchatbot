@@ -4,7 +4,7 @@ const { npSongsQueried } = require('../../command-use/commandUse')
 const {
 	vibeCheckSelector,
 } = require('../now-playing/npCommandHelpers/npCommandHelpers')
-const { getCurrentPlaylistSummary } = require("../../command-use/commandUse")
+const { getCurrentPlaylistSummary } = require('../../command-use/commandUse')
 
 const {
 	NO_LIVE_DATA_MESSAGE,
@@ -49,7 +49,7 @@ const handleDefault = (
 	obs,
 	obsClearDisplayTime,
 	config
-) => {	
+) => {
 	const currentTrackPlaying = reportData.track_log[0].track_id
 	const message = `Now playing: ${currentTrackPlaying}`
 	npSongsQueried.push({ name: currentTrackPlaying })
@@ -232,15 +232,7 @@ const handleStats = (
 }
 
 // !np playlist response
-const handlePlaylist = (
-	channel,
-	twitchClient,
-	reportData,
-	obs,
-	obsClearDisplayTime,
-	config,
-	tags
-) => {
+const handlePlaylist = (channel, twitchClient, config) => {
 	if (config.isSpotifyEnabled && config.currentSpotifyPlaylistLink) {
 		twitchClient.say(
 			channel,
@@ -284,9 +276,16 @@ const npCommands = async (
 			handler(channel, twitchClient, tags)
 			return
 		}
-
+		if (args[0] === 'playlist') {
+			handler(channel, twitchClient, config)
+			return
+		}
+		if (args[0] === 'options') {
+			handler(channel, twitchClient)
+			return
+		}
 		// replace createLiveReport call with the user's
-		// Serato Live Playlist data stored as 
+		// Serato Live Playlist data stored as
 
 		const reportData = getCurrentPlaylistSummary()
 		// const reportData = await createLiveReport(url)
