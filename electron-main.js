@@ -359,6 +359,38 @@ app.on('activate', async () => {
 
 app.on('ready', async () => {
 	startServer()
+	// Run migration before creating the main window so tokens are migrated on app startup.
+	// Controlled by env var MIGRATE_ON_STARTUP (default: enabled). Set to 'false' to skip.
+	const migrateFlag = process.env.MIGRATE_ON_STARTUP
+	if (migrateFlag === undefined || migrateFlag.toLowerCase() !== 'false') {
+		try {
+			const { migrateAllUsers } = require('./database/helpers/migrateTokens')
+			// Await migration so it completes before the UI is initialized. Failures are logged
+			// but won't prevent the app from starting. We expect a summary object back.
+			try {
+				const summary = await migrateAllUsers()
+				if (summary) {
+					console.log('Startup token migration completed. Summary:')
+					console.log(`  usersScanned: ${summary.usersScanned}`)
+					console.log(`  migrated: spotify=${summary.migrated.spotify}, discord=${summary.migrated.discord}, twitch=${summary.migrated.twitch}`)
+					if (summary.errors && summary.errors.length > 0) {
+						console.error('  migration errors:')
+						console.error(JSON.stringify(summary.errors, null, 2))
+					} else {
+						console.log('  no migration errors')
+					}
+				} else {
+					console.log('Startup token migration completed with no summary.')
+				}
+			} catch (e) {
+				console.error('Startup migration failed:', e)
+			}
+		} catch (e) {
+			console.error('Migration module not available during startup migration:', e)
+		}
+	} else {
+		console.log('MIGRATE_ON_STARTUP is set to false, skipping startup migration.')
+	}
 	await initMainWindow()
 })
 

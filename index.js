@@ -159,10 +159,5 @@ const initializeBot = async (config) => {
 module.exports = initializeBot
 
 // Start a background migration (non-blocking) so legacy DB tokens move to keystore on startup
-try {
-	const { migrateAllUsers } = require('./database/helpers/migrateTokens')
-	// fire-and-forget
-	migrateAllUsers().catch((e) => console.error('Migration job failed:', e))
-} catch (e) {
-	console.error('Migration module not available:', e)
-}
+// NOTE: migration moved to the main process startup (electron-main.js) so it runs when the
+// application is launched rather than when the bot process is started.

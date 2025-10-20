@@ -3,6 +3,8 @@ const { storeToken, getToken } = require('./tokens')
 
 async function migrateUserTokensForProviders(user, providers = ['spotify', 'discord', 'twitch'], db = defaultDb) {
   if (!user || !user._id) return
+  const migrated = []
+  const errors = []
 
   for (const provider of providers) {
     try {
@@ -30,7 +32,9 @@ async function migrateUserTokensForProviders(user, providers = ['spotify', 'disc
       // Verify the write
       const verify = await getToken(provider, user._id).catch(() => null)
       if (!verify) {
-        console.error(`Migration verification failed for ${provider} user ${user._id}`)
+        const msg = `Migration verification failed for ${provider} user ${user._id}`
+        console.error(msg)
+        errors.push({ provider, message: msg })
         continue
       }
 
@@ -52,30 +56,54 @@ async function migrateUserTokensForProviders(user, providers = ['spotify', 'disc
       })
 
       console.log(`Migrated ${provider} for user ${user._id} (marker set)`)
+      migrated.push(provider)
     } catch (e) {
       console.error(`Failed to migrate ${provider} for user ${user && user._id}:`, e)
+      errors.push({ provider, error: String(e) })
     }
   }
+
+  return { migrated, errors }
 }
 
 async function migrateAllUsers(options = {}, db = defaultDb) {
   console.log('Starting background token migration...')
+  const summary = {
+    usersScanned: 0,
+    migrated: { spotify: 0, discord: 0, twitch: 0 },
+    errors: [],
+  }
+
   return new Promise((resolve) => {
     db.users.find({}, async (err, users) => {
       if (err) {
         console.error('Error reading users DB for migration:', err)
-        return resolve()
+        summary.errors.push({ stage: 'readUsers', error: String(err) })
+        return resolve(summary)
       }
+
+      summary.usersScanned = users.length
 
       for (const user of users) {
         // run migrations sequentially to avoid hammering keystore
-        // but keep it reasonably quick for small DBs.
-        // Do not block startup; this runs in the background.
-        await migrateUserTokensForProviders(user, undefined, db)
+        try {
+          const result = await migrateUserTokensForProviders(user, undefined, db)
+          if (result && Array.isArray(result.migrated)) {
+            for (const p of result.migrated) {
+              if (summary.migrated[p] !== undefined) summary.migrated[p] += 1
+            }
+          }
+          if (result && Array.isArray(result.errors) && result.errors.length > 0) {
+            summary.errors.push({ _id: user._id, errors: result.errors })
+          }
+        } catch (e) {
+          console.error('Unexpected error migrating user', user && user._id, e)
+          summary.errors.push({ _id: user._id, error: String(e) })
+        }
       }
 
       console.log('Background token migration complete.')
-      resolve()
+      resolve(summary)
     })
   })
 }
