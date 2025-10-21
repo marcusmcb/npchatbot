@@ -15,6 +15,12 @@ contextBridge.exposeInMainWorld('electron', {
 		},
 		removeAllListeners: (channel) => ipcRenderer.removeAllListeners(channel),		
 	},	
-  // // optional utility: forward logs to main
-  // logToMain: (message) => ipcRenderer.send('renderer-log', message),
+  // optional utility: forward logs to main process logger
+  logToMain: (message) => {
+    try {
+      ipcRenderer.send('renderer-log', message)
+    } catch (e) {
+      // noop
+    }
+  },
 })

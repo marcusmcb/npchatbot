@@ -73,7 +73,15 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
 
 		const applyUserData = (response: any) => {
 			console.log('User Data Received in Renderer: ', response)
-			try { window.electron.logToMain?.(`[UserProvider] received: ${JSON.stringify(response)}`) } catch {}
+			// Forward to main logger using a safe stringify to avoid circular structure errors
+			const safeStringify = (obj: any) => {
+				try {
+					return JSON.stringify(obj)
+				} catch (e) {
+					try { return String(obj) } catch { return '[unserializable]' }
+				}
+			}
+			try { window.electron.logToMain?.(`[UserProvider] received: ${safeStringify(response)}`) } catch {}
 			if (!response || !response.data) {
 				setIsUserContextReady(true)
 				return

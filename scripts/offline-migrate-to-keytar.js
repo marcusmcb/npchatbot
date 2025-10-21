@@ -31,10 +31,29 @@ async function migrateFile(dbPath, options = { removeLegacy: true }) {
         const already = await getToken(provider, id).catch(() => null)
         if (already) continue
 
+        // Detect legacy shapes (nested provider objects or top-level token fields)
         let blob = null
-        if (provider === 'spotify' && user.spotify) blob = user.spotify
-        if (provider === 'discord' && user.discord) blob = user.discord
-        if (provider === 'twitch' && user.twitch) blob = user.twitch
+        if (provider === 'spotify') {
+          if (user.spotify && (user.spotify.refresh_token || user.spotify.access_token)) blob = user.spotify
+          else {
+            const tok = user.spotifyRefreshToken || user.spotify_refresh_token || user.refresh_token
+            if (tok) blob = { refresh_token: tok }
+          }
+        }
+        if (provider === 'discord') {
+          if (user.discord && (user.discord.refresh_token || user.discord.access_token)) blob = user.discord
+          else {
+            const tok = user.discordRefreshToken || user.discord_refresh_token
+            if (tok) blob = { refresh_token: tok }
+          }
+        }
+        if (provider === 'twitch') {
+          if (user.twitch && (user.twitch.refresh_token || user.twitch.access_token)) blob = user.twitch
+          else {
+            const tok = user.twitchRefreshToken || user.twitch_refresh_token || user.twitch_access_token || user.twitchAccessToken
+            if (tok) blob = { refresh_token: tok }
+          }
+        }
 
         if (!blob) continue
 

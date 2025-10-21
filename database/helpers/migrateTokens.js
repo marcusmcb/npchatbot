@@ -9,19 +9,48 @@ async function migrateUserTokensForProviders(user, providers = ['spotify', 'disc
   for (const provider of providers) {
     try {
       // Skip if keystore already has tokens for this user/provider
-      const existing = await getToken(provider, user._id).catch(() => null)
+      let existing = await getToken(provider, user._id).catch(() => null)
+      // Fallback: some older installs may have written tokens under a 'default' account
+      if (!existing) {
+        const fallback = await getToken(provider, 'default').catch(() => null)
+        if (fallback) {
+          // copy to canonical account
+          await storeToken(provider, user._id, fallback).catch(() => null)
+          // re-read
+          existing = await getToken(provider, user._id).catch(() => null)
+          if (existing) console.log(`Found fallback keystore entry for ${provider} and copied to user ${user._id}`)
+        }
+      }
       if (existing) continue
 
-      // Detect legacy shapes on user doc
+      // Detect legacy shapes on user doc. Support both nested objects and older top-level fields.
       let blob = null
-      if (provider === 'spotify' && user.spotify && (user.spotify.refresh_token || user.spotify.access_token)) {
-        blob = user.spotify
+      if (provider === 'spotify') {
+        if (user.spotify && (user.spotify.refresh_token || user.spotify.access_token)) {
+          blob = user.spotify
+        } else if (user.spotifyRefreshToken || user.spotify_refresh_token || user.refresh_token) {
+          // older DB shapes sometimes kept refresh token at top-level under different names
+          const tok = user.spotifyRefreshToken || user.spotify_refresh_token || user.refresh_token
+          blob = { refresh_token: tok }
+        }
       }
-      if (provider === 'discord' && user.discord && (user.discord.refresh_token || user.discord.access_token)) {
-        blob = user.discord
+
+      if (provider === 'discord') {
+        if (user.discord && (user.discord.refresh_token || user.discord.access_token)) {
+          blob = user.discord
+        } else if (user.discordRefreshToken || user.discord_refresh_token) {
+          const tok = user.discordRefreshToken || user.discord_refresh_token
+          blob = { refresh_token: tok }
+        }
       }
-      if (provider === 'twitch' && user.twitch && (user.twitch.refresh_token || user.twitch.access_token)) {
-        blob = user.twitch
+
+      if (provider === 'twitch') {
+        if (user.twitch && (user.twitch.refresh_token || user.twitch.access_token)) {
+          blob = user.twitch
+        } else if (user.twitchRefreshToken || user.twitch_refresh_token) {
+          const tok = user.twitchRefreshToken || user.twitch_refresh_token
+          blob = { refresh_token: tok }
+        }
       }
 
       if (!blob) continue

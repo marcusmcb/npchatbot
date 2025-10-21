@@ -143,18 +143,57 @@ ipcMain.on('open-auth-settings', (event, url) => {
 	shell.openExternal(url)
 })
 
+// Accept logs forwarded from renderer process (preload.logToMain)
+ipcMain.on('renderer-log', (_event, message) => {
+	try {
+		const formatMessage = (msg) => {
+			// If it's already an object, pretty-print it
+			if (typeof msg === 'object') return JSON.stringify(msg, null, 2)
+			// If it's a string, try to parse as JSON
+			if (typeof msg === 'string') {
+				// Try parsing whole string
+				try {
+					const parsed = JSON.parse(msg)
+					return JSON.stringify(parsed, null, 2)
+				} catch (e) {
+					// Look for an embedded JSON object (e.g. "prefix: { ... }")
+					const idx = msg.indexOf('{')
+					if (idx !== -1) {
+						const prefix = msg.slice(0, idx)
+						const rest = msg.slice(idx)
+						try {
+							const parsed = JSON.parse(rest)
+							return prefix + '\n' + JSON.stringify(parsed, null, 2)
+						} catch (e2) {
+							// fall through to return original string
+						}
+					}
+				}
+			}
+			return String(msg)
+		}
+
+		const pretty = formatMessage(message)
+		// Write to file and also to console (console output will show multi-line JSON)
+		logToFile(`[renderer] ${pretty}`)
+		console.log('[renderer]', '\n' + pretty)
+	} catch (e) {
+		console.error('Failed to write renderer log to file', e)
+	}
+})
+
 // Debug: mirror renderer logs into main process
-// ipcMain.on('renderer-log', (_event, message) => {
-// 	try {
-// 		if (typeof message === 'object') {
-// 			console.log('[renderer]\n' + JSON.stringify(message, null, 2))
-// 		} else {
-// 			console.log('[renderer]', message)
-// 		}
-// 	} catch (e) {
-// 		console.log('[renderer]', message)
-// 	}
-// })
+ipcMain.on('renderer-log', (_event, message) => {
+	try {
+		if (typeof message === 'object') {
+			console.log('[renderer]\n' + JSON.stringify(message, null, 2))
+		} else {
+			console.log('[renderer]', message)
+		}
+	} catch (e) {
+		console.log('[renderer]', message)
+	}
+})
 
 ipcMain.on('get-user-data', async (event, arg) => {
 	console.log('Get User Data Called')
