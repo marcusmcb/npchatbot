@@ -101,7 +101,7 @@ const initDiscordAuthToken = async (code, wss, mainWindow) => {
 		console.error('Error exchanging code for token:', error)
 		wss.clients.forEach(function each(client) {
 			if (client.readyState === WebSocket.OPEN) {
-				client.send(`Error during Spotify auth: ${error}`)
+				client.send(`Error during Discord auth: ${error}`)
 			}
 		})
 	}
