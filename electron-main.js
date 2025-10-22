@@ -273,36 +273,7 @@ ipcMain.on('share-playlist-to-discord', async (event, payload) => {
 		sessionDate,
 		event
 	)
-})
 
-// ipc handler to return user's playlist summary data
-ipcMain.on('get-playlist-summaries', async (event, arg) => {
-	const playlistSummaries = await getPlaylistSummaries()
-	if (playlistSummaries && playlistSummaries.length > 0) {
-		// const playlistSummaryData = await getPlaylistSummaryData(playlistSummaries)
-		event.reply('get-playlist-summaries-response', playlistSummaries)
-	} else {
-		console.log('No playlist summaries found.')
-		event.reply('get-playlist-summaries-response', [])
-	}
-})
-
-// Optional: IPC to repair existing summaries if needed
-ipcMain.on('repair-playlist-summaries', async (event) => {
-	try {
-		const result = await repairPlaylistSummaries()
-		console.log('Repair result:', result)
-		event.reply('repair-playlist-summaries-response', {
-			success: true,
-			result,
-		})
-	} catch (e) {
-		console.error('Repair failed:', e)
-		event.reply('repair-playlist-summaries-response', {
-			success: false,
-			error: e?.message || String(e),
-		})
-	}
 })
 
 // ipc handler for the Twitch connection process
@@ -402,31 +373,35 @@ app.on('ready', async () => {
 	// Controlled by env var MIGRATE_ON_STARTUP (default: enabled). Set to 'false' to skip.
 	const migrateFlag = process.env.MIGRATE_ON_STARTUP
 	if (migrateFlag === undefined || migrateFlag.toLowerCase() !== 'false') {
-		try {
-			const { migrateAllUsers } = require('./database/helpers/migrateTokens')
-			// Await migration so it completes before the UI is initialized. Failures are logged
-			// but won't prevent the app from starting. We expect a summary object back.
 			try {
-				const summary = await migrateAllUsers()
-				if (summary) {
-					console.log('Startup token migration completed. Summary:')
-					console.log(`  usersScanned: ${summary.usersScanned}`)
-					console.log(`  migrated: spotify=${summary.migrated.spotify}, discord=${summary.migrated.discord}, twitch=${summary.migrated.twitch}`)
-					if (summary.errors && summary.errors.length > 0) {
-						console.error('  migration errors:')
-						console.error(JSON.stringify(summary.errors, null, 2))
-					} else {
-						console.log('  no migration errors')
-					}
-				} else {
-					console.log('Startup token migration completed with no summary.')
+				const { migrateAllUsers } = require('./database/helpers/migrateTokens')
+				// Run migration in the background so it cannot block UI startup. We log completion when it finishes.
+				try {
+				// Default to removing legacy fields on startup migration; set MIGRATE_REMOVE_LEGACY=false to keep legacy values
+				const removeLegacy = (process.env.MIGRATE_REMOVE_LEGACY || 'true').toLowerCase() === 'true'
+				migrateAllUsers({ compact: true, removeLegacy })
+						.then((summary) => {
+							if (summary) {
+								console.log('Startup token migration completed. Summary:')
+								console.log(`  usersScanned: ${summary.usersScanned}`)
+								console.log(`  migrated: spotify=${summary.migrated.spotify}, discord=${summary.migrated.discord}, twitch=${summary.migrated.twitch}`)
+								if (summary.errors && summary.errors.length > 0) {
+									console.error('  migration errors:')
+									console.error(JSON.stringify(summary.errors, null, 2))
+								} else {
+									console.log('  no migration errors')
+								}
+							} else {
+								console.log('Startup token migration completed with no summary.')
+							}
+						})
+						.catch((e) => console.error('Startup migration failed:', e))
+				} catch (e) {
+					console.error('Startup migration invocation failed:', e)
 				}
 			} catch (e) {
-				console.error('Startup migration failed:', e)
+				console.error('Migration module not available during startup migration:', e)
 			}
-		} catch (e) {
-			console.error('Migration module not available during startup migration:', e)
-		}
 	} else {
 		console.log('MIGRATE_ON_STARTUP is set to false, skipping startup migration.')
 	}

@@ -8,7 +8,7 @@ async function migrateUserTokensForProviders(user, providers = ['spotify', 'disc
 
   for (const provider of providers) {
     try {
-      // Skip if keystore already has tokens for this user/provider
+      // Check if keystore already has tokens for this user/provider
       let existing = await getToken(provider, user._id).catch(() => null)
       // Fallback: some older installs may have written tokens under a 'default' account
       if (!existing) {
@@ -21,7 +21,26 @@ async function migrateUserTokensForProviders(user, providers = ['spotify', 'disc
           if (existing) console.log(`Found fallback keystore entry for ${provider} and copied to user ${user._id}`)
         }
       }
-      if (existing) continue
+
+      // If keystore already had tokens, still set migration marker in DB so changes persist.
+      if (existing) {
+        try {
+          const setObj = {}
+          setObj[`_tokensMigrated.${provider}`] = true
+          await new Promise((resolve, reject) => {
+            db.users.update({ _id: user._id }, { $set: setObj }, { upsert: false }, (err, numAffected) => {
+              if (err) return reject(err)
+              resolve(numAffected)
+            })
+          })
+          console.log(`Keystore already had ${provider} for ${user._id}; marker set in DB`)
+          migrated.push(provider)
+        } catch (e) {
+          console.error(`Failed to set marker for ${provider} for user ${user._id}:`, e)
+          errors.push({ provider, error: String(e) })
+        }
+        continue
+      }
 
       // Detect legacy shapes on user doc. Support both nested objects and older top-level fields.
       let blob = null
@@ -95,8 +114,14 @@ async function migrateUserTokensForProviders(user, providers = ['spotify', 'disc
   return { migrated, errors }
 }
 
-async function migrateAllUsers(options = {}, db = defaultDb) {
-  console.log('Starting background token migration...')
+async function migrateAllUsers(options = { compact: true, removeLegacy: false }, db = defaultDb) {
+  // Try to surface which physical DB file is being used so callers can verify where changes land
+  try {
+    const dbFile = db && db.users && db.users.filename ? db.users.filename : 'unknown'
+    console.log('Starting background token migration using DB file:', dbFile)
+  } catch (e) {
+    console.log('Starting background token migration (db path unknown)')
+  }
   const summary = {
     usersScanned: 0,
     migrated: { spotify: 0, discord: 0, twitch: 0 },
@@ -120,6 +145,61 @@ async function migrateAllUsers(options = {}, db = defaultDb) {
           if (result && Array.isArray(result.migrated)) {
             for (const p of result.migrated) {
               if (summary.migrated[p] !== undefined) summary.migrated[p] += 1
+              // Optionally remove legacy fields after successful migration
+              if (options.removeLegacy) {
+                try {
+                  // Attempt to unset only sensitive token fields (top-level and nested) so non-sensitive data (webhook_url, ids) remains.
+                  const unsetObj = {}
+                  if (p === 'spotify') {
+                    // top-level legacy names
+                    unsetObj['spotifyAccessToken'] = true
+                    unsetObj['spotifyRefreshToken'] = true
+                    unsetObj['spotifyAuthorizationCode'] = true
+                    unsetObj['spotify_access_token'] = true
+                    unsetObj['spotify_refresh_token'] = true
+                    unsetObj['refresh_token'] = true
+                    // nested object fields
+                    unsetObj['spotify.access_token'] = true
+                    unsetObj['spotify.refresh_token'] = true
+                    unsetObj['spotify.authorizationCode'] = true
+                    unsetObj['spotify.authorization_code'] = true
+                  }
+                  if (p === 'discord') {
+                    // top-level legacy names
+                    unsetObj['discordRefreshToken'] = true
+                    unsetObj['discord_refresh_token'] = true
+                    // nested object fields
+                    unsetObj['discord.accessToken'] = true
+                    unsetObj['discord.refreshToken'] = true
+                    unsetObj['discord.authorizationCode'] = true
+                    unsetObj['discord.authorization_code'] = true
+                  }
+                  if (p === 'twitch') {
+                    // top-level legacy names
+                    unsetObj['twitchAccessToken'] = true
+                    unsetObj['twitchAccessToken'] = true
+                    unsetObj['twitchRefreshToken'] = true
+                    unsetObj['twitch_access_token'] = true
+                    unsetObj['twitch_refresh_token'] = true
+                    // nested object fields
+                    unsetObj['twitch.access_token'] = true
+                    unsetObj['twitch.refresh_token'] = true
+                    unsetObj['twitch.accessToken'] = true
+                    unsetObj['twitch.refreshToken'] = true
+                  }
+
+                  // Only perform the update if we collected any keys
+                  const unsetKeys = Object.keys(unsetObj)
+                  if (unsetKeys.length > 0) {
+                    // Also ensure we remove any lingering app-level authorization codes
+                    unsetObj['appAuthorizationCode'] = true
+                    unsetObj['authorizationCode'] = true
+                    await new Promise((res, rej) => db.users.update({ _id: user._id }, { $unset: unsetObj }, {}, (err) => (err ? rej(err) : res())))
+                  }
+                } catch (e) {
+                  console.error('Failed to remove legacy fields for', user._id, p, e)
+                }
+              }
             }
           }
           if (result && Array.isArray(result.errors) && result.errors.length > 0) {
@@ -132,9 +212,39 @@ async function migrateAllUsers(options = {}, db = defaultDb) {
       }
 
       console.log('Background token migration complete.')
+
+      // Compact the datafile so changes are persisted and old records removed from the file.
+      if (options.compact !== false && db && db.users && db.users.persistence && typeof db.users.persistence.compactDatafile === 'function') {
+        try {
+          await new Promise((res) => db.users.persistence.compactDatafile(res))
+          console.log('Database compacted to persist migration changes.')
+        } catch (e) {
+          console.error('Failed to compact database after migration:', e)
+          summary.errors.push({ stage: 'compact', error: String(e) })
+        }
+      }
+
       resolve(summary)
     })
   })
 }
 
-module.exports = { migrateAllUsers, migrateUserTokensForProviders }
+async function anyUsersHaveLegacyTokens(db = defaultDb) {
+  return new Promise((resolve) => {
+    db.users.find({}, (err, users) => {
+      if (err || !users) return resolve(false)
+      for (const user of users) {
+        // quick checks for common legacy fields
+        if (user.spotify || user.spotifyAccessToken || user.spotifyRefreshToken || user.spotify_refresh_token || user.refresh_token) return resolve(true)
+        if (user.twitch || user.twitchAccessToken || user.twitchRefreshToken || user.twitch_refresh_token || user.twitch_access_token) return resolve(true)
+        if (user.discord || user.discordRefreshToken || user.discord_refresh_token) return resolve(true)
+        if (user.appAuthorizationCode || user.authorizationCode) return resolve(true)
+      }
+      resolve(false)
+    })
+  })
+
+}
+
+module.exports = { migrateAllUsers, migrateUserTokensForProviders, anyUsersHaveLegacyTokens }
+
