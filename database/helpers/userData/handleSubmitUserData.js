@@ -22,12 +22,13 @@ const { getToken } = require('../tokens')
 
 const handleSubmitUserData = async (event, arg, mainWindow) => {
 	let token
+	let user = null
 	try {
-		// Prefer the refresh token stored in the OS keystore (keytar).
-		// Fall back to the client-provided arg.twitchRefreshToken only if keystore is empty.
-		const user = await new Promise((resolve, reject) =>
-			db.users.findOne({}, (err, doc) => (err ? reject(err) : resolve(doc)))
-		)
+			// Prefer the refresh token stored in the OS keystore (keytar).
+			// Fall back to the client-provided arg.twitchRefreshToken only if keystore is empty.
+				user = await new Promise((resolve, reject) =>
+					db.users.findOne({}, (err, doc) => (err ? reject(err) : resolve(doc)))
+				)
 		if (!user) {
 			const errorResponse = {
 				success: false,
@@ -88,7 +89,8 @@ const handleSubmitUserData = async (event, arg, mainWindow) => {
 
 	if (isValidTwitchURL && isValidTwitchChatbotURL && isValidSeratoURL) {
 		try {
-			const data = await updateUserData(db, event, arg)
+			// Ensure updateUserData receives the current user's _id so it can locate the record
+			const data = await updateUserData(db, event, { ...arg, _id: user._id })
 			mainWindow.webContents.send('userDataUpdated')
 			event.reply('userDataResponse', data)
 		} catch (error) {

@@ -94,16 +94,11 @@ async function migrateUserTokensForProviders(user, providers = ['spotify', 'disc
       await new Promise((resolve, reject) => {
         db.users.update({ _id: user._id }, { $set: setObj }, { upsert: false }, (err, numAffected) => {
           if (err) return reject(err)
-          // read back immediately (debug)
-          db.users.findOne({ _id: user._id }, (err2, doc) => {
-            if (err2) console.error('DEBUG: findOne after marker set error', err2)
-            else console.log('DEBUG: user after marker set ->', doc)
-            resolve(numAffected)
-          })
+          resolve(numAffected)
         })
       })
 
-      console.log(`Migrated ${provider} for user ${user._id} (marker set)`)
+      console.log(`Migrated ${provider} for user ${user._id}`)
       migrated.push(provider)
     } catch (e) {
       console.error(`Failed to migrate ${provider} for user ${user && user._id}:`, e)

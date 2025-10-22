@@ -6,49 +6,17 @@ const path = require('path')
 const fs = require('fs')
 const readline = require('readline')
 
-const { normalizeFile } = require('./normalize-users-db')
-const { migrateFile } = require('./offline-migrate-to-keytar')
-
-function prompt(question) {
-  const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
-  return new Promise((resolve) => rl.question(question, (ans) => { rl.close(); resolve(ans) }))
-}
+const { migrateAllUsers } = require('../database/helpers/migrateTokens')
 
 async function run(options) {
-  const input = options.dbPath || path.join(process.cwd(), 'users.db')
-  if (!fs.existsSync(input)) throw new Error(`DB file not found: ${input}`)
-
-  const backup = input + '.bak-' + Date.now()
-  console.log('Backing up', input, '→', backup)
-  fs.copyFileSync(input, backup)
-
-  const normalized = options.normalizedPath || input.replace(/\.db$/, '.normalized.db')
-  console.log('Normalizing', input, '→', normalized)
-  normalizeFile(input, normalized)
-
-  console.log('Ready to migrate from', normalized)
-  if (!options.yes) {
-    const ans = await prompt('Proceed with migration in marker-only mode? (y/N) ')
-    if (!/^y(es)?$/i.test(ans)) { console.log('Aborting.'); return }
-  }
-
-  console.log('Running migration (marker-only by default).')
-  await migrateFile(normalized, { removeLegacy: !!options.remove })
-  console.log('Migration completed on', normalized)
-
-  if (options.commit) {
-    const commitAnswer = options.yes ? 'y' : await prompt(`Replace original ${input} with migrated file ${normalized}? (y/N) `)
-    if (/^y(es)?$/i.test(commitAnswer)) {
-      const origBackup = input + '.pre-migrate-' + Date.now()
-      console.log('Backing up original before commit:', input, '→', origBackup)
-      fs.copyFileSync(input, origBackup)
-      fs.copyFileSync(normalized, input)
-      console.log('Committed migrated DB to', input)
-    } else {
-      console.log('Commit skipped. Review', normalized, 'manually.')
-    }
-  } else {
-    console.log('No commit requested. Review the normalized/migrated file at', normalized)
+  console.log('Running migration against the active application DB via migrateAllUsers')
+  try {
+    const removeLegacy = !!options.remove
+    const summary = await migrateAllUsers({ compact: true, removeLegacy })
+    console.log('Migration summary:', JSON.stringify(summary, null, 2))
+  } catch (e) {
+    console.error('Migration failed:', e)
+    throw e
   }
 }
 
