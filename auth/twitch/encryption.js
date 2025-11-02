@@ -1,20 +1,50 @@
 const keytar = require('keytar')
 const crypto = require('crypto')
 
-const SERVICE_NAME = 'npChatbot'
+// New stable service name; keep lowercase and constant across environments
+const NEW_SERVICE = 'npchatbot-secrets'
+// Legacy service name kept for migration
+const LEGACY_SERVICE = 'npChatbot'
 const KEY_ACCOUNT = 'encryptionKey'
 const IV_ACCOUNT = 'encryptionIV'
 
-const getKeyAndIV = async () => {
-	let key = await keytar.getPassword(SERVICE_NAME, KEY_ACCOUNT)
-	let iv = await keytar.getPassword(SERVICE_NAME, IV_ACCOUNT)
+async function setWithRetry(service, account, value) {
+	try {
+		await keytar.setPassword(service, account, value)
+		return true
+	} catch (_) {
+		try { await keytar.deletePassword(service, account) } catch (_) {}
+		await keytar.setPassword(service, account, value)
+		return true
+	}
+}
 
+const getKeyAndIV = async () => {
+	// Try new service first
+	let key = await keytar.getPassword(NEW_SERVICE, KEY_ACCOUNT)
+	let iv = await keytar.getPassword(NEW_SERVICE, IV_ACCOUNT)
+
+	// If missing, attempt to migrate from legacy entries
+	if (!key || !iv) {
+		const legacyKey = await keytar.getPassword(LEGACY_SERVICE, KEY_ACCOUNT)
+		const legacyIv = await keytar.getPassword(LEGACY_SERVICE, IV_ACCOUNT)
+		if (legacyKey && legacyIv) {
+			await setWithRetry(NEW_SERVICE, KEY_ACCOUNT, legacyKey)
+			await setWithRetry(NEW_SERVICE, IV_ACCOUNT, legacyIv)
+			// Best-effort cleanup of legacy entries
+			try { await keytar.deletePassword(LEGACY_SERVICE, KEY_ACCOUNT) } catch (_) {}
+			try { await keytar.deletePassword(LEGACY_SERVICE, IV_ACCOUNT) } catch (_) {}
+			key = legacyKey
+			iv = legacyIv
+		}
+	}
+
+	// If still missing, generate fresh and store under new service
 	if (!key || !iv) {
 		key = crypto.randomBytes(32).toString('hex')
 		iv = crypto.randomBytes(16).toString('hex')
-
-		await keytar.setPassword(SERVICE_NAME, KEY_ACCOUNT, key)
-		await keytar.setPassword(SERVICE_NAME, IV_ACCOUNT, iv)
+		await setWithRetry(NEW_SERVICE, KEY_ACCOUNT, key)
+		await setWithRetry(NEW_SERVICE, IV_ACCOUNT, iv)
 	}
 
 	return {

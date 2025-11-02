@@ -98,6 +98,10 @@ server.use(cors())
 
 const isDev = !app.isPackaged
 process.env.NODE_ENV = isDev ? 'development' : 'production'
+// Enable a conservative Keychain fallback on macOS packaged builds
+if (process.platform === 'darwin' && app.isPackaged) {
+	process.env.KEYCHAIN_ACCOUNT_FALLBACK = 'true'
+}
 
 // socket config for auth responses
 const wss = new WebSocket.Server({ port: 8080 })

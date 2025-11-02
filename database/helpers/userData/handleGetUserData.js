@@ -48,18 +48,41 @@ const handleGetUserData = async () => {
 					} : null,
 				}
 
-				// Add safe authorization booleans by checking keystore for provider tokens.
-				// These are non-sensitive and indicate whether the app has tokens stored for the user.
-				try {
-					const { getToken } = require('../../helpers/tokens')
-					const twitchBlob = await getToken('twitch', user._id).catch(() => null)
-					const spotifyBlob = await getToken('spotify', user._id).catch(() => null)
-					userDataToSubmit.isTwitchAuthorized = !!(twitchBlob && (twitchBlob.refresh_token || twitchBlob.access_token))
-					userDataToSubmit.isSpotifyAuthorized = !!(spotifyBlob && (spotifyBlob.refresh_token || spotifyBlob.access_token))
-				} catch (e) {
-					userDataToSubmit.isTwitchAuthorized = false
-					userDataToSubmit.isSpotifyAuthorized = false
+				// Authorization flags:
+				// - In development (not packaged), avoid hitting Keychain to prevent repeated prompts.
+				//   Use DB-cached flags set during auth flows.
+				// - In production (packaged), if flags are missing in DB, initialize them once by
+				//   inspecting the keystore and persist the booleans for future reads.
+				const isPackaged = !!process.resourcesPath
+				let isTwitchAuthorized = !!user.isTwitchAuthorized
+				let isSpotifyAuthorized = !!user.isSpotifyAuthorized
+
+				if (isPackaged && (typeof user.isTwitchAuthorized === 'undefined' || typeof user.isSpotifyAuthorized === 'undefined')) {
+					try {
+						const { getToken } = require('../../helpers/tokens')
+						if (typeof user.isTwitchAuthorized === 'undefined') {
+							const twitchBlob = await getToken('twitch', user._id).catch(() => null)
+							isTwitchAuthorized = !!(twitchBlob && (twitchBlob.refresh_token || twitchBlob.access_token))
+							// Persist for future reads
+							await new Promise((resolve, reject) =>
+								db.users.update({ _id: user._id }, { $set: { isTwitchAuthorized } }, {}, (err) => (err ? reject(err) : resolve(true)))
+							)
+						}
+						if (typeof user.isSpotifyAuthorized === 'undefined') {
+							const spotifyBlob = await getToken('spotify', user._id).catch(() => null)
+							isSpotifyAuthorized = !!(spotifyBlob && (spotifyBlob.refresh_token || spotifyBlob.access_token))
+							// Persist for future reads
+							await new Promise((resolve, reject) =>
+								db.users.update({ _id: user._id }, { $set: { isSpotifyAuthorized } }, {}, (err) => (err ? reject(err) : resolve(true)))
+							)
+						}
+					} catch (_) {
+						// If any error, fall back to false without blocking
+					}
 				}
+
+				userDataToSubmit.isTwitchAuthorized = !!isTwitchAuthorized
+				userDataToSubmit.isSpotifyAuthorized = !!isSpotifyAuthorized
 
 				const responseObject = {
 					success: true,

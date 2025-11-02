@@ -112,12 +112,15 @@ const initSpotifyAuthToken = async (code, wss, mainWindow) => {
 						authorization_code: code,
 						expires_in: token.expires_in,
 					})
+					// Mark authorized in DB so UI can avoid repeated keychain reads
+					await updateAsync({ _id: user._id }, { $set: { isSpotifyAuthorized: true } })
 					// Do NOT persist raw tokens in the DB anymore; keystore is the single source of truth
 					console.log('User updated successfully! (tokens stored in keytar)')
 					logToFile('User updated successfully! (tokens stored in keytar)')
 				} catch (e) {
-					console.error('Error storing tokens in keytar:', e)
-					logToFile('Error storing tokens in keytar:', e)
+					const msg = e && e.message ? e.message : String(e)
+					console.error('Error storing tokens in keytar:', msg)
+					logToFile(`Error storing tokens in keytar: ${msg}`)
 				}
 			} else {
 				try {
@@ -129,13 +132,15 @@ const initSpotifyAuthToken = async (code, wss, mainWindow) => {
 						authorization_code: code,
 						expires_in: token.expires_in,
 					})
+					await updateAsync({ _id: newDoc._id }, { $set: { isSpotifyAuthorized: true } })
 					console.log('New user created and tokens stored in keytar')
 					logToFile('New user created and tokens stored in keytar')
 					// notify renderer that auth succeeded, but do NOT include tokens or sensitive fields
 					mainWindow.webContents.send('auth-successful', { _id: newDoc._id })
 				} catch (e) {
-					console.error('Error creating new user or storing new user tokens in keytar:', e)
-					logToFile('Error creating new user or storing new user tokens in keytar:', e)
+					const msg = e && e.message ? e.message : String(e)
+					console.error('Error creating new user or storing new user tokens in keytar:', msg)
+					logToFile(`Error creating new user or storing new user tokens in keytar: ${msg}`)
 				}
 			}
 		wss.clients.forEach(function each(client) {

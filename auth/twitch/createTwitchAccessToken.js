@@ -69,15 +69,21 @@ const initTwitchAuthToken = async (code, wss, mainWindow) => {
 			db.users.findOne({}, (err, doc) => (err ? reject(err) : resolve(doc)))
 		)
 
-		if (user) {
+	if (user) {
 			console.log('User found: ', user)
 			logToFile(`User found: ${JSON.stringify(user)}`)
 			logToFile(`* * * * * * * * * * * * * * * * * * *`)
-			// store token securely in OS keystore (do not block other operations)
-			storeToken('twitch', user._id, token).catch((e) => {
-				logToFile(`Error storing twitch token in keystore: ${e}`)
-				console.error('Error storing twitch token in keystore:', e)
-			})
+			// store token securely in OS keystore and mark authorized in DB
+			try {
+				await storeToken('twitch', user._id, token)
+				await new Promise((resolve, reject) =>
+					db.users.update({ _id: user._id }, { $set: { isTwitchAuthorized: true } }, {}, (err) => (err ? reject(err) : resolve(true)))
+				)
+			} catch (e) {
+				const msg = e && e.message ? e.message : String(e)
+				logToFile(`Error storing twitch token in keystore: ${msg}`)
+				console.error('Error storing twitch token in keystore:', msg)
+			}
 		} else {
 			// insert new user doc and store token in keystore
 			// create a user record but DO NOT persist sensitive tokens in DB
@@ -87,11 +93,17 @@ const initTwitchAuthToken = async (code, wss, mainWindow) => {
 			// notify renderer immediately (without tokens)
 			mainWindow.webContents.send('auth-successful', { _id: newDoc._id })
 
-			// store token securely in OS keystore under the new user id (do not block notification)
-			storeToken('twitch', newDoc._id, token).catch((e) => {
-				logToFile(`Error storing twitch token in keystore (insert): ${e}`)
-				console.error('Error storing twitch token in keystore (insert):', e)
-			})
+			// store token securely in OS keystore under the new user id and set authorized flag
+			try {
+				await storeToken('twitch', newDoc._id, token)
+				await new Promise((resolve, reject) =>
+					db.users.update({ _id: newDoc._id }, { $set: { isTwitchAuthorized: true } }, {}, (err) => (err ? reject(err) : resolve(true)))
+				)
+			} catch (e) {
+				const msg = e && e.message ? e.message : String(e)
+				logToFile(`Error storing twitch token in keystore (insert): ${msg}`)
+				console.error('Error storing twitch token in keystore (insert):', msg)
+			}
 		}
 		wss.clients.forEach(function each(client) {
 			if (client.readyState === WebSocket.OPEN) {
