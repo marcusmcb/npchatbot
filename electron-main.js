@@ -185,6 +185,18 @@ ipcMain.on('delete-selected-playlist', async (event, arg) => {
 	await deletePlaylist(arg, event)
 })
 
+// provide playlist summaries to renderer
+ipcMain.on('get-playlist-summaries', async (event, _arg) => {
+	try {
+		const summaries = await getPlaylistSummaries()
+		// Ensure we always send something back (empty array if none)
+		event.reply('get-playlist-summaries-response', Array.isArray(summaries) ? summaries : [])
+	} catch (e) {
+		console.error('Failed to fetch playlist summaries:', e)
+		event.reply('get-playlist-summaries-response', null)
+	}
+})
+
 ipcMain.on('submit-user-data', async (event, arg) => {
 	handleSubmitUserData(event, arg, mainWindow)
 })
