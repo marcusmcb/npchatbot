@@ -156,7 +156,7 @@ ipcMain.on('renderer-log', (_event, message) => {
 				: String(message)
 		// Write to file and also to console
 		logToFile(`[renderer] ${pretty}`)
-		console.log('[renderer]', pretty)
+		// console.log('[renderer]', pretty)
 	} catch (e) {
 		console.error('Failed to write renderer log to file', e)
 	}
@@ -344,15 +344,15 @@ app.on('activate', async () => {
 
 app.on('ready', async () => {
 	startServer()
-	// Run migration before creating the main window so tokens are migrated on app startup.
-	// Controlled by env var MIGRATE_ON_STARTUP (default: enabled). Set to 'false' to skip.
+	// run migration before creating the main window so tokens are migrated on app startup.
+	// controlled by env var MIGRATE_ON_STARTUP (default: enabled). Set to 'false' to skip.
 	const migrateFlag = process.env.MIGRATE_ON_STARTUP
 	if (migrateFlag === undefined || migrateFlag.toLowerCase() !== 'false') {
 		try {
 			const { migrateAllUsers } = require('./database/helpers/migrateTokens')
-			// Run migration in the background so it cannot block UI startup. We log completion when it finishes.
+			// run migration in the background so it cannot block UI startup. We log completion when it finishes.
 			try {
-				// Default to removing legacy fields on startup migration; set MIGRATE_REMOVE_LEGACY=false to keep legacy values
+				// default to removing legacy fields on startup migration; set MIGRATE_REMOVE_LEGACY=false to keep legacy values
 				const removeLegacy =
 					(process.env.MIGRATE_REMOVE_LEGACY || 'true').toLowerCase() === 'true'
 				migrateAllUsers({ compact: true, removeLegacy })

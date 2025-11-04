@@ -13,52 +13,57 @@ const { getToken } = require('./tokens')
  *  - timeoutMs: number - total poll timeout in ms (default 800)
  *  - intervalMs: number - poll interval in ms (default 100)
  */
-async function getRefreshToken(provider, user, options = {}) {
-  if (!provider) throw new Error('provider required')
-  if (!user) return null
 
-  const { poll = false, timeoutMs = 800, intervalMs = 100 } = options
+const getRefreshToken = async (provider, user, options = {}) => {
+	if (!provider) throw new Error('provider required')
+	if (!user) return null
 
-  try {
-    if (user._id) {
-      let blob = await getToken(provider, user._id).catch(() => null)
-      if (blob && blob.refresh_token) return blob.refresh_token
-      if (blob && blob.access_token && provider === 'twitch') return blob.access_token
+	const { poll = false, timeoutMs = 800, intervalMs = 100 } = options
 
-      if (poll) {
-        const maxTries = Math.ceil(timeoutMs / intervalMs)
-        for (let i = 0; i < maxTries; i++) {
-          await new Promise((r) => setTimeout(r, intervalMs))
-          blob = await getToken(provider, user._id).catch(() => null)
-          if (blob && blob.refresh_token) return blob.refresh_token
-          if (blob && blob.access_token && provider === 'twitch') return blob.access_token
-        }
-      }
-    }
-  } catch (e) {
-    // ignore keystore errors and fall back to DB fields
-    console.error('Error reading token from keystore:', e)
-  }
+	try {
+		if (user._id) {
+			let blob = await getToken(provider, user._id).catch(() => null)
+			if (blob && blob.refresh_token) return blob.refresh_token
+			if (blob && blob.access_token && provider === 'twitch')
+				return blob.access_token
 
-  // Legacy DB fallbacks (kept for migration/back-compat). Return null if not present.
-  if (provider === 'spotify') {
-    return (
-      user.spotifyRefreshToken ||
-      user.spotify_refresh_token ||
-      user.refresh_token ||
-      null
-    )
-  }
+			if (poll) {
+				const maxTries = Math.ceil(timeoutMs / intervalMs)
+				for (let i = 0; i < maxTries; i++) {
+					await new Promise((r) => setTimeout(r, intervalMs))
+					blob = await getToken(provider, user._id).catch(() => null)
+					if (blob && blob.refresh_token) return blob.refresh_token
+					if (blob && blob.access_token && provider === 'twitch')
+						return blob.access_token
+				}
+			}
+		}
+	} catch (e) {
+		// ignore keystore errors and fall back to DB fields
+		console.error('Error reading token from keystore:', e)
+	}
 
-  if (provider === 'twitch') {
-    return user.twitchRefreshToken || null
-  }
+	// Legacy DB fallbacks (kept for migration/back-compat). Return null if not present.
+	if (provider === 'spotify') {
+		return (
+			user.spotifyRefreshToken ||
+			user.spotify_refresh_token ||
+			user.refresh_token ||
+			null
+		)
+	}
 
-  if (provider === 'discord') {
-    return user.discord && user.discord.refresh_token ? user.discord.refresh_token : null
-  }
+	if (provider === 'twitch') {
+		return user.twitchRefreshToken || null
+	}
 
-  return null
+	if (provider === 'discord') {
+		return user.discord && user.discord.refresh_token
+			? user.discord.refresh_token
+			: null
+	}
+
+	return null
 }
 
 module.exports = { getRefreshToken }
