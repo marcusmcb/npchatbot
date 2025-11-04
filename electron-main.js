@@ -150,7 +150,10 @@ ipcMain.on('open-auth-settings', (event, url) => {
 // Accept logs forwarded from renderer process (preload.logToMain)
 ipcMain.on('renderer-log', (_event, message) => {
 	try {
-		const pretty = (typeof message === 'object') ? JSON.stringify(message, null, 2) : String(message)
+		const pretty =
+			typeof message === 'object'
+				? JSON.stringify(message, null, 2)
+				: String(message)
 		// Write to file and also to console
 		logToFile(`[renderer] ${pretty}`)
 		console.log('[renderer]', pretty)
@@ -185,12 +188,13 @@ ipcMain.on('delete-selected-playlist', async (event, arg) => {
 	await deletePlaylist(arg, event)
 })
 
-// provide playlist summaries to renderer
 ipcMain.on('get-playlist-summaries', async (event, _arg) => {
 	try {
 		const summaries = await getPlaylistSummaries()
-		// Ensure we always send something back (empty array if none)
-		event.reply('get-playlist-summaries-response', Array.isArray(summaries) ? summaries : [])
+		event.reply(
+			'get-playlist-summaries-response',
+			Array.isArray(summaries) ? summaries : []
+		)
 	} catch (e) {
 		console.error('Failed to fetch playlist summaries:', e)
 		event.reply('get-playlist-summaries-response', null)
@@ -226,7 +230,7 @@ ipcMain.on('share-playlist-to-discord', async (event, payload) => {
 	const { spotifyURL, sessionDate } = payload || {}
 	const userData = await getUserData(db)
 	const twitchChannelName = userData?.twitchChannelName
-	// Prefer webhook URL from keytar token blob if available, otherwise fall back to legacy DB field
+	// use webhook URL from keytar token blob if available, otherwise fall back to legacy DB field
 	let webhookURL = null
 	try {
 		if (userData && userData._id) {
@@ -245,7 +249,6 @@ ipcMain.on('share-playlist-to-discord', async (event, payload) => {
 		sessionDate,
 		event
 	)
-
 })
 
 // ipc handler for the Twitch connection process
@@ -345,37 +348,45 @@ app.on('ready', async () => {
 	// Controlled by env var MIGRATE_ON_STARTUP (default: enabled). Set to 'false' to skip.
 	const migrateFlag = process.env.MIGRATE_ON_STARTUP
 	if (migrateFlag === undefined || migrateFlag.toLowerCase() !== 'false') {
+		try {
+			const { migrateAllUsers } = require('./database/helpers/migrateTokens')
+			// Run migration in the background so it cannot block UI startup. We log completion when it finishes.
 			try {
-				const { migrateAllUsers } = require('./database/helpers/migrateTokens')
-				// Run migration in the background so it cannot block UI startup. We log completion when it finishes.
-				try {
 				// Default to removing legacy fields on startup migration; set MIGRATE_REMOVE_LEGACY=false to keep legacy values
-				const removeLegacy = (process.env.MIGRATE_REMOVE_LEGACY || 'true').toLowerCase() === 'true'
+				const removeLegacy =
+					(process.env.MIGRATE_REMOVE_LEGACY || 'true').toLowerCase() === 'true'
 				migrateAllUsers({ compact: true, removeLegacy })
-						.then((summary) => {
-							if (summary) {
-								console.log('Startup token migration completed. Summary:')
-								console.log(`  usersScanned: ${summary.usersScanned}`)
-								console.log(`  migrated: spotify=${summary.migrated.spotify}, discord=${summary.migrated.discord}, twitch=${summary.migrated.twitch}`)
-								if (summary.errors && summary.errors.length > 0) {
-									console.error('  migration errors:')
-									console.error(JSON.stringify(summary.errors, null, 2))
-								} else {
-									console.log('  no migration errors')
-								}
+					.then((summary) => {
+						if (summary) {
+							console.log('Startup token migration completed. Summary:')
+							console.log(`  usersScanned: ${summary.usersScanned}`)
+							console.log(
+								`  migrated: spotify=${summary.migrated.spotify}, discord=${summary.migrated.discord}, twitch=${summary.migrated.twitch}`
+							)
+							if (summary.errors && summary.errors.length > 0) {
+								console.error('  migration errors:')
+								console.error(JSON.stringify(summary.errors, null, 2))
 							} else {
-								console.log('Startup token migration completed with no summary.')
+								console.log('  no migration errors')
 							}
-						})
-						.catch((e) => console.error('Startup migration failed:', e))
-				} catch (e) {
-					console.error('Startup migration invocation failed:', e)
-				}
+						} else {
+							console.log('Startup token migration completed with no summary.')
+						}
+					})
+					.catch((e) => console.error('Startup migration failed:', e))
 			} catch (e) {
-				console.error('Migration module not available during startup migration:', e)
+				console.error('Startup migration invocation failed:', e)
 			}
+		} catch (e) {
+			console.error(
+				'Migration module not available during startup migration:',
+				e
+			)
+		}
 	} else {
-		console.log('MIGRATE_ON_STARTUP is set to false, skipping startup migration.')
+		console.log(
+			'MIGRATE_ON_STARTUP is set to false, skipping startup migration.'
+		)
 	}
 	await initMainWindow()
 })

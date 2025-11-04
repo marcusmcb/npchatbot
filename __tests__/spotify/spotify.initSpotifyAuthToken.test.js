@@ -63,4 +63,22 @@ describe('initSpotifyAuthToken', () => {
   expect(mainWindow.webContents.sent.some(e => e.channel === 'auth-successful')).toBe(false)
     expect(wsClient.messages.some(m => m.includes('npChatbot successfully linked'))).toBe(true)
   })
+
+  it('does not update DB for existing user when already migrated', async () => {
+    const token = { access_token: 'migrated_acc', refresh_token: 'migrated_ref' }
+    mock.onPost('https://accounts.spotify.com/api/token').reply(200, token)
+
+    const findOneSpy = jest.spyOn(db.users, 'findOne').mockImplementation((q, cb) => cb(null, { _id: 'existing', _tokensMigrated: { spotify: true } }))
+    const updateSpy = jest.spyOn(db.users, 'update').mockImplementation((q, update, opts, cb) => cb(null, 1))
+
+    await initSpotifyAuthToken('codeMIG', wss, mainWindow)
+    await new Promise((r) => setTimeout(r, 0))
+
+    expect(findOneSpy).toHaveBeenCalled()
+    // Because user is migrated, no DB update should occur
+    expect(updateSpy).not.toHaveBeenCalled()
+    // No renderer auth-successful message on update path
+    expect(mainWindow.webContents.sent.some(e => e.channel === 'auth-successful')).toBe(false)
+    expect(wsClient.messages.some(m => m.includes('npChatbot successfully linked'))).toBe(true)
+  })
 })

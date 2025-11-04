@@ -98,4 +98,24 @@ describe('initTwitchAuthToken', () => {
     // WS broadcast still sent
     expect(wsClient.messages.some(m => m.includes('npChatbot successfully linked'))).toBe(true)
   })
+
+  it('does not update DB for existing user when already migrated', async () => {
+    const token = { access_token: 'migrated_token', refresh_token: 'migrated_refresh' }
+    mock.onPost(process.env.TWITCH_AUTH_URL).reply(200, token)
+
+    // findOne returns a migrated user
+    const findOneSpy = jest.spyOn(db.users, 'findOne').mockImplementation((q, cb) => cb(null, { _id: 'existing', _tokensMigrated: { twitch: true } }))
+    const updateSpy = jest.spyOn(db.users, 'update').mockImplementation((q, update, opts, cb) => { cb && cb(null, 1) })
+
+    await initTwitchAuthToken('codeMIG', wss, mainWindow)
+    await new Promise((r) => setTimeout(r, 0))
+
+    expect(findOneSpy).toHaveBeenCalled()
+    // Because user is migrated, no DB update should occur
+    expect(updateSpy).not.toHaveBeenCalled()
+    // No renderer auth-successful message in update path
+    expect(mainWindow.webContents.sent.some(e => e.channel === 'auth-successful')).toBe(false)
+    // WS broadcast still sent
+    expect(wsClient.messages.some(m => m.includes('npChatbot successfully linked'))).toBe(true)
+  })
 })
