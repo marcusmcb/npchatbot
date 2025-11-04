@@ -76,9 +76,15 @@ const initTwitchAuthToken = async (code, wss, mainWindow) => {
 			// store token securely in OS keystore and mark authorized in DB
 			try {
 				await storeToken('twitch', user._id, token)
-				await new Promise((resolve, reject) =>
-					db.users.update({ _id: user._id }, { $set: { isTwitchAuthorized: true } }, {}, (err) => (err ? reject(err) : resolve(true)))
-				)
+				// If this user's tokens haven't been migrated yet, mark them as authorized
+				// in the DB so older versions of the app (or users without keystore
+				// entries) will still see the authorized flag. If the user has already
+				// been migrated (user._tokensMigrated?.twitch), skip updating the DB.
+				if (!user._tokensMigrated || !user._tokensMigrated.twitch) {
+					await new Promise((resolve, reject) =>
+						db.users.update({ _id: user._id }, { $set: { isTwitchAuthorized: true } }, {}, (err) => (err ? reject(err) : resolve(true)))
+					)
+				}
 			} catch (e) {
 				const msg = e && e.message ? e.message : String(e)
 				logToFile(`Error storing twitch token in keystore: ${msg}`)

@@ -112,9 +112,12 @@ const initSpotifyAuthToken = async (code, wss, mainWindow) => {
 						authorization_code: code,
 						expires_in: token.expires_in,
 					})
-					// Mark authorized in DB so UI can avoid repeated keychain reads
-					await updateAsync({ _id: user._id }, { $set: { isSpotifyAuthorized: true } })
-					// Do NOT persist raw tokens in the DB anymore; keystore is the single source of truth
+					// If this user's tokens haven't been migrated yet, mark them as
+					// authorized in the DB so older versions or non-migrated state
+					// will still reflect authorization. If migrated, skip DB write.
+					if (!user._tokensMigrated || !user._tokensMigrated.spotify) {
+						await updateAsync({ _id: user._id }, { $set: { isSpotifyAuthorized: true } })
+					}
 					console.log('User updated successfully! (tokens stored in keytar)')
 					logToFile('User updated successfully! (tokens stored in keytar)')
 				} catch (e) {

@@ -89,8 +89,8 @@ describe('initTwitchAuthToken', () => {
     await new Promise((r) => setTimeout(r, 0))
 
   expect(findOneSpy).toHaveBeenCalled()
-  // DB update should not be called since tokens are stored in keystore only
-  expect(updateSpy).not.toHaveBeenCalled()
+  // If the user's tokens haven't been migrated, we should mark them as authorized in the DB
+  expect(updateSpy).toHaveBeenCalled()
 
     // No renderer auth-successful message in update path
     expect(mainWindow.webContents.sent.some(e => e.channel === 'auth-successful')).toBe(false)

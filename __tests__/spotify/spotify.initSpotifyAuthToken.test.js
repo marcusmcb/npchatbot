@@ -57,8 +57,8 @@ describe('initSpotifyAuthToken', () => {
     await new Promise((r) => setTimeout(r, 0))
 
   expect(findOneSpy).toHaveBeenCalled()
-  // DB update should not persist raw tokens anymore
-  expect(updateSpy).not.toHaveBeenCalled()
+  // If the user's tokens haven't been migrated, the DB should be updated
+  expect(updateSpy).toHaveBeenCalled()
   // No renderer auth-successful message on update path
   expect(mainWindow.webContents.sent.some(e => e.channel === 'auth-successful')).toBe(false)
     expect(wsClient.messages.some(m => m.includes('npChatbot successfully linked'))).toBe(true)
