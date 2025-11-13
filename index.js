@@ -33,9 +33,19 @@ const initializeBot = async (config) => {
 
 	const url = `https://serato.com/playlists/${seratoDisplayName}/live`
 
+	// Prefer keystore-stored Twitch access token (if migrated), otherwise fall back to DB field
+	const { getToken: getKeystoreToken } = require('./database/helpers/tokens')
+	let twitchAuthToken = config.twitchAccessToken
+	try {
+		const blob = await getKeystoreToken('twitch', config._id)
+		if (blob && blob.access_token) twitchAuthToken = blob.access_token
+	} catch (e) {
+		console.error('Error reading twitch token from keystore:', e)
+	}
+
 	const refreshTokenConfig = returnTwitchRefreshTokenConfig(
 		config,
-		config.twitchAccessToken
+		twitchAuthToken
 	)
 
 	logToFile(`REFRESH TOKEN CONFIG: ${JSON.stringify(refreshTokenConfig)}`)
@@ -147,3 +157,7 @@ const initializeBot = async (config) => {
 }
 
 module.exports = initializeBot
+
+// Start a background migration (non-blocking) so legacy DB tokens move to keystore on startup
+// NOTE: migration moved to the main process startup (electron-main.js) so it runs when the
+// application is launched rather than when the bot process is started.

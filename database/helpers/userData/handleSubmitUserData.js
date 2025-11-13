@@ -18,13 +18,39 @@ const {
 const logToFile = require('../../../scripts/logger')
 const errorHandler = require('../errorHandler/errorHandler')
 const db = require('../../database')
+const { getToken } = require('../tokens')
 
 const handleSubmitUserData = async (event, arg, mainWindow) => {
 	let token
+	let user = null
 	try {
-		const currentAccessToken = await getTwitchRefreshToken(
-			arg.twitchRefreshToken
-		)
+			// Prefer the refresh token stored in the OS keystore (keytar).
+			// Fall back to the client-provided arg.twitchRefreshToken only if keystore is empty.
+				user = await new Promise((resolve, reject) =>
+					db.users.findOne({}, (err, doc) => (err ? reject(err) : resolve(doc)))
+				)
+		if (!user) {
+			const errorResponse = {
+				success: false,
+				error: 'No user found for token lookup',
+			}
+			event.reply('userDataResponse', errorResponse)
+			return
+		}
+
+		// Use centralized helper which can poll keystore for a short time if token write is still in-flight
+	const { getRefreshToken } = require('../getRefreshToken')
+		const refreshToken = await getRefreshToken('twitch', user, { poll: true }) || arg.twitchRefreshToken
+		if (!refreshToken) {
+			const errorResponse = {
+				success: false,
+				error: errorHandler('No stored Twitch refresh token found'),
+			}
+			event.reply('userDataResponse', errorResponse)
+			return
+		}
+
+		const currentAccessToken = await getTwitchRefreshToken(refreshToken)
 		if (currentAccessToken.status === 400) {
 			const errorResponse = {
 				success: false,
@@ -63,7 +89,8 @@ const handleSubmitUserData = async (event, arg, mainWindow) => {
 
 	if (isValidTwitchURL && isValidTwitchChatbotURL && isValidSeratoURL) {
 		try {
-			const data = await updateUserData(db, event, arg)
+			// Ensure updateUserData receives the current user's _id so it can locate the record
+			const data = await updateUserData(db, event, { ...arg, _id: user._id })
 			mainWindow.webContents.send('userDataUpdated')
 			event.reply('userDataResponse', data)
 		} catch (error) {

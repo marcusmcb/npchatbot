@@ -186,10 +186,9 @@ const App = (): JSX.Element => {
 	useEffect(() => {
 		const handleAuthSuccess = (response: AuthSuccess) => {
 			console.log('Auth success:', response)
-			setFormData({
-				_id: response._id,
-				twitchRefreshToken: response.twitchRefreshToken,
-			})
+			// Only set the user id and mark Twitch as authorized. Tokens are stored in the OS keystore and not exposed to the renderer.
+			setFormData({ _id: response._id })
+			setIsTwitchAuthorized(true)
 		}
 		window.electron.ipcRenderer.on('auth-successful', handleAuthSuccess)
 		return () => {

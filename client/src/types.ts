@@ -8,7 +8,6 @@ export interface BotProcessResponse {
 
 export interface AuthSuccess {
 	_id: string
-	twitchRefreshToken: string
 }
 
 export interface MessagePanelProps {

@@ -32,14 +32,11 @@ const createLiveReport = async (url) => {
 			startTimeParsed = new Date()
 			startTimeParsed.setSeconds(0, 0)
 			startTimeParsed.setHours(hours, minutes, 0, 0)
-
-			// Apply known scrape bug correction: scraped start time is 1 hour earlier than actual
-			// Example: scraped "1:23 PM" -> actual should be "2:23 PM"
-			startTimeParsed.setHours(startTimeParsed.getHours() + 1)
+			startTimeParsed.setHours(startTimeParsed.getHours())
 
 			const now = new Date()
-			// If the corrected start time is in the future relative to now,
-			// it likely started the previous day (crossed midnight). Adjust date back one day.
+			// previous Serato start time bug has since been fixed
+			// on the Serato Live Playlist page
 			if (startTimeParsed > now) {
 				startTimeParsed.setDate(startTimeParsed.getDate() - 1)
 			}

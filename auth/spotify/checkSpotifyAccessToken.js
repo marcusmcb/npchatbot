@@ -4,16 +4,23 @@ const getUserData = require('../../database/helpers/userData/getUserData')
 const {
 	getSpotifyAccessToken,
 } = require('../../auth/spotify/getSpotifyAccessToken')
+const { getToken } = require('../../database/helpers/tokens')
 
 const checkSpotifyAccessToken = async () => {
 	try {		
 		const user = await getUserData(db)
-		if (!user || !user.spotifyAccessToken) {
-			console.error('No stored access token found.')
+		if (!user) {
+			console.error('No user record found.')
 			return null
 		}
 
-		let accessToken = user.spotifyAccessToken
+		const tokenBlob = await getToken('spotify', user._id)
+		if (!tokenBlob || !tokenBlob.access_token) {
+			console.error('No stored access token found in keytar.')
+			return null
+		}
+
+		let accessToken = tokenBlob.access_token
 
 		// test the current access token with a simple request to Spotify
 		try {
@@ -38,18 +45,17 @@ const checkSpotifyAccessToken = async () => {
 					return null
 				}
 
-				// Update the database with the new access token
-				await new Promise((resolve, reject) => {
-					db.users.update(
-						{},
-						{ $set: { spotifyAccessToken: newAccessToken } },
-						{ multi: false },
-						(err, numReplaced) => {
-							if (err) reject(err)
-							else resolve(numReplaced)
-						}
-					)
-				})
+				// Persist the refreshed access token to the OS keystore instead of DB
+				try {
+					const tokenBlob = await getToken('spotify', user._id).catch(() => null)
+					await require('../database/helpers/tokens').storeToken('spotify', user._id, {
+						...(tokenBlob || {}),
+						access_token: newAccessToken,
+						refreshed_at: Date.now(),
+					})
+				} catch (e) {
+					// ignore keystore write errors
+				}
 
 				console.log('Spotify access token successfully refreshed.')
 				return newAccessToken // ✅ Return the new access token!

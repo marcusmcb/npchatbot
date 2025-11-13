@@ -2,6 +2,7 @@ const axios = require('axios')
 const db = require('../../database/database')
 const logToFile = require('../../scripts/logger')
 const WebSocket = require('ws')
+const { storeToken, getToken, deleteToken } = require('../../database/helpers/tokens')
 
 const exchangeCodeForToken = async (code) => {
 	// mainWindow.webContents.send('auth-code', { exchangeCodeForToken: code })
@@ -63,66 +64,53 @@ const initTwitchAuthToken = async (code, wss, mainWindow) => {
 			// and to try again or contact support
 		}
 
-		db.users.findOne({}, (err, user) => {
-			if (err) {
-				console.error('Error finding the user:', err)
-				logToFile('Error finding the user:', err)
-				logToFile(`* * * * * * * * * * * * * * * * * * *`)
-				return res.status(500).send('Database error.')
-			}
+		// Resolve current user (if any) using promises so we can use await cleanly
+		const user = await new Promise((resolve, reject) =>
+			db.users.findOne({}, (err, doc) => (err ? reject(err) : resolve(doc)))
+		)
 
-			if (user) {
-				console.log('User found: ', user)
-				logToFile(`User found: ${JSON.stringify(user)}`)
-				logToFile(`* * * * * * * * * * * * * * * * * * *`)
-				db.users.update(
-					{ _id: user._id },
-					{
-						$set: {
-							twitchAccessToken: token.access_token,
-							twitchRefreshToken: token.refresh_token,
-							appAuthorizationCode: code,
-						},
-					},
-					{},
-					(err, numReplaced) => {
-						if (err) {
-							console.error('Error updating the user:', err)
-							logToFile('Update Error updating the user:', err)
-							logToFile(`* * * * * * * * * * * * * * * * * * *`)
-							return res.status(500).send('Database error during update.')
-						}
-						logToFile(
-							`Updated ${numReplaced} user(s) with new Twitch app token.`
-						)
-						logToFile(`* * * * * * * * * * * * * * * * * * *`)
-						console.log(
-							`Updated ${numReplaced} user(s) with new Twitch app token.`
-						)
-					}
-				)
-			} else {
-				db.users.insert(
-					{
-						twitchAccessToken: token.access_token,
-						twitchRefreshToken: token.refresh_token,
-						appAuthorizationCode: code,
-					},
-					(err, newDoc) => {
-						if (err) {
-							console.error('Error creating new user: ', err)
-							logToFile('Insert Error creating new user: ', err)
-							logToFile(`* * * * * * * * * * * * * * * * * * *`)
-							return res.status(500).send('Error adding auth code to user file')
-						}
-						mainWindow.webContents.send('auth-successful', {
-							_id: newDoc._id,
-							twitchRefreshToken: newDoc.twitchRefreshToken,
-						})
-					}
-				)
+	if (user) {
+			console.log('User found: ', user)
+			logToFile(`User found: ${JSON.stringify(user)}`)
+			logToFile(`* * * * * * * * * * * * * * * * * * *`)
+			// store token securely in OS keystore and mark authorized in DB
+			try {
+				await storeToken('twitch', user._id, token)
+				// If this user's tokens haven't been migrated yet, mark them as authorized
+				// in the DB so older versions of the app (or users without keystore
+				// entries) will still see the authorized flag. If the user has already
+				// been migrated (user._tokensMigrated?.twitch), skip updating the DB.
+				if (!user._tokensMigrated || !user._tokensMigrated.twitch) {
+					await new Promise((resolve, reject) =>
+						db.users.update({ _id: user._id }, { $set: { isTwitchAuthorized: true } }, {}, (err) => (err ? reject(err) : resolve(true)))
+					)
+				}
+			} catch (e) {
+				const msg = e && e.message ? e.message : String(e)
+				logToFile(`Error storing twitch token in keystore: ${msg}`)
+				console.error('Error storing twitch token in keystore:', msg)
 			}
-		})
+		} else {
+			// insert new user doc and store token in keystore
+			// create a user record but DO NOT persist sensitive tokens in DB
+			const newDoc = await new Promise((resolve, reject) =>
+				db.users.insert({}, (err, doc) => (err ? reject(err) : resolve(doc)))
+			)
+			// notify renderer immediately (without tokens)
+			mainWindow.webContents.send('auth-successful', { _id: newDoc._id })
+
+			// store token securely in OS keystore under the new user id and set authorized flag
+			try {
+				await storeToken('twitch', newDoc._id, token)
+				await new Promise((resolve, reject) =>
+					db.users.update({ _id: newDoc._id }, { $set: { isTwitchAuthorized: true } }, {}, (err) => (err ? reject(err) : resolve(true)))
+				)
+			} catch (e) {
+				const msg = e && e.message ? e.message : String(e)
+				logToFile(`Error storing twitch token in keystore (insert): ${msg}`)
+				console.error('Error storing twitch token in keystore (insert):', msg)
+			}
+		}
 		wss.clients.forEach(function each(client) {
 			if (client.readyState === WebSocket.OPEN) {
 				client.send('npChatbot successfully linked to your Twitch account')
@@ -164,50 +152,61 @@ const getTwitchRefreshToken = async (refreshToken) => {
 const updateUserToken = async (db, event, token) => {
 	event.reply('botProcessResponse', '*** Update user token called ***')
 	try {
-		db.users.findOne({}, (err, user) => {
-			if (err) {
-				logToFile(`USER LOOKUP FOR TOKEN ERROR: ${JSON.stringify(err)}`)
-				console.log('USER LOOKUP FOR TOKEN ERROR: ', err)
-			} else if (user) {
-				logToFile(`USER FOUND FOR TOKEN UPDATE: ${JSON.stringify(user)}`)
-				try {
-					db.users.update(
-						{ _id: user._id },
-						{ $set: { twitchAccessToken: token.access_token } },
-						{}
-					)
+		// Resolve current user using promises so we can use await cleanly
+		const user = await new Promise((resolve, reject) =>
+			db.users.findOne({}, (err, doc) => (err ? reject(err) : resolve(doc)))
+		)
 
-					// Fetch the updated user data after updating the token
-					db.users.findOne({ _id: user._id }, (err, user) => {
-						if (err) {
-							logToFile(
-								`USER LOOKUP ERROR AFTER TOKEN UPDATE: ${JSON.stringify(err)}`
-							)
-							logToFile("*******************************")
-							console.log('USER LOOKUP ERROR AFTER TOKEN UPDATE: ', err)
-						} else if (user) {
-							logToFile(`USER DATA AFTER TOKEN UPDATE: ${JSON.stringify(user)}`)
-							logToFile("*******************************")
-							// console.log('USER DATA AFTER TOKEN UPDATE: ', user)
-							// console.log('--------------------------------------')
-							event.reply('userDataUpdated', user)
-							return {
-								success: true,
-								message: 'User token successfully updated',
-								data: user,
-							}
-						}
-					})
-				} catch (error) {
-					logToFile(`ERROR UPDATING TOKEN: ${JSON.stringify(error)}`)
-					logToFile("*******************************")
-					console.log('ERROR UPDATING TOKEN: ', error)
+		if (!user) {
+			logToFile('No user found for token update')
+			return { success: false, error: 'No user found' }
+		}
+
+		logToFile(`USER FOUND FOR TOKEN UPDATE: ${JSON.stringify(user)}`)
+
+		try {
+			// Do NOT persist raw access tokens to the DB. Store in OS keystore instead.
+			const existingBlob = await getToken('twitch', user._id).catch(() => null)
+			await storeToken('twitch', user._id, {
+				...(existingBlob || {}),
+				access_token: token.access_token,
+				refreshed_at: Date.now(),
+			})
+
+			// Fetch the updated user data (non-sensitive) to notify renderer
+			const userDoc = await new Promise((resolve, reject) =>
+				db.users.findOne({ _id: user._id }, (err, doc) => (err ? reject(err) : resolve(doc)))
+			)
+
+			if (userDoc) {
+				logToFile(`USER DATA AFTER TOKEN UPDATE: ${JSON.stringify(userDoc)}`)
+				logToFile('*******************************')
+				// sanitize before sending to renderer
+				const sanitized = {
+					_id: userDoc._id,
+					twitchChannelName: userDoc.twitchChannelName || '',
+					twitchChatbotName: userDoc.twitchChatbotName || '',
+					seratoDisplayName: userDoc.seratoDisplayName || '',
+					isObsResponseEnabled: !!userDoc.isObsResponseEnabled,
+					isIntervalEnabled: !!userDoc.isIntervalEnabled,
+					isSpotifyEnabled: !!userDoc.isSpotifyEnabled,
+				}
+				event.reply('userDataUpdated', sanitized)
+				return {
+					success: true,
+					message: 'User token successfully updated',
+					data: sanitized,
 				}
 			}
-		})
+		} catch (error) {
+			logToFile(`ERROR UPDATING TOKEN: ${JSON.stringify(error)}`)
+			logToFile('*******************************')
+			console.log('ERROR UPDATING TOKEN: ', error)
+			return { success: false, error }
+		}
 	} catch (error) {
 		logToFile(`ERROR UPDATING TOKEN: ${JSON.stringify(error)}`)
-		logToFile("*******************************")
+		logToFile('*******************************')
 		console.error('Error updating the user token:', error)
 		return { success: false, error: 'Error updating user token' }
 	}

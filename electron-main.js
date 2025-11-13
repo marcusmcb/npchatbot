@@ -42,6 +42,7 @@ const {
 
 // user data handler
 const getUserData = require('./database/helpers/userData/getUserData')
+const { getToken } = require('./database/helpers/tokens')
 
 /* PLAYLIST HANDLERS */
 const {
@@ -97,6 +98,10 @@ server.use(cors())
 
 const isDev = !app.isPackaged
 process.env.NODE_ENV = isDev ? 'development' : 'production'
+// Enable a conservative Keychain fallback on macOS packaged builds
+if (process.platform === 'darwin' && app.isPackaged) {
+	process.env.KEYCHAIN_ACCOUNT_FALLBACK = 'true'
+}
 
 // socket config for auth responses
 const wss = new WebSocket.Server({ port: 8080 })
@@ -142,22 +147,22 @@ ipcMain.on('open-auth-settings', (event, url) => {
 	shell.openExternal(url)
 })
 
-// Debug: mirror renderer logs into main process
+// Accept logs forwarded from renderer process (preload.logToMain)
 ipcMain.on('renderer-log', (_event, message) => {
 	try {
-		if (typeof message === 'object') {
-			console.log('[renderer]\n' + JSON.stringify(message, null, 2))
-		} else {
-			console.log('[renderer]', message)
-		}
+		const pretty =
+			typeof message === 'object'
+				? JSON.stringify(message, null, 2)
+				: String(message)
+		// Write to file and also to console
+		logToFile(`[renderer] ${pretty}`)
+		// console.log('[renderer]', pretty)
 	} catch (e) {
-		console.log('[renderer]', message)
+		console.error('Failed to write renderer log to file', e)
 	}
 })
 
 ipcMain.on('get-user-data', async (event, arg) => {
-	console.log('Get User Data Called')
-	console.log('-------------------------------')
 	const response = await handleGetUserData()
 	event.reply('getUserDataResponse', response)
 })
@@ -183,6 +188,19 @@ ipcMain.on('delete-selected-playlist', async (event, arg) => {
 	await deletePlaylist(arg, event)
 })
 
+ipcMain.on('get-playlist-summaries', async (event, _arg) => {
+	try {
+		const summaries = await getPlaylistSummaries()
+		event.reply(
+			'get-playlist-summaries-response',
+			Array.isArray(summaries) ? summaries : []
+		)
+	} catch (e) {
+		console.error('Failed to fetch playlist summaries:', e)
+		event.reply('get-playlist-summaries-response', null)
+	}
+})
+
 ipcMain.on('submit-user-data', async (event, arg) => {
 	handleSubmitUserData(event, arg, mainWindow)
 })
@@ -205,8 +223,6 @@ ipcMain.on('validate-live-playlist', async (event, arg) => {
 })
 
 ipcMain.on('update-connection-state', (event, state) => {
-	console.log('-----------------------')
-	console.log('Connection state updated:', state)
 	isConnected = state
 })
 
@@ -214,7 +230,18 @@ ipcMain.on('share-playlist-to-discord', async (event, payload) => {
 	const { spotifyURL, sessionDate } = payload || {}
 	const userData = await getUserData(db)
 	const twitchChannelName = userData?.twitchChannelName
-	const webhookURL = userData?.discord?.webhook_url
+	// use webhook URL from keytar token blob if available, otherwise fall back to legacy DB field
+	let webhookURL = null
+	try {
+		if (userData && userData._id) {
+			const discordBlob = await getToken('discord', userData._id)
+			webhookURL = discordBlob?.webhook?.url || null
+		}
+	} catch (e) {
+		// keytar may not be available in some environments; fall back to DB
+		webhookURL = null
+	}
+	if (!webhookURL) webhookURL = userData?.discord?.webhook_url || null
 	await sharePlaylistToDiscord(
 		spotifyURL,
 		webhookURL,
@@ -222,36 +249,6 @@ ipcMain.on('share-playlist-to-discord', async (event, payload) => {
 		sessionDate,
 		event
 	)
-})
-
-// ipc handler to return user's playlist summary data
-ipcMain.on('get-playlist-summaries', async (event, arg) => {
-	const playlistSummaries = await getPlaylistSummaries()
-	if (playlistSummaries && playlistSummaries.length > 0) {
-		// const playlistSummaryData = await getPlaylistSummaryData(playlistSummaries)
-		event.reply('get-playlist-summaries-response', playlistSummaries)
-	} else {
-		console.log('No playlist summaries found.')
-		event.reply('get-playlist-summaries-response', [])
-	}
-})
-
-// Optional: IPC to repair existing summaries if needed
-ipcMain.on('repair-playlist-summaries', async (event) => {
-	try {
-		const result = await repairPlaylistSummaries()
-		console.log('Repair result:', result)
-		event.reply('repair-playlist-summaries-response', {
-			success: true,
-			result,
-		})
-	} catch (e) {
-		console.error('Repair failed:', e)
-		event.reply('repair-playlist-summaries-response', {
-			success: false,
-			error: e?.message || String(e),
-		})
-	}
 })
 
 // ipc handler for the Twitch connection process
@@ -347,6 +344,50 @@ app.on('activate', async () => {
 
 app.on('ready', async () => {
 	startServer()
+	// run migration before creating the main window so tokens are migrated on app startup.
+	// controlled by env var MIGRATE_ON_STARTUP (default: enabled). Set to 'false' to skip.
+	const migrateFlag = process.env.MIGRATE_ON_STARTUP
+	if (migrateFlag === undefined || migrateFlag.toLowerCase() !== 'false') {
+		try {
+			const { migrateAllUsers } = require('./database/helpers/migrateTokens')
+			// run migration in the background so it cannot block UI startup. We log completion when it finishes.
+			try {
+				// default to removing legacy fields on startup migration; set MIGRATE_REMOVE_LEGACY=false to keep legacy values
+				const removeLegacy =
+					(process.env.MIGRATE_REMOVE_LEGACY || 'true').toLowerCase() === 'true'
+				migrateAllUsers({ compact: true, removeLegacy })
+					.then((summary) => {
+						if (summary) {
+							console.log('Startup token migration completed. Summary:')
+							console.log(`  usersScanned: ${summary.usersScanned}`)
+							console.log(
+								`  migrated: spotify=${summary.migrated.spotify}, discord=${summary.migrated.discord}, twitch=${summary.migrated.twitch}`
+							)
+							if (summary.errors && summary.errors.length > 0) {
+								console.error('  migration errors:')
+								console.error(JSON.stringify(summary.errors, null, 2))
+							} else {
+								console.log('  no migration errors')
+							}
+						} else {
+							console.log('Startup token migration completed with no summary.')
+						}
+					})
+					.catch((e) => console.error('Startup migration failed:', e))
+			} catch (e) {
+				console.error('Startup migration invocation failed:', e)
+			}
+		} catch (e) {
+			console.error(
+				'Migration module not available during startup migration:',
+				e
+			)
+		}
+	} else {
+		console.log(
+			'MIGRATE_ON_STARTUP is set to false, skipping startup migration.'
+		)
+	}
 	await initMainWindow()
 })
 

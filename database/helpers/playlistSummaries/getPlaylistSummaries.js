@@ -1,7 +1,9 @@
 const db = require('../../database')
-const { formatDateWithSuffix } = require('../../../bot-assets/commands/create-serato-report/helpers/liveReportHelpers')
+const {
+	formatDateWithSuffix,
+} = require('../../../bot-assets/commands/create-serato-report/helpers/liveReportHelpers')
 
-function computeFromTrackLog(trackLog = []) {
+const computeFromTrackLog = (trackLog = []) => {
 	const times = (trackLog || [])
 		.map((t) => {
 			if (!t || !t.timestamp || t.timestamp === 'N/A') return null
@@ -32,17 +34,29 @@ function computeFromTrackLog(trackLog = []) {
 	return { earliest, latest, hours, minutes, seconds }
 }
 
-function monthIndexFromName(name = '') {
+const monthIndexFromName = (name = '') => {
 	const months = [
-		'january','february','march','april','may','june',
-		'july','august','september','october','november','december',
+		'january',
+		'february',
+		'march',
+		'april',
+		'may',
+		'june',
+		'july',
+		'august',
+		'september',
+		'october',
+		'november',
+		'december',
 	]
 	return months.indexOf(String(name).toLowerCase())
 }
 
-function parseStartDateTime(playlistDateStr, setStartTimeStr) {
+const parseStartDateTime = (playlistDateStr, setStartTimeStr) => {
 	if (!playlistDateStr || !setStartTimeStr) return null
-	const m = playlistDateStr.match(/^[A-Za-z]+,\s+([A-Za-z]+)\s+(\d+)(?:st|nd|rd|th)?,\s+(\d{4})$/)
+	const m = playlistDateStr.match(
+		/^[A-Za-z]+,\s+([A-Za-z]+)\s+(\d+)(?:st|nd|rd|th)?,\s+(\d{4})$/
+	)
 	if (!m) return null
 	const [, monthName, dayStr, yearStr] = m
 	const monthIdx = monthIndexFromName(monthName)
@@ -62,9 +76,14 @@ function parseStartDateTime(playlistDateStr, setStartTimeStr) {
 	return new Date(year, monthIdx, day, hours24, minutes, 0, 0)
 }
 
-function computeFromCanonical(sessionDate, canonicalStart) {
+const computeFromCanonical = (sessionDate, canonicalStart) => {
 	const session = sessionDate ? new Date(sessionDate) : null
-	if (!session || !(canonicalStart instanceof Date) || isNaN(canonicalStart.getTime()) || isNaN(session.getTime()))
+	if (
+		!session ||
+		!(canonicalStart instanceof Date) ||
+		isNaN(canonicalStart.getTime()) ||
+		isNaN(session.getTime())
+	)
 		return null
 	let durationMs = session.getTime() - canonicalStart.getTime()
 	if (durationMs < 0) durationMs = 0
@@ -75,7 +94,7 @@ function computeFromCanonical(sessionDate, canonicalStart) {
 	return { hours, minutes, seconds }
 }
 
-function getCanonicalStart(doc) {
+const getCanonicalStart = (doc) => {
 	// 1) Prefer authoritative ISO if present
 	if (doc.set_start_iso) {
 		const d = new Date(doc.set_start_iso)
@@ -91,7 +110,7 @@ function getCanonicalStart(doc) {
 }
 
 const getPlaylistSummaries = async () => {
-	return new Promise((resolve, reject) => {		
+	return new Promise((resolve, reject) => {
 		db.playlists
 			.find({})
 			.sort({ session_date: -1 })

@@ -17,8 +17,7 @@ const handleConnect = async (
 			? formData.obsWebsocketPassword
 			: '',
 		isObsResponseEnabled: formData.isObsResponseEnabled,
-		twitchRefreshToken: formData.twitchRefreshToken,
-		spotifyRefreshToken: formData.spotifyRefreshToken,
+		// Do not send refresh tokens from renderer; they are stored securely in the OS keystore.
 		isSpotifyEnabled: formData.isSpotifyEnabled,
 		continueLastPlaylist: formData.continueLastPlaylist,
 		seratoDisplayName: formData.seratoDisplayName,

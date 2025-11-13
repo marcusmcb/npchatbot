@@ -27,8 +27,6 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
 		_id: '',
 		twitchChannelName: '',
 		twitchChatbotName: '',
-		twitchRefreshToken: '',
-		spotifyRefreshToken: '',
 		seratoDisplayName: '',
 		obsWebsocketAddress: '',
 		obsWebsocketPassword: '',
@@ -75,7 +73,15 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
 
 		const applyUserData = (response: any) => {
 			console.log('User Data Received in Renderer: ', response)
-			try { window.electron.logToMain?.(`[UserProvider] received: ${JSON.stringify(response)}`) } catch {}
+			// Forward to main logger using a safe stringify to avoid circular structure errors
+			const safeStringify = (obj: any) => {
+				try {
+					return JSON.stringify(obj)
+				} catch (e) {
+					try { return String(obj) } catch { return '[unserializable]' }
+				}
+			}
+			try { window.electron.logToMain?.(`[UserProvider] received: ${safeStringify(response)}`) } catch {}
 			if (!response || !response.data) {
 				setIsUserContextReady(true)
 				return
@@ -106,10 +112,10 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
 				typeof userData.intervalMessageDuration === 'string'
 			)
 				setIntervalMessageDuration(Number(userData.intervalMessageDuration))
-			if (typeof userData.appAuthorizationCode === 'string')
-				setIsTwitchAuthorized(!!userData.appAuthorizationCode)
-			if (typeof userData.spotifyAuthorizationCode === 'string')
-				setIsSpotifyAuthorized(!!userData.spotifyAuthorizationCode)
+			if (typeof userData.isTwitchAuthorized === 'boolean')
+				setIsTwitchAuthorized(userData.isTwitchAuthorized)
+			if (typeof userData.isSpotifyAuthorized === 'boolean')
+				setIsSpotifyAuthorized(userData.isSpotifyAuthorized)
 			if (typeof userData.discord === 'object') setIsDiscordAuthorized(true)
 
 			// hydrate form data (normalize numbers to strings for inputs if needed)
@@ -117,8 +123,6 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
 				_id: userData._id || '',
 				twitchChannelName: userData.twitchChannelName || '',
 				twitchChatbotName: userData.twitchChatbotName || '',
-				twitchRefreshToken: userData.twitchRefreshToken || '',
-				spotifyRefreshToken: userData.spotifyRefreshToken || '',
 				seratoDisplayName: userData.seratoDisplayName || '',
 				obsWebsocketAddress: userData.obsWebsocketAddress || '',
 				obsWebsocketPassword: userData.obsWebsocketPassword || '',
