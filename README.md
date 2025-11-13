@@ -111,13 +111,14 @@ When you've completed your live stream, simply click "Disconnect" to disconnect 
 
 ### Development Stack:
 
-- React/TypeScript (client UI)
+- React + TypeScript (client UI)
 - Electron (back end logic, data API, and handlers)
-- Electron-Forge (destkop build and packaging)
+- Electron-Forge (desktop build and packaging)
 - NodeJS (ES modules for chatbot scripting, web scraping, and playlist analysis)
 - Twitch API / TMI.js (app authorization & chat event listeners)
 - OBS-Websocket-JS (OBS text integration)
 - Spotify API (playlist creation, song-level queries, real-time playlist updates)
+- Discord API (channel webhook creation for sharing Spotify playlists)
 
 <hr>
 
