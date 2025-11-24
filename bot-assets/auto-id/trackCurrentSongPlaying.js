@@ -29,6 +29,50 @@ let { setCurrentPlaylistSummary } = require('../command-use/commandUse')
 let currentSong = null
 let trackingInterval = null
 let songsPlayed = []
+let newTracklog = []
+
+// helper to format milliseconds into M:SS
+const formatMsToMinSec = (ms) => {
+	if (typeof ms !== 'number' || !isFinite(ms) || ms < 0) return '0:00'
+	const totalSeconds = Math.floor(ms / 1000)
+	const minutes = Math.floor(totalSeconds / 60)
+	const seconds = totalSeconds % 60
+	return `${minutes}:${seconds.toString().padStart(2, '0')}`
+}
+
+// seed the in-memory track log from an initial scrape so that
+// sessions started mid-set still have historical tracks represented.
+// Existing lengths are only approximate (derived from Serato "ago" data);
+// the currently playing track length is set to null to allow live tracking.
+const seedInitialTracklog = async (url, isAutoIDCleanupEnabled) => {
+	if (newTracklog.length > 0) return // prevent duplicate seeding
+	try {
+		const reportData = await createLiveReport(url)
+		const scrapedLog = reportData?.track_log
+		if (!Array.isArray(scrapedLog) || scrapedLog.length === 0) return
+
+		// scrapedLog[0] is the currently playing track (length "Still playing")
+		// We rebuild ordering oldest->newest so track_number increments naturally.
+		const seeded = []
+		for (let i = scrapedLog.length - 1; i >= 0; i--) {
+			const entry = scrapedLog[i]
+			if (!entry) continue
+			const rawId = entry.track_id
+			const cleanedId = isAutoIDCleanupEnabled ? cleanCurrentSongInfo(rawId) : rawId
+			seeded.push({
+				track_number: seeded.length + 1,
+				track_id: cleanedId,
+				timestamp: entry.timestamp && entry.timestamp !== 'N/A' ? entry.timestamp : new Date().toISOString(),
+				length: entry.length === 'Still playing' ? null : entry.length,
+				source: 'seeded',
+			})
+		}
+		newTracklog = seeded
+		console.log('Initial tracklog seeded from existing Serato playlist. Count:', newTracklog.length)
+	} catch (e) {
+		console.log('Failed to seed initial tracklog:', e?.message || e)
+	}
+}
 
 const prepSongForSpotifyPlaylist = async (
 	spotifyPlaylistId,
@@ -221,6 +265,14 @@ const trackCurrentSongPlaying = async (config, url, twitchClient, wss) => {
 				)
 			}
 		}
+
+		// Seed historical tracks so mid-set starts are represented.
+		await seedInitialTracklog(url, isAutoIDCleanupEnabled)
+
+		// Ensure the last seeded (most recent) track is treated as currentSong if not already set.
+		if (!currentSong && newTracklog.length > 0) {
+			currentSong = newTracklog[newTracklog.length - 1].track_id
+		}
 		setTimeout(() => {
 			twitchClient.say(
 				channel,
@@ -244,13 +296,47 @@ const trackCurrentSongPlaying = async (config, url, twitchClient, wss) => {
 		}
 
 		if (newCurrentSong !== currentSong) {
+			console.log("---------------------------")
+			console.log("Current Song: ", currentSong)
+			console.log("New Current Song: ", newCurrentSong)
+			console.log("---------------------------")
+			
 			currentSong = newCurrentSong
 
+			// compute length for the previous track using timestamp difference
+			const now = new Date()
+			const last = newTracklog[newTracklog.length - 1]
+			// Only update length for tracks that were added live, so we
+			// don't overwrite seeded lengths from the initial scrape.
+			if (last && last.timestamp && last.source !== 'seeded') {
+				try {
+					const lastTs = new Date(last.timestamp)
+					const delta = now.getTime() - lastTs.getTime()
+					last.length = formatMsToMinSec(delta > 0 ? delta : 0)
+				} catch (_e) {
+					// leave last.length as-is if parsing fails
+				}
+			}
+
+			// push the new current song with current timestamp; length is unknown yet
+			newTracklog.push({
+				track_number: newTracklog.length + 1,
+				track_id: currentSong,
+				timestamp: now.toISOString(),
+				length: null,
+				source: 'live',
+			})
 			// add method to here to scrape and store the user's
 			// full Serato Live Playlist data
 
+			console.log("---------------------------")
+			console.log("Current Tracklog:")
+			console.log(newTracklog)
+			console.log("---------------------------")
+
 			const reportData = await createLiveReport(url)
-			console.log('---- Playlist report data updated ----')
+			// console.log('---- Playlist report data updated ----')
+			// console.log(reportData)
 			setCurrentPlaylistSummary(reportData)
 
 			// return the current song playing if the Auto ID feature is enabled

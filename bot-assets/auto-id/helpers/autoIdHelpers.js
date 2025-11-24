@@ -12,7 +12,13 @@ const checkCurrentSong = async (url) => {
 	try {
 		const response = await scrapeData(url)
 		const results = response[0]
-		if (results.length > 0) {
+		let timestamps = response[1]
+		// for (let i = 0; i < timestamps.length; i++) {
+		// 	console.log("Timestamp: ")
+		// 	console.log(timestamps[i].children[0].data.trim())
+		// 	console.log("---------------")
+		// }
+		if (results.length > 0) {			
 			return results[0].children[0].data.trim()
 		} else {
 			return null

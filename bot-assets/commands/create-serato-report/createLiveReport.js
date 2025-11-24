@@ -17,7 +17,7 @@ const createLiveReport = async (url) => {
 
 		let tracksPlayed = []
 		let trackTimestamps = []
-	let startTimeParsed
+		let startTimeParsed
 
 		// parse the start time into a Date object
 		if (starttime) {
@@ -40,7 +40,6 @@ const createLiveReport = async (url) => {
 			if (startTimeParsed > now) {
 				startTimeParsed.setDate(startTimeParsed.getDate() - 1)
 			}
-
 		} else {
 			throw new Error('Start time is missing or invalid.')
 		}
@@ -167,7 +166,9 @@ const createLiveReport = async (url) => {
 			const period = hours >= 12 ? 'PM' : 'AM'
 			hours = hours % 12
 			hours = hours === 0 ? 12 : hours
-			starttimeFormatted = `${hours}:${minutes.toString().padStart(2, '0')} ${period}`
+			starttimeFormatted = `${hours}:${minutes
+				.toString()
+				.padStart(2, '0')} ${period}`
 		} else if (starttime) {
 			const [time, period] = starttime.split(/(am|pm)/i)
 			starttimeFormatted = `${time.trim()} ${period.toUpperCase()}`
@@ -197,7 +198,9 @@ const createLiveReport = async (url) => {
 		const seratoLiveReport = {
 			dj_name: playlistArtistName,
 			set_start_time: starttimeFormatted,
-			set_start_iso: startTimeParsed ? startTimeParsed.toISOString() : undefined,
+			set_start_iso: startTimeParsed
+				? startTimeParsed.toISOString()
+				: undefined,
 			set_length: {
 				hours,
 				minutes,
@@ -224,9 +227,9 @@ const createLiveReport = async (url) => {
 			track_log: trackLog,
 		}
 
-		console.log('----------------------')
-		console.log('Serato Report Created: ')
-		console.log(seratoLiveReport)
+		// console.log('----------------------')
+		// console.log('Serato Report Created: ')
+		// console.log(seratoLiveReport)
 		// console.log('DJ Name: ', seratoLiveReport.dj_name)
 		// console.log('Start Time:', seratoLiveReport.set_start_time)
 		// console.log('Set Length: ', seratoLiveReport.set_length)
@@ -239,7 +242,7 @@ const createLiveReport = async (url) => {
 		// console.log('Track Array Sample: ', seratoLiveReport.track_log[10])
 		// console.log('Tracks Played: ')
 		// console.log(seratoLiveReport.track_log)
-		console.log('----------------------')
+		// console.log('----------------------')
 		return seratoLiveReport
 	} catch (err) {
 		console.log('Error creating Serato Live report: ', err)
