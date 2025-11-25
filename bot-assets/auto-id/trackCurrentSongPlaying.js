@@ -30,6 +30,7 @@ let { setCurrentPlaylistSummary } = require('../command-use/commandUse')
 
 let trackingInterval = null
 let songsPlayed = [] // only used to avoid adding true duplicates to Spotify
+let hasSeededSongsPlayedForContinuedPlaylist = false
 
 const prepSongForSpotifyPlaylist = async (
 	spotifyPlaylistId,
@@ -80,16 +81,7 @@ const resumeSpotifyPlaylist = async (
 
 	const seratoPlaylistLength = results.length
 	const spotifyPlaylistLength = await getSpotifyPlaylistData(spotifyPlaylistId)
-
-	/* LOGGING FOR TESTING */
-
-	// console.log("Serato Playlist Data: ")
-	// console.log("-------------------------------")
-	// for (let i = 0; i < results.length; i++) {
-	// 	console.log(results[i].children[0].data.trim())
-	// }
-	// console.log("-------------------------------")
-
+	
 	console.log('Serato Playlist Length: ', seratoPlaylistLength)
 	console.log('Spotify Playlist Length: ', spotifyPlaylistLength)
 
@@ -228,14 +220,22 @@ const trackCurrentSongPlaying = async (config, url, twitchClient, wss) => {
 
 		// Initialize songsPlayed from the seeded track log so we don't
 		// re-add those songs to Spotify, but continue to add new ones.
-		const seededLog = trackLogStore.getCurrentTracklog()
-		const seededPlayed = seededLog.map((entry) => {
-			const songId = isAutoIDCleanupEnabled
-				? cleanCurrentSongInfo(entry.track_id)
-				: entry.track_id
-			return cleanQueryString(songId)
-		})
-		songsPlayed = [...new Set([...songsPlayed, ...seededPlayed])]
+		// For continued playlists, only seed once per app run so that
+		// reconnects don't double-count history.
+		if (!continueLastPlaylist || !hasSeededSongsPlayedForContinuedPlaylist) {
+			const seededLog = trackLogStore.getCurrentTracklog()
+			const seededPlayed = seededLog.map((entry) => {
+				const songId = isAutoIDCleanupEnabled
+					? cleanCurrentSongInfo(entry.track_id)
+					: entry.track_id
+				return cleanQueryString(songId)
+			})
+			songsPlayed = [...new Set([...songsPlayed, ...seededPlayed])]
+			if (continueLastPlaylist) {
+				hasSeededSongsPlayedForContinuedPlaylist = true
+			}
+		}
+
 		setTimeout(() => {
 			twitchClient.say(
 				channel,
@@ -298,6 +298,7 @@ const endTrackCurrentSongPlaying = () => {
 		clearInterval(trackingInterval)
 		trackingInterval = null
 		trackLogStore.reset()
+		hasSeededSongsPlayedForContinuedPlaylist = false
 		console.log('Auto ID tracking interval successfully ended.')
 		console.log('--------------------------------------')
 	}
