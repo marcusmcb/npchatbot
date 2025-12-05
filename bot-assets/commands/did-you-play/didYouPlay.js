@@ -86,9 +86,15 @@ const dypCommand = async (
 				const remainingMinutes = diffMinutes % 60
 
 				if (diffHours > 0) {
-					safeTimePlayed = `${diffHours} hour${diffHours === 1 ? '' : 's'} and ${remainingMinutes} minute${remainingMinutes === 1 ? '' : 's'} ago`
+					safeTimePlayed = `${diffHours} hour${
+						diffHours === 1 ? '' : 's'
+					} and ${remainingMinutes} minute${
+						remainingMinutes === 1 ? '' : 's'
+					} ago`
 				} else if (diffMinutes > 0) {
-					safeTimePlayed = `${diffMinutes} minute${diffMinutes === 1 ? '' : 's'} ago`
+					safeTimePlayed = `${diffMinutes} minute${
+						diffMinutes === 1 ? '' : 's'
+					} ago`
 				} else {
 					safeTimePlayed = 'just now'
 				}
@@ -102,12 +108,7 @@ const dypCommand = async (
 			obs.call('SetInputSettings', {
 				inputName: 'npchatbot-response',
 				inputSettings: {
-					text: `${config.twitchChannelName} has played
-'${searchItem}' ${searchResults.length} times so far in this stream.
-
-Their last song played was:
-${lastSongPlayed}
-* played ${safeTimePlayed}`,
+					text: `${config.twitchChannelName} has played '${searchItem}' ${searchResults.length} times so far in this stream. Their last song played was: ${lastSongPlayed}, played ${safeTimePlayed}`,
 				},
 			})
 			clearOBSResponse(obs, obsClearDisplayTime)

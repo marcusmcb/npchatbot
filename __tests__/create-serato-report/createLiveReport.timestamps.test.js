@@ -70,7 +70,7 @@ describe('createLiveReport timestamp anchoring', () => {
 			const diffFirstMs = fixedNow.getTime() - playedAtFirst.getTime()
 			const diffSecondMs = fixedNow.getTime() - playedAtSecond.getTime()
 
-			// Allow a small epsilon (~5 seconds) for any rounding behaviour,
+			// Allow a small epsilon (~5 seconds) for any rounding behavior,
 			// but the differences should be roughly 10 and 25 minutes.
 			const epsilon = 5 * 1000
 
