@@ -357,4 +357,6 @@ const npCommands = async (
 
 module.exports = {
 	npCommands,
+	handleVibeCheck,
+	handleStart,
 }
