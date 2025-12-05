@@ -218,6 +218,12 @@ const trackCurrentSongPlaying = async (config, url, twitchClient, wss) => {
 		// Seed historical tracks so mid-set starts are represented.
 		await trackLogStore.seedFromLiveReport(url, isAutoIDCleanupEnabled)
 
+		// Immediately publish a live-report snapshot from the seeded
+		// track log so commands like !np and !np previous see the
+		// correct ordering before the first live song change.
+		const initialLiveReport = trackLogStore.getLiveReportSnapshot()
+		setCurrentPlaylistSummary(initialLiveReport)
+
 		// Initialize songsPlayed from the seeded track log so we don't
 		// re-add those songs to Spotify, but continue to add new ones.
 		// For continued playlists, only seed once per app run so that
@@ -266,18 +272,17 @@ const trackCurrentSongPlaying = async (config, url, twitchClient, wss) => {
 
 			// update central track log store for this song change
 			trackLogStore.handleSongChange(newCurrentSong, isAutoIDCleanupEnabled)
-			// add method to here to scrape and store the user's
-			// full Serato Live Playlist data
 
 			console.log("---------------------------")
 			console.log("Current Tracklog:")
 			console.log(trackLogStore.getCurrentTracklog())
 			console.log("---------------------------")
 
-			const reportData = await createLiveReport(url)
-			// console.log('---- Playlist report data updated ----')
-			// console.log(reportData)
-			setCurrentPlaylistSummary(reportData)
+			// Build a live report snapshot from the current track log so
+			// commands can respond using our in-memory data instead of
+			// scraping Serato each time.
+			const liveReport = trackLogStore.getLiveReportSnapshot()
+			setCurrentPlaylistSummary(liveReport)
 
 			// return the current song playing if the Auto ID feature is enabled
 			if (isAutoIDEnabled === true) {

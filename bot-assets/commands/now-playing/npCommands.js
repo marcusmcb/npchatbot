@@ -50,7 +50,10 @@ const handleDefault = (
 	obsClearDisplayTime,
 	config
 ) => {
-	const currentTrackPlaying = reportData.track_log[0].track_id
+	// track_log is ordered oldest -> newest; current song is the last entry
+	const latestIndex = reportData.track_log.length - 1
+	const currentTrackPlaying =
+		latestIndex >= 0 ? reportData.track_log[latestIndex].track_id : 'Unknown'
 	const message = `Now playing: ${currentTrackPlaying}`
 	npSongsQueried.push({ name: currentTrackPlaying })
 	twitchClient.say(channel, message)
@@ -71,7 +74,16 @@ const handlePrevious = (
 	obsClearDisplayTime,
 	config
 ) => {
-	const previousTrackPlayed = reportData.track_log[1].track_id
+	// previous track is the one immediately before the latest entry
+	const latestIndex = reportData.track_log.length - 1
+	const previousIndex = latestIndex - 1
+	if (previousIndex < 0) {
+		const message = `${config.twitchChannelName} has not played a previous song yet in this stream.`
+		twitchClient.say(channel, message)
+		updateOBSWithText(obs, message, obsClearDisplayTime, config)
+		return
+	}
+	const previousTrackPlayed = reportData.track_log[previousIndex].track_id
 	const message = `Previous song: ${previousTrackPlayed}`
 	npSongsQueried.push({ name: previousTrackPlayed })
 	twitchClient.say(channel, message)
@@ -118,11 +130,37 @@ const handleVibeCheck = (
 	const vibeCheckSelection = vibeCheckSelector(reportData.track_log)
 	console.log('Vibe check selection: ', vibeCheckSelection)
 	console.log('---------------------------------')
-	const message = `${config.twitchChannelName} played "${vibeCheckSelection.track_id}" ${vibeCheckSelection.time_played} in this stream.`
+
+	// Compute how long ago the selected track was played based on its timestamp.
+	// This mirrors the logic used in the !dyp handler so that the time since
+	// played is always calculated live from the stored timestamp instead of
+	// relying on any static "time_played" text from the original scrape.
+	let safeTimePlayed = 'earlier in this stream'
+	if (vibeCheckSelection && vibeCheckSelection.timestamp && vibeCheckSelection.timestamp !== 'N/A') {
+		const playedAt = new Date(vibeCheckSelection.timestamp)
+		if (!Number.isNaN(playedAt.getTime())) {
+			const now = new Date()
+			let diffMs = now.getTime() - playedAt.getTime()
+			if (diffMs < 0) diffMs = 0
+			const diffMinutes = Math.floor(diffMs / 60000)
+			const diffHours = Math.floor(diffMinutes / 60)
+			const remainingMinutes = diffMinutes % 60
+
+			if (diffHours > 0) {
+				safeTimePlayed = `${diffHours} hour${diffHours === 1 ? '' : 's'} and ${remainingMinutes} minute${remainingMinutes === 1 ? '' : 's'} ago`
+			} else if (diffMinutes > 0) {
+				safeTimePlayed = `${diffMinutes} minute${diffMinutes === 1 ? '' : 's'} ago`
+			} else {
+				safeTimePlayed = 'just now'
+			}
+		}
+	}
+
+	const message = `${config.twitchChannelName} played "${vibeCheckSelection.track_id}" ${safeTimePlayed} in this stream.`
 	twitchClient.say(channel, message)
 	updateOBSWithText(
 		obs,
-		`vibe check:\n\n${config.twitchChannelName} played\n"${vibeCheckSelection.track_id}"\n${vibeCheckSelection.time_played} in this stream.`,
+		`vibe check:\n\n${config.twitchChannelName} played\n"${vibeCheckSelection.track_id}"\n${safeTimePlayed} in this stream.`,
 		obsClearDisplayTime,
 		config
 	)

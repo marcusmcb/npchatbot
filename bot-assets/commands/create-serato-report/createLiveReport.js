@@ -19,7 +19,7 @@ const createLiveReport = async (url) => {
 		let trackTimestamps = []
 		let startTimeParsed
 
-		// parse the start time into a Date object
+		// parse the Serato playlist start time for stats/display only
 		if (starttime) {
 			const [time, period] = starttime.split(/(am|pm)/i)
 			const timeParts = time.split(':').map(Number)
@@ -32,19 +32,17 @@ const createLiveReport = async (url) => {
 			startTimeParsed = new Date()
 			startTimeParsed.setSeconds(0, 0)
 			startTimeParsed.setHours(hours, minutes, 0, 0)
-			startTimeParsed.setHours(startTimeParsed.getHours())
 
-			const now = new Date()
-			// previous Serato start time bug has since been fixed
-			// on the Serato Live Playlist page
-			if (startTimeParsed > now) {
+			const nowForStart = new Date()
+			// If Serato-reported start time is in the future, assume it was yesterday
+			if (startTimeParsed > nowForStart) {
 				startTimeParsed.setDate(startTimeParsed.getDate() - 1)
 			}
 		} else {
 			throw new Error('Start time is missing or invalid.')
 		}
 
-		// calculate the set length (ensure non-negative)
+		// calculate the set length (ensure non-negative) based on now vs start
 		const now = new Date()
 		let durationMs = now.getTime() - startTimeParsed.getTime()
 		if (durationMs < 0) durationMs = 0
@@ -65,15 +63,19 @@ const createLiveReport = async (url) => {
 				: Object.values(timestamps) // try converting object to an array
 		}
 
-		timestamps.forEach((timestampObj, index) => {
-			const timestampString = timestampObj.children?.[0]?.data?.trim()
+		// Build absolute timestamps for each track relative to *now* using
+		// the "X minutes ago" / "X seconds ago" values from Serato. This
+		// keeps the live "time since played" calculations aligned even when
+		// the app is started mid-set.
+		timestamps.forEach((timestampObj) => {
+			const timestampString = timestampObj?.children?.[0]?.data?.trim()
 			if (timestampString) {
 				const timeAgoMatch = timestampString.match(/(\d+)\s(\w+)\sago/)
 				if (timeAgoMatch) {
 					const [, value, unit] = timeAgoMatch
 					const offset = parseInt(value, 10)
 
-					const adjustedTimestamp = new Date(startTimeParsed)
+					const adjustedTimestamp = new Date(now)
 					if (unit.includes('min')) {
 						adjustedTimestamp.setMinutes(
 							adjustedTimestamp.getMinutes() - offset

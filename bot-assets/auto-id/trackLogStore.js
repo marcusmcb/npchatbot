@@ -1,5 +1,8 @@
 const createLiveReport = require('../commands/create-serato-report/createLiveReport')
 const { cleanCurrentSongInfo } = require('../spotify/helpers/spotifyPlaylistHelpers')
+const {
+	lengthToMs,
+} = require('../commands/create-serato-report/helpers/liveReportHelpers')
 
 let currentSong = null
 let tracklog = []
@@ -104,10 +107,95 @@ const getCurrentTracklog = () => tracklog.slice()
 
 const getCurrentSong = () => currentSong
 
+// Build a live "report" snapshot derived from the current in-memory tracklog.
+// This mirrors the structure used by createLiveReport for the fields
+// consumed by commands (track_log, shortest/longest, doubles, averages).
+const getLiveReportSnapshot = () => {
+	// Use a shallow copy so consumers can't mutate internal state.
+	const log = getCurrentTracklog()
+	if (!log || log.length === 0) {
+		return {
+			track_log: [],
+			total_tracks_played: 0,
+			average_track_length: { minutes: 0, seconds: 0 },
+			doubles_played: [],
+			shortest_track: null,
+			longest_track: null,
+		}
+	}
+
+	// For now, treat total_tracks_played as unique tracks, matching
+	// createLiveReport semantics.
+	const uniqueTracks = new Set(log.map((track) => track.track_id))
+	const totalTracksPlayed = uniqueTracks.size
+
+	// Only consider tracks with a concrete length string.
+	const validTracks = log.filter(
+		(track) => track.length && track.length !== '0:00' && track.length !== 'Still playing'
+	)
+
+	const validLengthsMs = validTracks.map((track) => lengthToMs(track.length))
+	const averageLengthMs =
+		validLengthsMs.length > 0
+			? validLengthsMs.reduce((sum, length) => sum + length, 0) /
+			  validLengthsMs.length
+			: 0
+
+	const averageTrackLength = {
+		minutes: Math.floor(averageLengthMs / 60000),
+		seconds: Math.floor((averageLengthMs % 60000) / 1000),
+	}
+
+	// Shortest and longest tracks by length.
+	let shortestSong = null
+	let longestSong = null
+	validTracks.forEach((track) => {
+		if (!shortestSong || lengthToMs(track.length) < lengthToMs(shortestSong.length)) {
+			shortestSong = track
+		}
+		if (!longestSong || lengthToMs(track.length) > lengthToMs(longestSong.length)) {
+			longestSong = track
+		}
+	})
+
+ 	// Identify doubles: adjacent entries with the same track_id.
+	const doublesPlayed = []
+	for (let i = 0; i < log.length - 1; i++) {
+		if (log[i].track_id === log[i + 1].track_id) {
+			doublesPlayed.push({
+				track_id: log[i].track_id,
+				time_played: log[i].timestamp,
+			})
+		}
+	}
+
+	return {
+		track_log: log,
+		total_tracks_played: totalTracksPlayed,
+		average_track_length: averageTrackLength,
+		doubles_played: doublesPlayed,
+		shortest_track: shortestSong
+			? {
+					track_id: shortestSong.track_id,
+					length: shortestSong.length,
+					time_played: shortestSong.timestamp,
+			  }
+			: null,
+		longest_track: longestSong
+			? {
+					track_id: longestSong.track_id,
+					length: longestSong.length,
+					time_played: longestSong.timestamp,
+			  }
+			: null,
+	}
+}
+
 module.exports = {
 	seedFromLiveReport,
 	handleSongChange,
 	getCurrentTracklog,
 	getCurrentSong,
+	getLiveReportSnapshot,
 	reset,
 }
