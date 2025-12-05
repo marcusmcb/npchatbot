@@ -105,8 +105,11 @@ const handleStart = (
 	config,
 	tags
 ) => {
+	// track_log is ordered oldest -> newest; the first song in the set
+	// is therefore the first entry in the array.
+	const firstIndex = 0
 	const firstTrackPlayed =
-		reportData.track_log[reportData.track_log.length - 1].track_id
+		reportData.track_log[firstIndex]?.track_id || 'Unknown'
 	const message = `${config.twitchChannelName} kicked off this stream with ${firstTrackPlayed}`
 	twitchClient.say(channel, message)
 	updateOBSWithText(
