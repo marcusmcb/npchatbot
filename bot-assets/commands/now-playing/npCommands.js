@@ -191,11 +191,11 @@ const handleShortest = (
 ) => {
 	const shortestTrack = reportData.shortest_track.track_id
 	const shortestTrackLength = reportData.shortest_track['length']
-	const message = `The shortest song that ${config.twitchChannelName} has played in the last hour was ${shortestTrack} (${shortestTrackLength}).`
+	const message = `The shortest song that ${config.twitchChannelName} has played in this set (so far) was ${shortestTrack} (${shortestTrackLength}).`
 	twitchClient.say(channel, message)
 	updateOBSWithText(
 		obs,
-		`The shortest song played in the last hour was:\n\n${shortestTrack}\n(${shortestTrackLength})`,
+		`The shortest song played in this set (so far) was:\n\n${shortestTrack}\n(${shortestTrackLength})`,
 		obsClearDisplayTime,
 		config
 	)
@@ -213,11 +213,11 @@ const handleLongest = (
 ) => {
 	const longestTrack = reportData.longest_track.track_id
 	const longestTrackLength = reportData.longest_track['length']
-	const message = `The longest song that ${config.twitchChannelName} has played in the last hour was ${longestTrack} (${longestTrackLength}).`
+	const message = `The longest song that ${config.twitchChannelName} has played in this set (so far) was ${longestTrack} (${longestTrackLength}).`
 	twitchClient.say(channel, message)
 	updateOBSWithText(
 		obs,
-		`The longest song played in the last hour was:\n\n${longestTrack}\n(${longestTrackLength})`,
+		`The longest song played in this set (so far) was:\n\n${longestTrack}\n(${longestTrackLength})`,
 		obsClearDisplayTime,
 		config
 	)
