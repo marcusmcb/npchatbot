@@ -74,8 +74,6 @@ const handleSongChange = (newCurrentSong, isAutoIDCleanupEnabled) => {
 		? cleanCurrentSongInfo(newCurrentSong)
 		: newCurrentSong
 
-	if (cleaned === currentSong) return
-
 	const now = new Date()
 	const last = tracklog[tracklog.length - 1]
 
@@ -158,13 +156,19 @@ const getLiveReportSnapshot = () => {
 		}
 	})
 
- 	// Identify doubles: adjacent entries with the same track_id.
+	// Identify doubles: adjacent entries with the same track_id.
+	// We store each double with the timestamp of the *second* track
+	// in the pair so "time since doubles" refers to when the repeat
+	// actually occurred. When multiple doubles are present for the
+	// same track, later pairs will naturally appear later in this
+	// array, allowing callers to treat the last entry as the most
+	// recent instance.
 	const doublesPlayed = []
 	for (let i = 0; i < log.length - 1; i++) {
 		if (log[i].track_id === log[i + 1].track_id) {
 			doublesPlayed.push({
 				track_id: log[i].track_id,
-				time_played: log[i].timestamp,
+				time_played: log[i + 1].timestamp,
 			})
 		}
 	}

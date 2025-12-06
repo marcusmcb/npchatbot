@@ -139,7 +139,11 @@ const handleVibeCheck = (
 	// played is always calculated live from the stored timestamp instead of
 	// relying on any static "time_played" text from the original scrape.
 	let safeTimePlayed = 'earlier in this stream'
-	if (vibeCheckSelection && vibeCheckSelection.timestamp && vibeCheckSelection.timestamp !== 'N/A') {
+	if (
+		vibeCheckSelection &&
+		vibeCheckSelection.timestamp &&
+		vibeCheckSelection.timestamp !== 'N/A'
+	) {
 		const playedAt = new Date(vibeCheckSelection.timestamp)
 		if (!Number.isNaN(playedAt.getTime())) {
 			const now = new Date()
@@ -150,9 +154,15 @@ const handleVibeCheck = (
 			const remainingMinutes = diffMinutes % 60
 
 			if (diffHours > 0) {
-				safeTimePlayed = `${diffHours} hour${diffHours === 1 ? '' : 's'} and ${remainingMinutes} minute${remainingMinutes === 1 ? '' : 's'} ago`
+				safeTimePlayed = `${diffHours} hour${
+					diffHours === 1 ? '' : 's'
+				} and ${remainingMinutes} minute${
+					remainingMinutes === 1 ? '' : 's'
+				} ago`
 			} else if (diffMinutes > 0) {
-				safeTimePlayed = `${diffMinutes} minute${diffMinutes === 1 ? '' : 's'} ago`
+				safeTimePlayed = `${diffMinutes} minute${
+					diffMinutes === 1 ? '' : 's'
+				} ago`
 			} else {
 				safeTimePlayed = 'just now'
 			}
@@ -229,11 +239,44 @@ const handleDoubles = (
 		updateOBSWithText(obs, message, obsClearDisplayTime, config)
 	} else {
 		const timesDoublesPlayed = reportData.doubles_played.length
-		const message = `${config.twitchChannelName} has played doubles ${timesDoublesPlayed} time(s) in this set.  The last song they played doubles with was "${reportData.doubles_played[0].track_id}", ${reportData.doubles_played[0].time_played}.`
+		// doubles_played is ordered by detection time; the most recent
+		// instance is therefore the last element.
+		const lastDouble = reportData.doubles_played[timesDoublesPlayed - 1]
+		const lastDoubleTrack = lastDouble.track_id
+		const lastDoubleTimestamp = lastDouble.time_played
+
+		let timeSinceLastDoubleText = 'earlier in this stream'
+		if (lastDoubleTimestamp && lastDoubleTimestamp !== 'N/A') {
+			const playedAt = new Date(lastDoubleTimestamp)
+			if (!Number.isNaN(playedAt.getTime())) {
+				const now = new Date()
+				let diffMs = now.getTime() - playedAt.getTime()
+				if (diffMs < 0) diffMs = 0
+				const diffMinutes = Math.floor(diffMs / 60000)
+				const diffHours = Math.floor(diffMinutes / 60)
+				const remainingMinutes = diffMinutes % 60
+
+				if (diffHours > 0) {
+					timeSinceLastDoubleText = `${diffHours} hour${
+						diffHours === 1 ? '' : 's'
+					} and ${remainingMinutes} minute${
+						remainingMinutes === 1 ? '' : 's'
+					} ago`
+				} else if (diffMinutes > 0) {
+					timeSinceLastDoubleText = `${diffMinutes} minute${
+						diffMinutes === 1 ? '' : 's'
+					} ago`
+				} else {
+					timeSinceLastDoubleText = 'just now'
+				}
+			}
+		}
+
+		const message = `${config.twitchChannelName} has played doubles ${timesDoublesPlayed} time(s) in this set. The last song they played doubles with was "${lastDoubleTrack}", about ${timeSinceLastDoubleText}.`
 		twitchClient.say(channel, message)
 		updateOBSWithText(
 			obs,
-			`${config.twitchChannelName} has played doubles ${timesDoublesPlayed} times so far in this set.\n\nThe last song they played doubles with was:\n"${reportData.doubles_played[0].track_id}"\n${reportData.doubles_played[0].time_played}.`,
+			`${config.twitchChannelName} has played doubles ${timesDoublesPlayed} times so far in this set.\n\nThe last song they played doubles with was:\n"${lastDoubleTrack}"\n(about ${timeSinceLastDoubleText}).`,
 			obsClearDisplayTime,
 			config
 		)
