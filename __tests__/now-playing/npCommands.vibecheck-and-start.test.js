@@ -38,9 +38,10 @@ const MINUTE = 60 * 1000
  * Build a simple track log where timestamps are relative to a given
  * reference "now" time via an offset in minutes.
  */
-const makeRelativeTrack = (name, minutesAgo, now) => ({
+const makeRelativeTrack = (name, minutesAgo, now, fullName) => ({
 	track_number: 1,
 	track_id: name,
+	full_track_id: fullName,
 	timestamp: new Date(now.getTime() - minutesAgo * MINUTE).toISOString(),
 	length: '3:00',
 	source: 'seeded',
@@ -60,9 +61,14 @@ describe('npCommands integration for vibecheck and start', () => {
 		// vibeCheckSelector picks a random element, we monkey-patch
 		// Math.random below to always pick index 2 ("Track Recent").
 		const trackLog = [
-			makeRelativeTrack('Track Old', 30, now),
-			makeRelativeTrack('Track Middle', 12, now),
-			makeRelativeTrack('Track Recent', 5, now),
+			makeRelativeTrack('Track Old', 30, now, 'Track Old (Extra Mix)'),
+			makeRelativeTrack('Track Middle', 12, now, 'Track Middle (Alt Edit)'),
+			makeRelativeTrack(
+				'Track Recent',
+				5,
+				now,
+				'Track Recent (Full Tilt Remix)'
+			),
 		]
 
 		// Provide this track log to handleVibeCheck via reportData
@@ -89,8 +95,9 @@ describe('npCommands integration for vibecheck and start', () => {
 			const [channel, message] = twitchClient.say.mock.calls[0]
 			expect(channel).toBe('#test')
 
-			// Expect it to mention the selected track name
-			expect(message).toMatch(/Track Recent/)
+			// Expect it to mention the selected full track name, including
+			// the extra title detail from full_track_id.
+			expect(message).toMatch(/Track Recent \(Full Tilt Remix\)/)
 			// And to mention "minute" wording, approximating the 5-minute offset
 			expect(message).toMatch(/minute/)
 		} finally {

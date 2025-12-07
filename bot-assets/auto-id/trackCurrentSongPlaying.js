@@ -20,6 +20,7 @@ const {
 	getUniqueSongs,
 	hasSongBeenPlayed,
 	checkCurrentSong,
+	checkCurrentSongWithPrevious,
 } = require('./helpers/autoIdHelpers')
 
 const trackLogStore = require('./trackLogStore')
@@ -251,7 +252,12 @@ const trackCurrentSongPlaying = async (config, url, twitchClient, wss) => {
 	}
 
 	trackingInterval = setInterval(async () => {
-		let newCurrentSong = await checkCurrentSong(url)
+		// Use both the current and previous entries from the
+		// Serato Live playlist so we can detect back-to-back
+		// doubles even when the track title does not change
+		// between polls.
+		const { current, previous } = await checkCurrentSongWithPrevious(url)
+		let newCurrentSong = current
 
 		if (newCurrentSong === null) {
 			console.log(
@@ -264,10 +270,20 @@ const trackCurrentSongPlaying = async (config, url, twitchClient, wss) => {
 			newCurrentSong = cleanCurrentSongInfo(newCurrentSong)
 		}
 
-		if (newCurrentSong !== trackLogStore.getCurrentSong()) {
+		const lastLogged = trackLogStore.getCurrentSong()
+		const isDoubleCandidate =
+			newCurrentSong &&
+			previous &&
+			newCurrentSong === previous &&
+			lastLogged === newCurrentSong
+
+		if (isDoubleCandidate || newCurrentSong !== lastLogged) {
 			console.log("---------------------------")
-			console.log("Current Song: ", trackLogStore.getCurrentSong())
+			console.log("Current Song: ", lastLogged)
 			console.log("New Current Song: ", newCurrentSong)
+			if (isDoubleCandidate) {
+				console.log('Detected potential live doubles (same track back-to-back).')
+			}
 			console.log("---------------------------")
 
 			// update central track log store for this song change

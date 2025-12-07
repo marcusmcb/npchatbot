@@ -7,49 +7,7 @@ const {
 	dypSearchTerms,
 	getCurrentPlaylistSummary,
 } = require('../../command-use/commandUse')
-
-// Shared helper to format a human-friendly "time since" string from a Date.
-// The signature mirrors the helper in npCommands so that !dyp, !np vibecheck,
-// and !np doubles behave consistently.
-const formatTimeSince = (playedAt, isSeeded = false, hasConcreteLength = true) => {
-	if (!(playedAt instanceof Date) || Number.isNaN(playedAt.getTime())) {
-		return 'earlier in this stream'
-	}
-
-	const now = new Date()
-	let diffMs = now.getTime() - playedAt.getTime()
-	if (diffMs < 0) diffMs = 0
-
-	const diffMinutes = Math.floor(diffMs / 60000)
-	const diffHours = Math.floor(diffMinutes / 60)
-	const remainingMinutes = diffMinutes % 60
-
-	if (isSeeded && !hasConcreteLength) {
-		if (diffHours >= 1) {
-			return `about ${diffHours} hour${diffHours === 1 ? '' : 's'} ago`
-		}
-		return 'earlier in this stream'
-	}
-
-	if (diffMinutes >= 90) {
-		if (diffHours <= 1) {
-			return 'about an hour ago'
-		}
-		return `about ${diffHours} hours ago`
-	}
-
-	if (diffHours > 0) {
-		return `${diffHours} hour${diffHours === 1 ? '' : 's'} and ${remainingMinutes} minute${
-			remainingMinutes === 1 ? '' : 's'
-		} ago`
-	}
-
-	if (diffMinutes > 0) {
-		return `${diffMinutes} minute${diffMinutes === 1 ? '' : 's'} ago`
-	}
-
-	return 'just now'
-}
+const { formatTimeSince } = require('../now-playing/timeSinceHelpers')
 
 const dypCommand = async (
 	channel,
@@ -90,10 +48,15 @@ const dypCommand = async (
 		const searchTerm = searchItem.toLowerCase()
 		dypSearchTerms.push({ name: searchItem })
 
-		// track_log is ordered oldest -> newest; collect all matches
-		const searchResults = data.track_log.filter((entry) =>
-			entry.track_id.toLowerCase().includes(searchTerm)
-		)
+		// track_log is ordered oldest -> newest; collect all matches.
+		// Prefer matching against the full original title when available so
+		// viewers can search for remix/extra text that may have been
+		// stripped from the cleaned track_id for auto ID / Spotify usage.
+		const searchResults = data.track_log.filter((entry) => {
+			const searchableTitle =
+				(entry.full_track_id || entry.track_id || '').toLowerCase()
+			return searchableTitle.includes(searchTerm)
+		})
 		console.log('SEARCH RESULTS: ', searchResults)
 
 		if (searchResults.length === 0) {
@@ -114,7 +77,7 @@ const dypCommand = async (
 		// Most recent match is the last element in searchResults
 		const latestIndex = searchResults.length - 1
 		const latestMatch = searchResults[latestIndex]
-		const lastSongPlayed = latestMatch.track_id
+		const lastSongPlayed = latestMatch.full_track_id || latestMatch.track_id
 		const lastTimestamp = latestMatch.timestamp
 
 		let safeTimePlayed = 'earlier in this stream'

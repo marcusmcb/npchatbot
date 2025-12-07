@@ -45,6 +45,7 @@ const seedFromLiveReport = async (url, isAutoIDCleanupEnabled) => {
 			seeded.push({
 				track_number: seeded.length + 1,
 				track_id: cleanedId,
+				full_track_id: rawId,
 				timestamp:
 					entry.timestamp && entry.timestamp !== 'N/A'
 						? entry.timestamp
@@ -93,6 +94,7 @@ const handleSongChange = (newCurrentSong, isAutoIDCleanupEnabled) => {
 	tracklog.push({
 		track_number: tracklog.length + 1,
 		track_id: cleaned,
+		full_track_id: newCurrentSong,
 		timestamp: now.toISOString(),
 		length: null,
 		source: 'live',

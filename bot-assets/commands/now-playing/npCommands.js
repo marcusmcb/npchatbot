@@ -4,6 +4,7 @@ const { npSongsQueried } = require('../../command-use/commandUse')
 const {
 	vibeCheckSelector,
 } = require('../now-playing/npCommandHelpers/npCommandHelpers')
+const { formatTimeSince } = require('./timeSinceHelpers')
 const { getCurrentPlaylistSummary } = require('../../command-use/commandUse')
 
 const {
@@ -13,57 +14,8 @@ const {
 
 const NP_OPTIONS =
 	'npChatbot options: !np, !np previous, !np start, !np vibecheck, !dyp (query), !np stats, !np doubles, !np shortest, !np longest'
-// Shared helper to format a human-friendly "time since" string.
-// If `isSeeded` is true, we are conservative: when the seeded
-// entry does not yet have a concrete length (0:00 or null), we
-// avoid "just now" and similar precise wording entirely.
-const formatTimeSince = (playedAt, isSeeded = false, hasConcreteLength = true) => {
-	if (!(playedAt instanceof Date) || Number.isNaN(playedAt.getTime())) {
-		return 'earlier in this stream'
-	}
-
-	const now = new Date()
-	let diffMs = now.getTime() - playedAt.getTime()
-	if (diffMs < 0) diffMs = 0
-
-	const diffMinutes = Math.floor(diffMs / 60000)
-	const diffHours = Math.floor(diffMinutes / 60)
-	const remainingMinutes = diffMinutes % 60
-
-	// For seeded history where we *don't* yet know the final
-	// track length (e.g. length is 0:00 or null), timestamps
-	// can be especially misleading. In that case, always fall
-	// back to coarse wording so we never claim "just now".
-	if (isSeeded && !hasConcreteLength) {
-		if (diffHours >= 1) {
-			return `about ${diffHours} hour${diffHours === 1 ? '' : 's'} ago`
-		}
-		// Less than an hour but seeded with no concrete length:
-		// still avoid pretending we know exact minutes.
-		return 'earlier in this stream'
-	}
-
-	// For live or trustworthy timestamps, keep the
-	// original precise behaviour.
-	if (diffMinutes >= 90) {
-		if (diffHours <= 1) {
-			return 'about an hour ago'
-		}
-		return `about ${diffHours} hours ago`
-	}
-
-	if (diffHours > 0) {
-		return `${diffHours} hour${diffHours === 1 ? '' : 's'} and ${remainingMinutes} minute${
-			remainingMinutes === 1 ? '' : 's'
-		} ago`
-	}
-
-	if (diffMinutes > 0) {
-		return `${diffMinutes} minute${diffMinutes === 1 ? '' : 's'} ago`
-	}
-
-	return 'just now'
-}
+// formatTimeSince is shared via ./timeSinceHelpers so !dyp, !np
+// vibecheck, and !np doubles all behave consistently.
 
 const updateOBSWithText = (obs, text, obsClearDisplayTime, config) => {
 	if (config.isObsResponseEnabled) {
@@ -104,7 +56,10 @@ const handleDefault = (
 	// track_log is ordered oldest -> newest; current song is the last entry
 	const latestIndex = reportData.track_log.length - 1
 	const currentTrackPlaying =
-		latestIndex >= 0 ? reportData.track_log[latestIndex].track_id : 'Unknown'
+		latestIndex >= 0
+			? reportData.track_log[latestIndex].full_track_id ||
+			  reportData.track_log[latestIndex].track_id
+			: 'Unknown'
 	const message = `Now playing: ${currentTrackPlaying}`
 	npSongsQueried.push({ name: currentTrackPlaying })
 	twitchClient.say(channel, message)
@@ -134,7 +89,9 @@ const handlePrevious = (
 		updateOBSWithText(obs, message, obsClearDisplayTime, config)
 		return
 	}
-	const previousTrackPlayed = reportData.track_log[previousIndex].track_id
+	const previousTrackPlayed =
+		reportData.track_log[previousIndex].full_track_id ||
+		reportData.track_log[previousIndex].track_id
 	const message = `Previous song: ${previousTrackPlayed}`
 	npSongsQueried.push({ name: previousTrackPlayed })
 	twitchClient.say(channel, message)
@@ -203,11 +160,13 @@ const handleVibeCheck = (
 		safeTimePlayed = formatTimeSince(playedAt, isSeeded, hasConcreteLength)
 	}
 
-	const message = `${config.twitchChannelName} played "${vibeCheckSelection.track_id}" ${safeTimePlayed}.`
+	const selectedTitle =
+		vibeCheckSelection.full_track_id || vibeCheckSelection.track_id
+	const message = `${config.twitchChannelName} played "${selectedTitle}" ${safeTimePlayed}.`
 	twitchClient.say(channel, message)
 	updateOBSWithText(
 		obs,
-		`vibe check:\n\n${config.twitchChannelName} played\n"${vibeCheckSelection.track_id}"\n${safeTimePlayed}.`,
+		`vibe check:\n\n${config.twitchChannelName} played\n"${selectedTitle}"\n${safeTimePlayed}.`,
 		obsClearDisplayTime,
 		config
 	)
