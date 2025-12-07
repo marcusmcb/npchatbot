@@ -257,37 +257,41 @@ const trackCurrentSongPlaying = async (config, url, twitchClient, wss) => {
 		// doubles even when the track title does not change
 		// between polls.
 		const { current, previous } = await checkCurrentSongWithPrevious(url)
-		let newCurrentSong = current
+		const rawCurrentSong = current
 
-		if (newCurrentSong === null) {
+		if (rawCurrentSong === null) {
 			console.log(
 				'No song currently playing.  Please check that your Serato Live Playlist is active and public.'
 			)
 			return
 		}
-
-		if (isAutoIDCleanupEnabled === true) {
-			newCurrentSong = cleanCurrentSongInfo(newCurrentSong)
-		}
+		// Use a cleaned version only for comparisons and downstream
+		// matching/Spotify logic; always log the raw Serato title so
+		// full_track_id retains remix/extra detail for !np/!np previous.
+		const cleanedCurrentSong = isAutoIDCleanupEnabled
+			? cleanCurrentSongInfo(rawCurrentSong)
+			: rawCurrentSong
 
 		const lastLogged = trackLogStore.getCurrentSong()
 		const isDoubleCandidate =
-			newCurrentSong &&
+			cleanedCurrentSong &&
 			previous &&
-			newCurrentSong === previous &&
-			lastLogged === newCurrentSong
+			(isAutoIDCleanupEnabled
+					? cleanCurrentSongInfo(previous)
+					: previous) === cleanedCurrentSong &&
+			lastLogged === cleanedCurrentSong
 
-		if (isDoubleCandidate || newCurrentSong !== lastLogged) {
+		if (isDoubleCandidate || cleanedCurrentSong !== lastLogged) {
 			console.log("---------------------------")
 			console.log("Current Song: ", lastLogged)
-			console.log("New Current Song: ", newCurrentSong)
+			console.log("New Current Song: ", cleanedCurrentSong)
 			if (isDoubleCandidate) {
 				console.log('Detected potential live doubles (same track back-to-back).')
 			}
 			console.log("---------------------------")
 
 			// update central track log store for this song change
-			trackLogStore.handleSongChange(newCurrentSong, isAutoIDCleanupEnabled)
+			trackLogStore.handleSongChange(rawCurrentSong, isAutoIDCleanupEnabled)
 
 			console.log("---------------------------")
 			console.log("Current Tracklog:")
