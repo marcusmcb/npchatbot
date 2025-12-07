@@ -8,6 +8,49 @@ const {
 	getCurrentPlaylistSummary,
 } = require('../../command-use/commandUse')
 
+// Shared helper to format a human-friendly "time since" string from a Date.
+// The signature mirrors the helper in npCommands so that !dyp, !np vibecheck,
+// and !np doubles behave consistently.
+const formatTimeSince = (playedAt, isSeeded = false, hasConcreteLength = true) => {
+	if (!(playedAt instanceof Date) || Number.isNaN(playedAt.getTime())) {
+		return 'earlier in this stream'
+	}
+
+	const now = new Date()
+	let diffMs = now.getTime() - playedAt.getTime()
+	if (diffMs < 0) diffMs = 0
+
+	const diffMinutes = Math.floor(diffMs / 60000)
+	const diffHours = Math.floor(diffMinutes / 60)
+	const remainingMinutes = diffMinutes % 60
+
+	if (isSeeded && !hasConcreteLength) {
+		if (diffHours >= 1) {
+			return `about ${diffHours} hour${diffHours === 1 ? '' : 's'} ago`
+		}
+		return 'earlier in this stream'
+	}
+
+	if (diffMinutes >= 90) {
+		if (diffHours <= 1) {
+			return 'about an hour ago'
+		}
+		return `about ${diffHours} hours ago`
+	}
+
+	if (diffHours > 0) {
+		return `${diffHours} hour${diffHours === 1 ? '' : 's'} and ${remainingMinutes} minute${
+			remainingMinutes === 1 ? '' : 's'
+		} ago`
+	}
+
+	if (diffMinutes > 0) {
+		return `${diffMinutes} minute${diffMinutes === 1 ? '' : 's'} ago`
+	}
+
+	return 'just now'
+}
+
 const dypCommand = async (
 	channel,
 	tags,
@@ -77,38 +120,22 @@ const dypCommand = async (
 		let safeTimePlayed = 'earlier in this stream'
 		if (lastTimestamp && lastTimestamp !== 'N/A') {
 			const playedAt = new Date(lastTimestamp)
-			if (!Number.isNaN(playedAt.getTime())) {
-				const now = new Date()
-				let diffMs = now.getTime() - playedAt.getTime()
-				if (diffMs < 0) diffMs = 0
-				const diffMinutes = Math.floor(diffMs / 60000)
-				const diffHours = Math.floor(diffMinutes / 60)
-				const remainingMinutes = diffMinutes % 60
-
-				if (diffHours > 0) {
-					safeTimePlayed = `${diffHours} hour${
-						diffHours === 1 ? '' : 's'
-					} and ${remainingMinutes} minute${
-						remainingMinutes === 1 ? '' : 's'
-					} ago`
-				} else if (diffMinutes > 0) {
-					safeTimePlayed = `${diffMinutes} minute${
-						diffMinutes === 1 ? '' : 's'
-					} ago`
-				} else {
-					safeTimePlayed = 'just now'
-				}
-			}
+			const isSeeded = latestMatch.source === 'seeded'
+			const hasConcreteLength =
+				latestMatch.length &&
+				latestMatch.length !== '0:00' &&
+				latestMatch.length !== 'Still playing'
+			safeTimePlayed = formatTimeSince(playedAt, isSeeded, hasConcreteLength)
 		}
 
-		const message = `${config.twitchChannelName} has played '${searchItem}' ${searchResults.length} time(s) so far in this stream. Their last song played was "${lastSongPlayed}", played ${safeTimePlayed}.`
+		const message = `${config.twitchChannelName} has played '${searchItem}' ${searchResults.length} time(s) so far in this stream. Their last song played was "${lastSongPlayed}", ${safeTimePlayed}.`
 		twitchClient.say(channel, message)
 
 		if (config.isObsResponseEnabled === true) {
 			obs.call('SetInputSettings', {
 				inputName: 'npchatbot-response',
 				inputSettings: {
-					text: `${config.twitchChannelName} has played '${searchItem}' ${searchResults.length} times so far in this stream. Their last song played was: ${lastSongPlayed}, played ${safeTimePlayed}`,
+					text: `${config.twitchChannelName} has played '${searchItem}' ${searchResults.length} times so far in this stream. Their last song played was: ${lastSongPlayed}, ${safeTimePlayed}`,
 				},
 			})
 			clearOBSResponse(obs, obsClearDisplayTime)

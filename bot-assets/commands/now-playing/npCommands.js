@@ -13,6 +13,57 @@ const {
 
 const NP_OPTIONS =
 	'npChatbot options: !np, !np previous, !np start, !np vibecheck, !dyp (query), !np stats, !np doubles, !np shortest, !np longest'
+// Shared helper to format a human-friendly "time since" string.
+// If `isSeeded` is true, we are conservative: when the seeded
+// entry does not yet have a concrete length (0:00 or null), we
+// avoid "just now" and similar precise wording entirely.
+const formatTimeSince = (playedAt, isSeeded = false, hasConcreteLength = true) => {
+	if (!(playedAt instanceof Date) || Number.isNaN(playedAt.getTime())) {
+		return 'earlier in this stream'
+	}
+
+	const now = new Date()
+	let diffMs = now.getTime() - playedAt.getTime()
+	if (diffMs < 0) diffMs = 0
+
+	const diffMinutes = Math.floor(diffMs / 60000)
+	const diffHours = Math.floor(diffMinutes / 60)
+	const remainingMinutes = diffMinutes % 60
+
+	// For seeded history where we *don't* yet know the final
+	// track length (e.g. length is 0:00 or null), timestamps
+	// can be especially misleading. In that case, always fall
+	// back to coarse wording so we never claim "just now".
+	if (isSeeded && !hasConcreteLength) {
+		if (diffHours >= 1) {
+			return `about ${diffHours} hour${diffHours === 1 ? '' : 's'} ago`
+		}
+		// Less than an hour but seeded with no concrete length:
+		// still avoid pretending we know exact minutes.
+		return 'earlier in this stream'
+	}
+
+	// For live or trustworthy timestamps, keep the
+	// original precise behaviour.
+	if (diffMinutes >= 90) {
+		if (diffHours <= 1) {
+			return 'about an hour ago'
+		}
+		return `about ${diffHours} hours ago`
+	}
+
+	if (diffHours > 0) {
+		return `${diffHours} hour${diffHours === 1 ? '' : 's'} and ${remainingMinutes} minute${
+			remainingMinutes === 1 ? '' : 's'
+		} ago`
+	}
+
+	if (diffMinutes > 0) {
+		return `${diffMinutes} minute${diffMinutes === 1 ? '' : 's'} ago`
+	}
+
+	return 'just now'
+}
 
 const updateOBSWithText = (obs, text, obsClearDisplayTime, config) => {
 	if (config.isObsResponseEnabled) {
@@ -134,10 +185,9 @@ const handleVibeCheck = (
 	console.log('Vibe check selection: ', vibeCheckSelection)
 	console.log('---------------------------------')
 
-	// Compute how long ago the selected track was played based on its timestamp.
-	// This mirrors the logic used in the !dyp handler so that the time since
-	// played is always calculated live from the stored timestamp instead of
-	// relying on any static "time_played" text from the original scrape.
+	// Compute how long ago the selected track was played based on its
+	// timestamp using the shared formatter so behaviour stays consistent
+	// with !dyp and !np doubles.
 	let safeTimePlayed = 'earlier in this stream'
 	if (
 		vibeCheckSelection &&
@@ -145,35 +195,19 @@ const handleVibeCheck = (
 		vibeCheckSelection.timestamp !== 'N/A'
 	) {
 		const playedAt = new Date(vibeCheckSelection.timestamp)
-		if (!Number.isNaN(playedAt.getTime())) {
-			const now = new Date()
-			let diffMs = now.getTime() - playedAt.getTime()
-			if (diffMs < 0) diffMs = 0
-			const diffMinutes = Math.floor(diffMs / 60000)
-			const diffHours = Math.floor(diffMinutes / 60)
-			const remainingMinutes = diffMinutes % 60
-
-			if (diffHours > 0) {
-				safeTimePlayed = `${diffHours} hour${
-					diffHours === 1 ? '' : 's'
-				} and ${remainingMinutes} minute${
-					remainingMinutes === 1 ? '' : 's'
-				} ago`
-			} else if (diffMinutes > 0) {
-				safeTimePlayed = `${diffMinutes} minute${
-					diffMinutes === 1 ? '' : 's'
-				} ago`
-			} else {
-				safeTimePlayed = 'just now'
-			}
-		}
+		const isSeeded = vibeCheckSelection.source === 'seeded'
+		const hasConcreteLength =
+			vibeCheckSelection.length &&
+			vibeCheckSelection.length !== '0:00' &&
+			vibeCheckSelection.length !== 'Still playing'
+		safeTimePlayed = formatTimeSince(playedAt, isSeeded, hasConcreteLength)
 	}
 
-	const message = `${config.twitchChannelName} played "${vibeCheckSelection.track_id}" ${safeTimePlayed} in this stream.`
+	const message = `${config.twitchChannelName} played "${vibeCheckSelection.track_id}" ${safeTimePlayed}.`
 	twitchClient.say(channel, message)
 	updateOBSWithText(
 		obs,
-		`vibe check:\n\n${config.twitchChannelName} played\n"${vibeCheckSelection.track_id}"\n${safeTimePlayed} in this stream.`,
+		`vibe check:\n\n${config.twitchChannelName} played\n"${vibeCheckSelection.track_id}"\n${safeTimePlayed}.`,
 		obsClearDisplayTime,
 		config
 	)
@@ -234,53 +268,46 @@ const handleDoubles = (
 	tags
 ) => {
 	if (reportData.doubles_played.length === 0) {
-		const message = `${config.twitchChannelName} has not played doubles once during this set (yet).`
+		const message = `${config.twitchChannelName} hasn't played any doubles in this set so far.`
 		twitchClient.say(channel, message)
 		updateOBSWithText(obs, message, obsClearDisplayTime, config)
-	} else {
-		const timesDoublesPlayed = reportData.doubles_played.length
-		// doubles_played is ordered by detection time; the most recent
-		// instance is therefore the last element.
-		const lastDouble = reportData.doubles_played[timesDoublesPlayed - 1]
-		const lastDoubleTrack = lastDouble.track_id
-		const lastDoubleTimestamp = lastDouble.time_played
-
-		let timeSinceLastDoubleText = 'earlier in this stream'
-		if (lastDoubleTimestamp && lastDoubleTimestamp !== 'N/A') {
-			const playedAt = new Date(lastDoubleTimestamp)
-			if (!Number.isNaN(playedAt.getTime())) {
-				const now = new Date()
-				let diffMs = now.getTime() - playedAt.getTime()
-				if (diffMs < 0) diffMs = 0
-				const diffMinutes = Math.floor(diffMs / 60000)
-				const diffHours = Math.floor(diffMinutes / 60)
-				const remainingMinutes = diffMinutes % 60
-
-				if (diffHours > 0) {
-					timeSinceLastDoubleText = `${diffHours} hour${
-						diffHours === 1 ? '' : 's'
-					} and ${remainingMinutes} minute${
-						remainingMinutes === 1 ? '' : 's'
-					} ago`
-				} else if (diffMinutes > 0) {
-					timeSinceLastDoubleText = `${diffMinutes} minute${
-						diffMinutes === 1 ? '' : 's'
-					} ago`
-				} else {
-					timeSinceLastDoubleText = 'just now'
-				}
-			}
-		}
-
-		const message = `${config.twitchChannelName} has played doubles ${timesDoublesPlayed} time(s) in this set. The last song they played doubles with was "${lastDoubleTrack}", about ${timeSinceLastDoubleText}.`
-		twitchClient.say(channel, message)
-		updateOBSWithText(
-			obs,
-			`${config.twitchChannelName} has played doubles ${timesDoublesPlayed} times so far in this set.\n\nThe last song they played doubles with was:\n"${lastDoubleTrack}"\n(about ${timeSinceLastDoubleText}).`,
-			obsClearDisplayTime,
-			config
-		)
+		return
 	}
+
+	const timesDoublesPlayed = reportData.doubles_played.length
+	const lastDouble = reportData.doubles_played[timesDoublesPlayed - 1]
+	let safeTimePlayed = 'earlier in this stream'
+
+	if (lastDouble && lastDouble.time_played) {
+		const playedAt = new Date(lastDouble.time_played)
+		// doubles_played entries are derived from the underlying
+		// track_log; if that entry was seeded, treat the time
+		// conservatively as well.
+		const matchingTrack = reportData.track_log.find(
+			(entry) => entry.timestamp === lastDouble.time_played
+		)
+		const isSeeded = matchingTrack && matchingTrack.source === 'seeded'
+		const hasConcreteLength =
+			matchingTrack &&
+			matchingTrack.length &&
+			matchingTrack.length !== '0:00' &&
+			matchingTrack.length !== 'Still playing'
+		safeTimePlayed = formatTimeSince(playedAt, isSeeded, hasConcreteLength)
+	}
+
+	const message = `${config.twitchChannelName} has played ${timesDoublesPlayed} set(s) of doubles so far in this set. The most recent doubles were "${lastDouble.track_id}", played ${safeTimePlayed}.`
+	console.log(message)
+	console.log('Doubles played: ', reportData.doubles_played)
+	console.log('---------------------------------')
+
+	twitchClient.say(channel, message)
+	updateOBSWithText(
+		obs,
+		`Doubles check:\n\n${config.twitchChannelName} has played ${timesDoublesPlayed} set(s) of doubles so far.\n\nMost recent doubles:\n"${lastDouble.track_id}"\nPlayed ${safeTimePlayed}.`,
+		obsClearDisplayTime,
+		config
+	)
+
 }
 
 // !np stats response

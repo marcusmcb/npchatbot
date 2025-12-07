@@ -173,6 +173,8 @@ const getLiveReportSnapshot = () => {
 		}
 	}
 
+	// Expose source on each track_log entry so callers can distinguish
+	// between historical seeded entries and live-tracked entries.
 	return {
 		track_log: log,
 		total_tracks_played: totalTracksPlayed,

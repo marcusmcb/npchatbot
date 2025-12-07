@@ -70,19 +70,35 @@ const createLiveReport = async (url) => {
 		timestamps.forEach((timestampObj) => {
 			const timestampString = timestampObj?.children?.[0]?.data?.trim()
 			if (timestampString) {
-				const timeAgoMatch = timestampString.match(/(\d+)\s(\w+)\sago/)
-				if (timeAgoMatch) {
-					const [, value, unit] = timeAgoMatch
-					const offset = parseInt(value, 10)
+				// Support composite phrases like "1 hour 5 minutes ago" or
+				// "2 hours ago" by summing all numeric+unit pieces except the
+				// final "ago" token.
+				const parts = timestampString.replace(/ago/i, '').trim().split(/\s+/)
+				if (parts.length >= 2) {
+					let totalMinutes = 0
+					let totalSeconds = 0
+					for (let i = 0; i < parts.length - 1; i += 2) {
+						const value = parseInt(parts[i], 10)
+						const unit = (parts[i + 1] || '').toLowerCase()
+						if (Number.isNaN(value)) continue
+						if (unit.startsWith('hour')) {
+							totalMinutes += value * 60
+						} else if (unit.startsWith('min')) {
+							totalMinutes += value
+						} else if (unit.startsWith('sec')) {
+							totalSeconds += value
+						}
+					}
 
 					const adjustedTimestamp = new Date(now)
-					if (unit.includes('min')) {
+					if (totalMinutes) {
 						adjustedTimestamp.setMinutes(
-							adjustedTimestamp.getMinutes() - offset
+							adjustedTimestamp.getMinutes() - totalMinutes
 						)
-					} else if (unit.includes('sec')) {
+					}
+					if (totalSeconds) {
 						adjustedTimestamp.setSeconds(
-							adjustedTimestamp.getSeconds() - offset
+							adjustedTimestamp.getSeconds() - totalSeconds
 						)
 					}
 					trackTimestamps.push(adjustedTimestamp)

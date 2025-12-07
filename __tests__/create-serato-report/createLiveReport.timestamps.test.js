@@ -92,4 +92,51 @@ describe('createLiveReport timestamp anchoring', () => {
 			Date = originalDateNow
 		}
 	})
+
+	test('supports composite "hours and minutes ago" strings', async () => {
+		const fixedNow = new Date('2025-12-05T02:00:00.000Z')
+		const originalDateNow = Date
+
+		// eslint-disable-next-line no-global-assign
+		Date = class extends Date {
+			constructor(value) {
+				if (value) {
+					// @ts-ignore
+					return super(value)
+				}
+				// @ts-ignore
+				return new originalDateNow(fixedNow.getTime())
+			}
+			static now() {
+				return fixedNow.getTime()
+			}
+		}
+
+		try {
+			// Fake Serato scrape: one track "1 hour 5 minutes ago".
+			scrapeData.mockResolvedValueOnce([
+				[
+					{ children: [{ data: 'Composite Track' }] },
+				],
+				[
+					makeTextNode('1 hour 5 minutes ago'),
+				],
+				'8:00pm',
+			])
+
+			const report = await createLiveReport('https://example.com/playlist')
+			expect(report).toBeDefined()
+			expect(report.track_log).toHaveLength(1)
+
+			const [only] = report.track_log
+			const playedAt = new originalDateNow(only.timestamp)
+			const diffMs = fixedNow.getTime() - playedAt.getTime()
+			const expectedMs = (1 * 60 + 5) * MINUTE
+			const epsilon = 5 * 1000
+			expect(Math.abs(diffMs - expectedMs)).toBeLessThanOrEqual(epsilon)
+		} finally {
+			// eslint-disable-next-line no-global-assign
+			Date = originalDateNow
+		}
+	})
 })
