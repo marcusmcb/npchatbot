@@ -143,7 +143,7 @@ const handleVibeCheck = (
 	console.log('---------------------------------')
 
 	// Compute how long ago the selected track was played based on its
-	// timestamp using the shared formatter so behaviour stays consistent
+	// timestamp using the shared formatter so behavior stays consistent
 	// with !dyp and !np doubles.
 	let safeTimePlayed = 'earlier in this stream'
 	if (
@@ -386,6 +386,12 @@ const npCommands = async (
 
 module.exports = {
 	npCommands,
-	handleVibeCheck,
+	handleDefault,
+	handlePrevious,
 	handleStart,
+	handleVibeCheck,
+	handleShortest,
+	handleLongest,
+	handleDoubles,
+	handleStats,
 }

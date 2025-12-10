@@ -28,7 +28,7 @@ const formatTimeSince = (playedAt, isSeeded = false, hasConcreteLength = true) =
 	}
 
 	// For live or trustworthy timestamps, keep the
-	// original precise behaviour.
+	// original precise behavior.
 	if (diffMinutes >= 90) {
 		if (diffHours <= 1) {
 			return 'about an hour ago'
