@@ -82,6 +82,11 @@ const updateUserData = async (db, event, arg) => {
 			isReportEnabled: !!updatedUser.isReportEnabled,
 			intervalMessageDuration: String(updatedUser.intervalMessageDuration ?? ''),
 			obsClearDisplayTime: String(updatedUser.obsClearDisplayTime ?? ''),
+			// OBS connection details are optional but user-visible in the UI
+			// so we include them in the sanitized payload (they are already
+			// persisted in the DB via updatedUser above).
+			obsWebsocketAddress: updatedUser.obsWebsocketAddress || '',
+			obsWebsocketPassword: updatedUser.obsWebsocketPassword || '',
 			userEmailAddress: user.userEmailAddress || '',
 		}
 

@@ -65,7 +65,7 @@ const handleDefault = (
 	twitchClient.say(channel, message)
 	updateOBSWithText(
 		obs,
-		`Now playing: ${currentTrackPlaying}`,
+		`Now playing: \n${currentTrackPlaying}`,
 		obsClearDisplayTime,
 		config
 	)
@@ -97,7 +97,7 @@ const handlePrevious = (
 	twitchClient.say(channel, message)
 	updateOBSWithText(
 		obs,
-		`Previous song:\n${previousTrackPlayed}`,
+		`The previous song played was:\n${previousTrackPlayed}`,
 		obsClearDisplayTime,
 		config
 	)
@@ -122,7 +122,7 @@ const handleStart = (
 	twitchClient.say(channel, message)
 	updateOBSWithText(
 		obs,
-		`${config.twitchChannelName} kicked off this stream with :\n${firstTrackPlayed}`,
+		`${config.twitchChannelName} kicked off this stream with:\n\n${firstTrackPlayed}`,
 		obsClearDisplayTime,
 		config
 	)
@@ -254,7 +254,7 @@ const handleDoubles = (
 		safeTimePlayed = formatTimeSince(playedAt, isSeeded, hasConcreteLength)
 	}
 
-	const message = `${config.twitchChannelName} has played ${timesDoublesPlayed} set(s) of doubles so far in this set. The most recent doubles were "${lastDouble.track_id}", played ${safeTimePlayed}.`
+	const message = `${config.twitchChannelName} has played ${timesDoublesPlayed} set(s) of doubles so far in this set. The most recent song was "${lastDouble.track_id}", played ${safeTimePlayed}.`
 	console.log(message)
 	console.log('Doubles played: ', reportData.doubles_played)
 	console.log('---------------------------------')
@@ -262,7 +262,7 @@ const handleDoubles = (
 	twitchClient.say(channel, message)
 	updateOBSWithText(
 		obs,
-		`Doubles check:\n\n${config.twitchChannelName} has played ${timesDoublesPlayed} set(s) of doubles so far.\n\nMost recent doubles:\n"${lastDouble.track_id}"\nPlayed ${safeTimePlayed}.`,
+		`Doubles check:\n\n${config.twitchChannelName} has played ${timesDoublesPlayed} set(s) of doubles so far.\n\nThe most recent song was\n"${lastDouble.track_id}"\nPlayed ${safeTimePlayed}.`,
 		obsClearDisplayTime,
 		config
 	)
@@ -295,7 +295,7 @@ const handleStats = (
 	twitchClient.say(channel, message)
 	updateOBSWithText(
 		obs,
-		`${config.twitchChannelName} has played ${totalTracksPlayed} tracks so far\nwith an average track length of ${averageTrackLength}`,
+		`${config.twitchChannelName} has played\n${totalTracksPlayed} songs so far with an\naverage track length of ${averageTrackLength}`,
 		obsClearDisplayTime,
 		config
 	)

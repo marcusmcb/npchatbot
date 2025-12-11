@@ -38,6 +38,11 @@ const handleGetUserData = async () => {
 					isReportEnabled: !!user.isReportEnabled,
 					intervalMessageDuration: String(user.intervalMessageDuration ?? ''),
 					obsClearDisplayTime: String(user.obsClearDisplayTime ?? ''),
+					// OBS connection details are optional but, when provided,
+					// should be persisted and hydrated back into the UI so the
+					// user does not need to re-enter them each launch.
+					obsWebsocketAddress: user.obsWebsocketAddress || '',
+					obsWebsocketPassword: user.obsWebsocketPassword || '',
 					userEmailAddress: user.userEmailAddress || '',
 					// Do expose non-sensitive discord webhook metadata if present
 					discord: user.discord

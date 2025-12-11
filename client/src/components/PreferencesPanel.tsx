@@ -275,7 +275,7 @@ const PreferencesPanel: React.FC<PreferencesPanelProps> = (props) => {
 							: '')
 					}
 				>
-					Enable On-Screen OBS Responses
+					Enable OBS Responses
 				</label>
 			</div>
 
@@ -356,7 +356,7 @@ const PreferencesPanel: React.FC<PreferencesPanelProps> = (props) => {
 							: ''
 					}
 				>
-					Interval duration:
+					Duration (in seconds):
 				</label>
 
 				<input

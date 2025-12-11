@@ -36,7 +36,7 @@ const dypCommand = async (
 			return
 		}
 
-		if (data.total_tracks_played < 4) {
+		if (data.total_tracks_played < 2) {
 			twitchClient.say(
 				channel,
 				`${config.twitchChannelName} hasn't played enough music in this stream to search just yet.`
@@ -53,20 +53,23 @@ const dypCommand = async (
 		// viewers can search for remix/extra text that may have been
 		// stripped from the cleaned track_id for auto ID / Spotify usage.
 		const searchResults = data.track_log.filter((entry) => {
-			const searchableTitle =
-				(entry.full_track_id || entry.track_id || '').toLowerCase()
+			const searchableTitle = (
+				entry.full_track_id ||
+				entry.track_id ||
+				''
+			).toLowerCase()
 			return searchableTitle.includes(searchTerm)
 		})
 		console.log('SEARCH RESULTS: ', searchResults)
 
 		if (searchResults.length === 0) {
-			const msg = `${config.twitchChannelName} has not played '${searchItem}' so far in this stream.`
+			const msg = `${config.twitchChannelName} has not played '${searchItem}' in this stream yet.`
 			twitchClient.say(channel, msg)
 			if (config.isObsResponseEnabled === true) {
 				obs.call('SetInputSettings', {
 					inputName: 'npchatbot-response',
 					inputSettings: {
-						text: msg,
+						text: `${config.twitchChannelName} has not played\n'${searchItem}' in this stream yet.`,
 					},
 				})
 				clearOBSResponse(obs, obsClearDisplayTime)
@@ -98,7 +101,7 @@ const dypCommand = async (
 			obs.call('SetInputSettings', {
 				inputName: 'npchatbot-response',
 				inputSettings: {
-					text: `${config.twitchChannelName} has played '${searchItem}' ${searchResults.length} times so far in this stream. Their last song played was: ${lastSongPlayed}, ${safeTimePlayed}`,
+					text: `${config.twitchChannelName} has played\n'${searchItem}' ${searchResults.length} time(s) so far in this stream.\n\nTheir last song played was:\n${lastSongPlayed} (${safeTimePlayed})`,
 				},
 			})
 			clearOBSResponse(obs, obsClearDisplayTime)
