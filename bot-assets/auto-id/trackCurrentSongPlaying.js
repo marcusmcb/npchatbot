@@ -32,6 +32,11 @@ let { setCurrentPlaylistSummary } = require('../command-use/commandUse')
 let trackingInterval = null
 let songsPlayed = [] // only used to avoid adding true duplicates to Spotify
 let hasSeededSongsPlayedForContinuedPlaylist = false
+// Remember the last Serato scrape state so we don't
+// repeatedly count the same back-to-back double on
+// every polling interval.
+let lastSeratoCurrent = null
+let lastSeratoPrevious = null
 
 const prepSongForSpotifyPlaylist = async (
 	spotifyPlaylistId,
@@ -263,6 +268,10 @@ const trackCurrentSongPlaying = async (config, url, twitchClient, wss) => {
 			console.log(
 				'No song currently playing.  Please check that your Serato Live Playlist is active and public.'
 			)
+			// Reset last Serato state so the next real song
+			// change is treated as fresh.
+			lastSeratoCurrent = null
+			lastSeratoPrevious = null
 			return
 		}
 		// Use a cleaned version only for comparisons and downstream
@@ -273,6 +282,11 @@ const trackCurrentSongPlaying = async (config, url, twitchClient, wss) => {
 			: rawCurrentSong
 
 		const lastLogged = trackLogStore.getCurrentSong()
+		// Detect a potential back-to-back double from Serato
+		// (current and previous rows resolve to the same title),
+		// but only treat it as a *new* double when the Serato
+		// pair changes so we don't keep appending duplicates on
+		// every poll while the playlist is static.
 		const isDoubleCandidate =
 			cleanedCurrentSong &&
 			previous &&
@@ -280,8 +294,12 @@ const trackCurrentSongPlaying = async (config, url, twitchClient, wss) => {
 					? cleanCurrentSongInfo(previous)
 					: previous) === cleanedCurrentSong &&
 			lastLogged === cleanedCurrentSong
+		const sameSeratoPairAsLast =
+			current === lastSeratoCurrent && previous === lastSeratoPrevious
+		const songChanged = cleanedCurrentSong !== lastLogged
+		const shouldLogDouble = isDoubleCandidate && !sameSeratoPairAsLast
 
-		if (isDoubleCandidate || cleanedCurrentSong !== lastLogged) {
+		if (songChanged || shouldLogDouble) {
 			console.log("---------------------------")
 			console.log("Current Song: ", lastLogged)
 			console.log("New Current Song: ", cleanedCurrentSong)
@@ -315,6 +333,12 @@ const trackCurrentSongPlaying = async (config, url, twitchClient, wss) => {
 				await prepSongForSpotifyPlaylist(spotifyPlaylistId, liveCurrent, wss)
 			}
 		}
+
+		// Remember the last Serato current/previous pair for
+		// the next polling iteration so we can suppress
+		// re-counting the same double over and over.
+		lastSeratoCurrent = current
+		lastSeratoPrevious = previous
 	}, 10000)
 }
 
@@ -324,6 +348,8 @@ const endTrackCurrentSongPlaying = () => {
 		trackingInterval = null
 		trackLogStore.reset()
 		hasSeededSongsPlayedForContinuedPlaylist = false
+		lastSeratoCurrent = null
+		lastSeratoPrevious = null
 		console.log('Auto ID tracking interval successfully ended.')
 		console.log('--------------------------------------')
 	}
