@@ -156,4 +156,4 @@ The added Spotify integration gives streaming DJs an easily shareable playlist w
 
 This began as a simple Node script, running on a Raspberry Pi here in my office to give viewers in my own channel an easy way to look up the song "now playing".  It's now a fully-fledged desktop app, ready for you to download and try out for yourself.
 
-Marcus McBride, 2025.
+Marcus McBride, 2026.
