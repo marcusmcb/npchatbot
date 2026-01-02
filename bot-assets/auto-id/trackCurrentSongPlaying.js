@@ -1,3 +1,5 @@
+const WebSocket = require('ws')
+
 const {
 	cleanCurrentSongInfo,
 	cleanQueryString,
@@ -87,7 +89,7 @@ const resumeSpotifyPlaylist = async (
 
 	const seratoPlaylistLength = results.length
 	const spotifyPlaylistLength = await getSpotifyPlaylistData(spotifyPlaylistId)
-	
+
 	console.log('Serato Playlist Length: ', seratoPlaylistLength)
 	console.log('Spotify Playlist Length: ', spotifyPlaylistLength)
 
@@ -272,6 +274,13 @@ const trackCurrentSongPlaying = async (config, url, twitchClient, wss) => {
 			// change is treated as fresh.
 			lastSeratoCurrent = null
 			lastSeratoPrevious = null
+			wss.clients.forEach((client) => {
+				if (client.readyState === WebSocket.OPEN) {
+					client.send(
+						'npChatbot could not detect a song currently playing.  Please ensure your Serato Live Playlist is active and public.'
+					)
+				}
+			})
 			return
 		}
 		// Use a cleaned version only for comparisons and downstream
@@ -290,9 +299,8 @@ const trackCurrentSongPlaying = async (config, url, twitchClient, wss) => {
 		const isDoubleCandidate =
 			cleanedCurrentSong &&
 			previous &&
-			(isAutoIDCleanupEnabled
-					? cleanCurrentSongInfo(previous)
-					: previous) === cleanedCurrentSong &&
+			(isAutoIDCleanupEnabled ? cleanCurrentSongInfo(previous) : previous) ===
+				cleanedCurrentSong &&
 			lastLogged === cleanedCurrentSong
 		const sameSeratoPairAsLast =
 			current === lastSeratoCurrent && previous === lastSeratoPrevious
@@ -300,21 +308,23 @@ const trackCurrentSongPlaying = async (config, url, twitchClient, wss) => {
 		const shouldLogDouble = isDoubleCandidate && !sameSeratoPairAsLast
 
 		if (songChanged || shouldLogDouble) {
-			console.log("---------------------------")
-			console.log("Current Song: ", lastLogged)
-			console.log("New Current Song: ", cleanedCurrentSong)
+			console.log('---------------------------')
+			console.log('Current Song: ', lastLogged)
+			console.log('New Current Song: ', cleanedCurrentSong)
 			if (isDoubleCandidate) {
-				console.log('Detected potential live doubles (same track back-to-back).')
+				console.log(
+					'Detected potential live doubles (same track back-to-back).'
+				)
 			}
-			console.log("---------------------------")
+			console.log('---------------------------')
 
 			// update central track log store for this song change
 			trackLogStore.handleSongChange(rawCurrentSong, isAutoIDCleanupEnabled)
 
-			console.log("---------------------------")
-			console.log("Current Tracklog:")
+			console.log('---------------------------')
+			console.log('Current Tracklog:')
 			console.log(trackLogStore.getCurrentTracklog())
-			console.log("---------------------------")
+			console.log('---------------------------')
 
 			// Build a live report snapshot from the current track log so
 			// commands can respond using our in-memory data instead of
