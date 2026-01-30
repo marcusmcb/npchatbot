@@ -236,6 +236,7 @@ const handleDoubles = (
 	const timesDoublesPlayed = reportData.doubles_played.length
 	const lastDouble = reportData.doubles_played[timesDoublesPlayed - 1]
 	let safeTimePlayed = 'earlier in this stream'
+	let lastDoubleTitle = lastDouble ? lastDouble.track_id : ''
 
 	if (lastDouble && lastDouble.time_played) {
 		const playedAt = new Date(lastDouble.time_played)
@@ -246,6 +247,9 @@ const handleDoubles = (
 			(entry) => entry.timestamp === lastDouble.time_played
 		)
 		const isSeeded = matchingTrack && matchingTrack.source === 'seeded'
+		if (matchingTrack && (matchingTrack.full_track_id || matchingTrack.track_id)) {
+			lastDoubleTitle = matchingTrack.full_track_id || matchingTrack.track_id
+		}
 		const hasConcreteLength =
 			matchingTrack &&
 			matchingTrack.length &&
@@ -254,7 +258,7 @@ const handleDoubles = (
 		safeTimePlayed = formatTimeSince(playedAt, isSeeded, hasConcreteLength)
 	}
 
-	const message = `${config.twitchChannelName} has played doubles ${timesDoublesPlayed} times(s) far in this set. The most recent song was "${lastDouble.track_id}", played ${safeTimePlayed}.`
+	const message = `${config.twitchChannelName} has played ${timesDoublesPlayed} set(s) of doubles so far in this set. The most recent song was "${lastDoubleTitle}", played ${safeTimePlayed}.`
 	console.log(message)
 	console.log('Doubles played: ', reportData.doubles_played)
 	console.log('---------------------------------')
@@ -262,7 +266,7 @@ const handleDoubles = (
 	twitchClient.say(channel, message)
 	updateOBSWithText(
 		obs,
-		`Doubles check:\n\n${config.twitchChannelName} has played doubles ${timesDoublesPlayed} times so far in this set.\n\nThe most recent song was\n"${lastDouble.track_id}"\nPlayed ${safeTimePlayed}.`,
+		`Doubles check:\n\n${config.twitchChannelName} has played ${timesDoublesPlayed} set(s) of doubles so far in this set.\n\nThe most recent song was\n"${lastDoubleTitle}"\nPlayed ${safeTimePlayed}.`,
 		obsClearDisplayTime,
 		config
 	)

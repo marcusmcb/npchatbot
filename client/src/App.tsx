@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import TitleBar from './components/TitleBar'
 import CredentialsPanel from './components/CredentialsPanel'
 import PreferencesPanel from './components/PreferencesPanel'
+import SessionPreferencesPanel from './components/SessionPreferencesPanel'
 import SessionPanel from './components/SessionPanel'
 import MessagePanel from './components/MessagePanel'
 import ReportViewer from './components/ReportViewer'
@@ -33,7 +34,6 @@ const App = (): JSX.Element => {
 	const {
 		isObsResponseEnabled,
 		isIntervalEnabled,
-		isReportEnabled,
 		isSpotifyEnabled,
 		isAutoIDEnabled,
 		isAutoIDCleanupEnabled,
@@ -72,17 +72,7 @@ const App = (): JSX.Element => {
 		} else return
 	}
 
-	// helper to validate submitted email string
-	const isValidEmail = (email: string) => {
-		var pattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/
-		return pattern.test(email)
-	}
 
-	// handle user input changes
-	const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-		const { name, value } = event.target
-		setFormData({ [name]: value } as any)
-	}
 
 	/* EFFECT HOOKS */
 
@@ -267,14 +257,12 @@ const App = (): JSX.Element => {
 			setError,
 			(data: any) => setFormData(data),
 			commitInitial,
-			isReportEnabled,
 			isIntervalEnabled,
 			isObsResponseEnabled,
 			isSpotifyEnabled,
 			isAutoIDEnabled,
 			isAutoIDCleanupEnabled,
-			continueLastPlaylist,
-			isValidEmail
+			continueLastPlaylist
 		)
 		// commitInitial will be called inside handleSubmit on success
 	}
@@ -314,7 +302,7 @@ const App = (): JSX.Element => {
 					</>
 				)}
 			</div>
-			<div>
+			<div className='content-panel'>
 				{reportView ? (
 					<div className='app-container'>
 						<div className='main-report-panel'>
@@ -331,34 +319,50 @@ const App = (): JSX.Element => {
 					</div>
 				) : (
 					<div className='app-container'>
-						<div className='creds-prefs-panel'>
-							<CredentialsPanel
-								showTooltip={showTooltip}
-								setShowTooltip={setShowTooltip}
-								handleSubmit={handleSubmitWrapper}
-								isBotConnected={isBotConnected}
-							/>
-							<PreferencesPanel
-								showTooltip={showTooltip}
-								setShowTooltip={setShowTooltip}
-								isBotConnected={isBotConnected}
-							/>
+						<div className='main-grid'>
+							<div className='grid-creds'>
+								<CredentialsPanel
+									showTooltip={showTooltip}
+									setShowTooltip={setShowTooltip}
+									handleSubmit={handleSubmitWrapper}
+									isBotConnected={isBotConnected}
+								/>
+							</div>
+
+							<div className='grid-prefs'>
+								<PreferencesPanel
+									showTooltip={showTooltip}
+									setShowTooltip={setShowTooltip}
+									isBotConnected={isBotConnected}
+								/>
+							</div>
+
+							<div className='grid-session-prefs'>
+								<SessionPreferencesPanel
+									showTooltip={showTooltip}
+									setShowTooltip={setShowTooltip}
+									isBotConnected={isBotConnected}
+								/>
+							</div>
+
+							<div className='grid-session-panel'>
+								<SessionPanel
+									handleConnect={handleConnectWrapper}
+									handleDisconnect={handleDisconnectWrapper}
+									isBotConnected={isBotConnected}
+									reportData={reportData || ({} as ReportData)}
+									isReportReady={isReportReady}
+									setReportView={setReportView}
+									reportView={reportView}
+									validateLivePlaylist={validateLivePlaylistWrapper}
+									playlistSummaries={playlistSummaries}
+									currentReportIndex={currentReportIndex}
+									setCurrentReportIndex={setCurrentReportIndex}
+									reloadPlaylistSummaries={reloadPlaylistSummaries}
+									setPlaylistSummaries={setPlaylistSummaries}
+								/>
+							</div>
 						</div>
-						<SessionPanel
-							handleConnect={handleConnectWrapper}
-							handleDisconnect={handleDisconnectWrapper}
-							isBotConnected={isBotConnected}
-							reportData={reportData || ({} as ReportData)}
-							isReportReady={isReportReady}
-							setReportView={setReportView}
-							reportView={reportView}
-							validateLivePlaylist={validateLivePlaylistWrapper}
-							playlistSummaries={playlistSummaries}
-							currentReportIndex={currentReportIndex}
-							setCurrentReportIndex={setCurrentReportIndex}
-							reloadPlaylistSummaries={reloadPlaylistSummaries}
-							setPlaylistSummaries={setPlaylistSummaries}
-						/>
 					</div>
 				)}
 			</div>

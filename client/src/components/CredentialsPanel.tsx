@@ -112,7 +112,7 @@ const CredentialsPanel: React.FC<CredentialsPanelProps> = (props) => {
 	}
 
 	return (
-		<div className='app-container-column'>
+		<div className='app-container-column creds-panel'>
 			<div className='app-form-title'>Enter your credentials below:</div>
 			<form className='app-form' onSubmit={props.handleSubmit}>
 				{fieldsConfig.map((field) => (

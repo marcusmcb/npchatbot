@@ -10,6 +10,7 @@ add option to resume last Spotify playlist on startup
 
 */
 
+import React from 'react'
 import '../App.css'
 import './styles/preferencespanel.css'
 import { useUserContext } from '../context/UserContext'
@@ -22,13 +23,8 @@ type PreferencesPanelProps = {
 
 const PreferencesPanel: React.FC<PreferencesPanelProps> = (props) => {
 	const {
-		// form
-		formData,
-		setFormData,
-		// auth
 		isTwitchAuthorized,
 		isSpotifyAuthorized,
-		// prefs
 		isSpotifyEnabled,
 		setIsSpotifyEnabled,
 		continueLastPlaylist,
@@ -37,18 +33,16 @@ const PreferencesPanel: React.FC<PreferencesPanelProps> = (props) => {
 		setIsAutoIDEnabled,
 		isAutoIDCleanupEnabled,
 		setIsAutoIDCleanupEnabled,
-		isObsResponseEnabled,
-		setIsObsResponseEnabled,
-		isIntervalEnabled,
-		setIsIntervalEnabled,
-		isReportEnabled,
-		setIsReportEnabled,
 	} = useUserContext()
 
-	const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-		const { name, value } = event.target
-		setFormData({ [name]: value } as any)
-	}
+	const isSpotifyToggleDisabled = !isSpotifyAuthorized || props.isBotConnected
+	const isContinueLastDisabled =
+		!isSpotifyAuthorized || !isSpotifyEnabled || props.isBotConnected
+	const isAutoIdToggleDisabled = !isTwitchAuthorized || props.isBotConnected
+	const isAutoIdCleanupDisabled =
+		!isTwitchAuthorized || !isAutoIDEnabled || props.isBotConnected
+
+
 	return (
 		<div className='app-container-column'>
 			<div className='app-form-title'>Preferences:</div>
@@ -57,21 +51,16 @@ const PreferencesPanel: React.FC<PreferencesPanelProps> = (props) => {
 			<div className='toggle-field spotify-prefs-element'>
 				<input
 					type='checkbox'
-					disabled={!isSpotifyAuthorized || props.isBotConnected}
+					disabled={isSpotifyToggleDisabled}
 					id='spotifyPlaylistEnabled'
 					checked={isSpotifyEnabled}
 					onChange={() => setIsSpotifyEnabled(!isSpotifyEnabled)}
-					className={
-						!isSpotifyAuthorized || props.isBotConnected
-							? 'disabled-toggle'
-							: ''
-					}
+					className={isSpotifyToggleDisabled ? 'disabled-toggle' : ''}
 				/>
-
 				<label
 					htmlFor='spotifyPlaylistEnabled'
 					className={
-						(!isSpotifyEnabled || props.isBotConnected
+						(!isSpotifyEnabled || isSpotifyToggleDisabled
 							? 'disabled-label'
 							: '') + (props.isBotConnected ? ' greyed-out-label' : '')
 					}
@@ -94,38 +83,21 @@ const PreferencesPanel: React.FC<PreferencesPanelProps> = (props) => {
 				</span>
 			</div>
 
-			{/* Continue Last Playlist */}
-			<div className='toggle-field'>
+			<div className='toggle-field interval-prefs-element'>
 				<input
 					type='checkbox'
-					disabled={
-						!isSpotifyAuthorized ||
-						!isSpotifyEnabled ||
-						props.isBotConnected
-					}
-					id='spotifyPlaylistEnabled'
+					disabled={isContinueLastDisabled}
+					id='continueLastPlaylist'
 					checked={continueLastPlaylist}
 					onChange={() => setContinueLastPlaylist(!continueLastPlaylist)}
-					className={
-						!isSpotifyAuthorized ||
-						!isSpotifyEnabled ||
-						props.isBotConnected
-							? 'disabled-toggle'
-							: ''
-					}
+					className={isContinueLastDisabled ? 'disabled-toggle' : ''}
 				/>
-
 				<label
 					htmlFor='continueLastPlaylist'
 					className={
-						(!isSpotifyAuthorized ||
-						!isSpotifyEnabled ||
-						props.isBotConnected
+						(!continueLastPlaylist || isContinueLastDisabled
 							? 'disabled-label'
-							: '') +
-						(!isSpotifyEnabled || props.isBotConnected
-							? ' greyed-out-label'
-							: '')
+							: '') + (props.isBotConnected ? ' greyed-out-label' : '')
 					}
 				>
 					Continue Last Playlist
@@ -147,29 +119,19 @@ const PreferencesPanel: React.FC<PreferencesPanelProps> = (props) => {
 			</div>
 
 			{/* Auto ID Preferences */}
-			<div className='toggle-field'>
+			<div className='toggle-field interval-prefs-element'>
 				<input
 					type='checkbox'
-					disabled={!isTwitchAuthorized || props.isBotConnected}
+					disabled={isAutoIdToggleDisabled}
 					id='autoIDEnabled'
 					checked={isAutoIDEnabled}
-					onChange={() => {
-						setIsAutoIDEnabled(!isAutoIDEnabled)
-						// if (props.isAutoIDCleanupEnabled) {
-						// 	props.setIsAutoIDCleanupEnabled(false)
-						// }
-					}}
-					className={
-						!isTwitchAuthorized || props.isBotConnected
-							? 'disabled-toggle'
-							: ''
-					}
+					onChange={() => setIsAutoIDEnabled(!isAutoIDEnabled)}
+					className={isAutoIdToggleDisabled ? 'disabled-toggle' : ''}
 				/>
-
 				<label
 					htmlFor='autoIDEnabled'
 					className={
-						(!isAutoIDEnabled || props.isBotConnected
+						(!isAutoIDEnabled || isAutoIdToggleDisabled
 							? 'disabled-label'
 							: '') + (props.isBotConnected ? ' greyed-out-label' : '')
 					}
@@ -190,33 +152,21 @@ const PreferencesPanel: React.FC<PreferencesPanelProps> = (props) => {
 				</span>
 			</div>
 
-			{/* Auto ID Cleanup Preferences */}
-			<div className='toggle-field'>
+			<div className='toggle-field interval-prefs-element'>
 				<input
 					type='checkbox'
-					disabled={
-						!isTwitchAuthorized ||
-						!isAutoIDEnabled ||
-						props.isBotConnected
-					}
+					disabled={isAutoIdCleanupDisabled}
 					id='autoIDCleanupEnabled'
 					checked={isAutoIDCleanupEnabled}
 					onChange={() => setIsAutoIDCleanupEnabled(!isAutoIDCleanupEnabled)}
-					className={
-						!isTwitchAuthorized ||
-						!isAutoIDEnabled ||
-						props.isBotConnected
-							? 'disabled-toggle'
-							: ''
-					}
+					className={isAutoIdCleanupDisabled ? 'disabled-toggle' : ''}
 				/>
-
 				<label
 					htmlFor='autoIDCleanupEnabled'
 					className={
 						(!isAutoIDEnabled ||
 						!isAutoIDCleanupEnabled ||
-						props.isBotConnected
+						isAutoIdCleanupDisabled
 							? 'disabled-label'
 							: '') +
 						(props.isBotConnected || !isAutoIDEnabled
@@ -242,152 +192,6 @@ const PreferencesPanel: React.FC<PreferencesPanelProps> = (props) => {
 				</span>
 			</div>
 
-			{/* OBS preferences */}
-			<div className='toggle-field obs-prefs-element'>
-				<input
-					type='checkbox'
-					id='obsResponseToggle'
-					checked={isObsResponseEnabled}
-					disabled={
-						!isTwitchAuthorized ||
-						!formData.obsWebsocketAddress ||
-						props.isBotConnected
-					}
-					onChange={() => {
-						setIsObsResponseEnabled(!isObsResponseEnabled)
-					}}
-					className={
-						!isTwitchAuthorized ||
-						!formData.obsWebsocketAddress ||
-						props.isBotConnected
-							? 'disabled-toggle'
-							: ''
-					}
-				/>
-				<label
-					htmlFor='obsResponseToggle'
-					className={
-						(!isObsResponseEnabled || props.isBotConnected
-							? 'disabled-label'
-							: '') +
-						(!isObsResponseEnabled || props.isBotConnected
-							? 'greyed-out-label'
-							: '')
-					}
-				>
-					Enable OBS Responses
-				</label>
-			</div>
-
-			<div className='form-field'>
-				<label
-					htmlFor='obs-clear-display-time'
-					className={
-						!isObsResponseEnabled || props.isBotConnected
-							? 'disabled-label'
-							: ''
-					}
-				>
-					Display time (in seconds):
-				</label>
-
-				<input
-					className={
-						!isObsResponseEnabled || props.isBotConnected
-							? 'pref-input disabled-label'
-							: 'pref-input'
-					}
-					type='text'
-					id='obs-clear-display-time'
-					name='obsClearDisplayTime'
-					value={formData.obsClearDisplayTime}
-					onChange={handleInputChange}
-					// placeholder='enter time in seconds'
-					disabled={!isObsResponseEnabled}
-				/>
-				<span
-					className={`question-icon ${
-						props.showTooltip === 'obsClearDisplayTime' ? 'active-icon' : ''
-					}`}
-					onClick={() =>
-						props.setShowTooltip(
-							props.showTooltip === 'obsClearDisplayTime'
-								? null
-								: 'obsClearDisplayTime'
-						)
-					}
-				>
-					?
-				</span>
-			</div>
-
-			{/* Interval Message preferences */}
-			<div className='toggle-field interval-prefs-element'>
-				<input
-					type='checkbox'
-					disabled={!isTwitchAuthorized || props.isBotConnected}
-					id='intervalMessageToggle'
-					checked={isIntervalEnabled}
-					onChange={() => setIsIntervalEnabled(!isIntervalEnabled)}
-					className={
-						!isTwitchAuthorized || props.isBotConnected
-							? 'disabled-toggle'
-							: ''
-					}
-				/>
-
-				<label
-					htmlFor='intervalMessageToggle'
-					className={
-						(!isIntervalEnabled || props.isBotConnected
-							? 'disabled-label'
-							: '') + (props.isBotConnected ? ' greyed-out-label' : '')
-					}
-				>
-					Enable Interval Messages
-				</label>
-			</div>
-			<div className='form-field'>
-				<label
-					htmlFor='obs-interval-duration'
-					className={
-						!isIntervalEnabled || props.isBotConnected
-							? 'disabled-label'
-							: ''
-					}
-				>
-					Duration (in seconds):
-				</label>
-
-				<input
-					className={
-						!isIntervalEnabled || props.isBotConnected
-							? 'disabled-label pref-input'
-							: 'pref-input'
-					}
-					type='text'
-					id='obs-interval-duration'
-					name='intervalMessageDuration'
-					value={formData.intervalMessageDuration}
-					onChange={handleInputChange}
-					// placeholder='enter time in minutes'
-					disabled={!isIntervalEnabled || props.isBotConnected}
-				/>
-				<span
-					className={`question-icon ${
-						props.showTooltip === 'intervalMessageDuration' ? 'active-icon' : ''
-					}`}
-					onClick={() =>
-						props.setShowTooltip(
-							props.showTooltip === 'intervalMessageDuration'
-								? null
-								: 'intervalMessageDuration'
-						)
-					}
-				>
-					?
-				</span>
-			</div>
 		</div>
 	)
 }

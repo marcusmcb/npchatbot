@@ -7,14 +7,12 @@ const handleSubmit = async (
 	setError: (error: string) => void,
 	setFormData: (data: any) => void,
 	commitInitial: (nextFormData?: any, nextPreferences?: any) => void,
-	isReportEnabled: boolean,
 	isIntervalEnabled: boolean,
 	isObsResponseEnabled: boolean,
 	isSpotifyEnabled: boolean,
 	isAutoIDEnabled: boolean,
 	isAutoIDCleanupEnabled: boolean,
-	continueLastPlaylist: boolean,
-	isValidEmail: (email: string) => boolean
+	continueLastPlaylist: boolean
 ) => {
 	setError('')
 	event.preventDefault()
@@ -33,14 +31,6 @@ const handleSubmit = async (
 		return
 	}
 	addMessageToQueue('Updating...')
-	if (isReportEnabled && formData.userEmailAddress === '') {
-		setError('A valid email address is required for post-stream reporting.')
-		return
-	}
-	if (isReportEnabled && !isValidEmail(formData.userEmailAddress)) {
-		setError('Please enter a valid email address to enable this feature.')
-		return
-	}
 	if (isIntervalEnabled && formData.intervalMessageDuration === '') {
 		formData.intervalMessageDuration = '15'
 	}
@@ -52,7 +42,6 @@ const handleSubmit = async (
 		...formData,
 		isObsResponseEnabled,
 		isIntervalEnabled,
-		isReportEnabled,
 		isSpotifyEnabled,
 		isAutoIDEnabled,
 		isAutoIDCleanupEnabled,

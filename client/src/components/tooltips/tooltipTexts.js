@@ -12,8 +12,8 @@ const tooltipTexts = {
 		'Enter your local OBS web socket address here (optional) in the same format shown in the example (address:port).',
 	obsWebsocketPassword:
 		'If your web socket connection is secured within OBS, please enter the password here (optional)',
-	userEmailAddress:
-		"Enter the email address that you'd like your post-stream report sent to",
+	obsResponseToggle:
+		'Enable this feature to show chat responses in OBS. Requires Twitch authorization and an OBS Websocket address.',
 	spotifyPlaylistEnabled:
 		'With this feature enabled, a Spotify© playlist of your current set will be created each time you connect npChatbot to Twitch.',
 	continueLastPlaylist:
@@ -22,6 +22,8 @@ const tooltipTexts = {
 		'Enable this feature to automatically display the song currently playing in your chat as it updates.',
 	autoIDCleanupEnabled:
 		"With Auto ID enabled, this feature removes any text within brackets or parentheses from the current song's artist & title when displayed in your chat.",
+	intervalMessageToggle:
+		'Enable this feature to send automatic interval messages to chat while connected.',
 }
 
 export default tooltipTexts

@@ -209,7 +209,7 @@ describe('npCommands core command handlers', () => {
 		const [channel, message] = twitchClient.say.mock.calls[0]
 		expect(channel).toBe('#test')
 		expect(message).toMatch(/has played 1 set\(s\) of doubles/)
-		expect(message).toMatch(/"Song X"/)
+		expect(message).toMatch(/"Song X \(Remix\)"/)
 
 		expect(obs.call).toHaveBeenCalledTimes(1)
 		expect(clearOBSResponse).toHaveBeenCalled()

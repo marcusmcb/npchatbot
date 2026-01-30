@@ -318,6 +318,33 @@ const initMainWindow = async () => {
 	const iconPath = path.join(__dirname, './client/public/favicon.ico')
 	const appHtmlFilePath = path.join(__dirname, './client/build/index.html')
 
+	// In dev, CRA may auto-select a different port (e.g., 3001) if 3000 is busy.
+	// Electron was historically hardcoded to 3000, which can result in loading a stale
+	// or different renderer instance. Probe common URLs and use the first that responds.
+	let devServerUrl = 'http://127.0.0.1:3000'
+	if (isDev) {
+		const candidates = [
+			process.env.REACT_DEV_SERVER_URL,
+			'http://127.0.0.1:3001',
+			'http://localhost:3001',
+			'http://127.0.0.1:3000',
+			'http://localhost:3000',
+		].filter(Boolean)
+
+		const uniqueCandidates = [...new Set(candidates)]
+		for (const url of uniqueCandidates) {
+			try {
+				const ok = await waitForServer(url, 2500)
+				if (ok) {
+					devServerUrl = url
+					break
+				}
+			} catch (e) {
+				// ignore and try next candidate
+			}
+		}
+	}
+
 	mainWindow = await createMainWindow({
 		isDev,
 		getIsConnected: () => isConnected,
@@ -330,7 +357,7 @@ const initMainWindow = async () => {
 		preloadPath,
 		iconPath,
 		waitForServer,
-		devServerUrl: 'http://127.0.0.1:3000',
+		devServerUrl,
 		appHtmlFilePath,
 	})
 }

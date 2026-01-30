@@ -25,8 +25,8 @@ const MessagePanel: React.FC<MessagePanelProps> = ({
 				return tooltipTexts.obsWebsocketAddress
 			case 'obsWebsocketPassword':
 				return tooltipTexts.obsWebsocketPassword
-			case 'userEmailAddress':
-				return tooltipTexts.userEmailAddress
+			case 'obsResponseToggle':
+				return tooltipTexts.obsResponseToggle
 			case 'spotifyPlaylistEnabled':
 				return tooltipTexts.spotifyPlaylistEnabled
 			case 'autoIDEnabled':
@@ -35,6 +35,8 @@ const MessagePanel: React.FC<MessagePanelProps> = ({
 				return tooltipTexts.autoIDCleanupEnabled
 			case 'continueLastPlaylist':
 				return tooltipTexts.continueLastPlaylist
+			case 'intervalMessageToggle':
+				return tooltipTexts.intervalMessageToggle
 			default:
 				return ''
 		}
