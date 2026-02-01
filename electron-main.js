@@ -319,9 +319,9 @@ const initMainWindow = async () => {
 	const appHtmlFilePath = path.join(__dirname, './client/build/index.html')
 
 	// In dev, CRA may auto-select a different port (e.g., 3001) if 3000 is busy.
-	// Electron was historically hardcoded to 3000, which can result in loading a stale
-	// or different renderer instance. Probe common URLs and use the first that responds.
-	let devServerUrl = 'http://127.0.0.1:3000'
+	// We pin CRA to 3001 in client/package.json, so prefer that by default.
+	// We still probe alternates to support overrides and unusual environments.
+	let devServerUrl = process.env.REACT_DEV_SERVER_URL || 'http://127.0.0.1:3001'
 	if (isDev) {
 		const candidates = [
 			process.env.REACT_DEV_SERVER_URL,
@@ -332,16 +332,27 @@ const initMainWindow = async () => {
 		].filter(Boolean)
 
 		const uniqueCandidates = [...new Set(candidates)]
-		for (const url of uniqueCandidates) {
-			try {
-				const ok = await waitForServer(url, 2500)
-				if (ok) {
-					devServerUrl = url
-					break
+		// CRA can take a bit to boot; keep probing for up to 60s total.
+		const start = Date.now()
+		const overallTimeoutMs = 60000
+		while (Date.now() - start < overallTimeoutMs) {
+			let found = null
+			for (const url of uniqueCandidates) {
+				try {
+					const ok = await waitForServer(url, 1200)
+					if (ok) {
+						found = url
+						break
+					}
+				} catch (e) {
+					// ignore and try next candidate
 				}
-			} catch (e) {
-				// ignore and try next candidate
 			}
+			if (found) {
+				devServerUrl = found
+				break
+			}
+			await new Promise((r) => setTimeout(r, 250))
 		}
 	}
 

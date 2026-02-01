@@ -20,7 +20,7 @@
     "web-vitals": "^3.4.0"
   },
   "scripts": {
-  "start": "react-scripts start",
+    "start": "cross-env PORT=3001 BROWSER=none react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
@@ -45,6 +45,7 @@
     ]
   },
   "devDependencies": {
-    "create-react-app": "^5.0.1"
+    "create-react-app": "^5.0.1",
+    "cross-env": "^7.0.3"
   }
 }

@@ -46,9 +46,36 @@ const createMainWindow = async ({
 	const appURL = isDev ? devServerUrl : `file://${appHtmlFilePath}`
 
 	if (isDev) {
-		const ready = await waitForServer(devServerUrl)
+		// Show something immediately so we don't end up with a white window while CRA boots.
+		const loadingHtml = `<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'" />
+    <title>npChatbot - Starting</title>
+  </head>
+  <body style="margin:0; background: rgb(49,49,49); color: #fff; font-family: sans-serif;">
+    <div style="padding: 18px;">
+      <div style="font-size: 20px; color: rgb(74,242,228); margin-bottom: 10px;">Starting npChatbot…</div>
+      <div style="opacity: 0.9;">Waiting for React dev server:</div>
+      <div style="margin-top: 6px; font-family: monospace;">${String(devServerUrl || '')}</div>
+      <div style="margin-top: 14px; opacity: 0.7;">If this takes more than ~1 minute, restart <b>npm run dev</b>.</div>
+    </div>
+  </body>
+</html>`
+		try {
+			await mainWindow.loadURL(
+				`data:text/html;charset=utf-8,${encodeURIComponent(loadingHtml)}`
+			)
+		} catch {}
+
+		const ready = await waitForServer(devServerUrl, 60000)
 		if (!ready) {
 			console.error('Client dev server did not start in time.')
+			// Still try loading the URL so Electron displays an error page instead of staying blank.
+			try {
+				mainWindow.loadURL(appURL)
+			} catch {}
 			return mainWindow
 		}
 	}
