@@ -216,7 +216,7 @@ button:disabled:hover {
 .toggle-field {
 	display: flex;
 	align-items: center;
-	margin-bottom: 10px;
+	margin-bottom: 8px;
 	cursor: pointer;
 }
 
@@ -228,21 +228,79 @@ button:disabled:hover {
    Row 1: Credentials | Preferences | Session Preferences
    Row 2:             Chatbot Controls (spans Preferences + Session Prefs)
 */
-.main-grid {
-	display: grid;
-	grid-template-columns: 430px 1fr 320px;
-	grid-template-rows: auto auto;
-	align-content: start;
-	column-gap: 16px;
-	row-gap: 12px;
+.main-layout {
+	display: flex;
+	gap: 16px;
 	flex: 1;
 	min-height: 0;
 	overflow: hidden;
 }
 
+.left-col {
+	flex: 0 0 430px;
+	min-width: 0;
+	min-height: 0;
+	overflow: hidden;
+}
+
+.right-col {
+	flex: 1;
+	min-width: 0;
+	min-height: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	overflow: hidden;
+}
+
+.right-top {
+	display: flex;
+	gap: 16px;
+	min-width: 0;
+}
+
+.prefs-col {
+	min-width: 0;
+}
+
+.session-prefs-col {
+	min-width: 0;
+}
+
+.right-bottom {
+	flex: 0 0 auto;
+	min-height: 0;
+	margin-top: 40px;
+}
+
+.main-grid {
+	display: grid;
+	grid-template-columns: 430px 1fr 320px;
+	grid-template-rows: auto minmax(0, 1fr);
+	align-content: start;
+	column-gap: 16px;
+	row-gap: 10px;
+	flex: 1;
+	min-height: 0;
+	overflow: hidden;
+}
+
+/* Slightly tighter spacing in the fixed-size main grid */
+.main-grid .app-form-title {
+	padding: 10px 0 6px;
+}
+
+.main-grid .app-form {
+	padding: 12px 0 0;
+}
+
+.main-grid .form-field {
+	margin-bottom: 8px;
+}
+
 .grid-creds {
 	grid-column: 1;
-	grid-row: 1;
+	grid-row: 1 / 3;
 	min-width: 0;
 	min-height: 0;
 	overflow: hidden;
@@ -269,6 +327,7 @@ button:disabled:hover {
 	grid-row: 2;
 	min-width: 0;
 	min-height: 0;
+	align-self: start;
 	overflow: hidden;
 }
 

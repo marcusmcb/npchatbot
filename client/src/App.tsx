@@ -319,8 +319,8 @@ const App = (): JSX.Element => {
 					</div>
 				) : (
 					<div className='app-container'>
-						<div className='main-grid'>
-							<div className='grid-creds'>
+						<div className='main-layout'>
+							<div className='left-col'>
 								<CredentialsPanel
 									showTooltip={showTooltip}
 									setShowTooltip={setShowTooltip}
@@ -329,38 +329,41 @@ const App = (): JSX.Element => {
 								/>
 							</div>
 
-							<div className='grid-prefs'>
-								<PreferencesPanel
-									showTooltip={showTooltip}
-									setShowTooltip={setShowTooltip}
-									isBotConnected={isBotConnected}
-								/>
-							</div>
+							<div className='right-col'>
+								<div className='right-top'>
+									<div className='prefs-col'>
+										<PreferencesPanel
+											showTooltip={showTooltip}
+											setShowTooltip={setShowTooltip}
+											isBotConnected={isBotConnected}
+										/>
+									</div>
+									<div className='session-prefs-col'>
+										<SessionPreferencesPanel
+											showTooltip={showTooltip}
+											setShowTooltip={setShowTooltip}
+											isBotConnected={isBotConnected}
+										/>
+									</div>
+								</div>
 
-							<div className='grid-session-prefs'>
-								<SessionPreferencesPanel
-									showTooltip={showTooltip}
-									setShowTooltip={setShowTooltip}
-									isBotConnected={isBotConnected}
-								/>
-							</div>
-
-							<div className='grid-session-panel'>
-								<SessionPanel
-									handleConnect={handleConnectWrapper}
-									handleDisconnect={handleDisconnectWrapper}
-									isBotConnected={isBotConnected}
-									reportData={reportData || ({} as ReportData)}
-									isReportReady={isReportReady}
-									setReportView={setReportView}
-									reportView={reportView}
-									validateLivePlaylist={validateLivePlaylistWrapper}
-									playlistSummaries={playlistSummaries}
-									currentReportIndex={currentReportIndex}
-									setCurrentReportIndex={setCurrentReportIndex}
-									reloadPlaylistSummaries={reloadPlaylistSummaries}
-									setPlaylistSummaries={setPlaylistSummaries}
-								/>
+								<div className='right-bottom'>
+									<SessionPanel
+										handleConnect={handleConnectWrapper}
+										handleDisconnect={handleDisconnectWrapper}
+										isBotConnected={isBotConnected}
+										reportData={reportData || ({} as ReportData)}
+										isReportReady={isReportReady}
+										setReportView={setReportView}
+										reportView={reportView}
+										validateLivePlaylist={validateLivePlaylistWrapper}
+										playlistSummaries={playlistSummaries}
+										currentReportIndex={currentReportIndex}
+										setCurrentReportIndex={setCurrentReportIndex}
+										reloadPlaylistSummaries={reloadPlaylistSummaries}
+										setPlaylistSummaries={setPlaylistSummaries}
+									/>
+								</div>
 							</div>
 						</div>
 					</div>
