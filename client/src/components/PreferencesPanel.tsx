@@ -45,7 +45,7 @@ const PreferencesPanel: React.FC<PreferencesPanelProps> = (props) => {
 
 	return (
 		<div className='app-container-column'>
-			<div className='app-form-title'>Preferences:</div>
+			<div className='app-form-title'>Chatbot Preferences:</div>
 
 			{/* Spotify Preferences */}
 			<div className='toggle-field spotify-prefs-element'>
