@@ -74,6 +74,7 @@
 .session-info-status {
 	margin-left: 0;
 	color: var(--session-info-status-color);
+	font-family: var(--fira-sans);
 }
 
 .greyed-out-on-connect {
