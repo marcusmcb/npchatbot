@@ -17,7 +17,9 @@ const getSpotifySongData = async (songQuery) => {
 	}
 
 	try {
-		const url = `https://api.spotify.com/v1/search?q=${songQuery}&type=track&limit=3&market=USA`
+		const url = `https://api.spotify.com/v1/search?q=${encodeURIComponent(
+			songQuery
+		)}&type=track&limit=3&market=US`
 		const response = await axios.get(url, {
 			headers: {
 				Authorization: `Bearer ${accessToken}`,

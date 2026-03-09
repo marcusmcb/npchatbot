@@ -12,9 +12,9 @@ const createSpotifyPlaylist = async () => {
 			})
 		})
 
-		if (!user || !user.spotifyUserId) {
-			logToFile('No stored Spotify user ID found')
-			throw new Error('No stored Spotify user ID found')
+		if (!user) {
+			logToFile('No user found for Spotify playlist creation')
+			throw new Error('No user found for Spotify playlist creation')
 		} else {
 			logToFile('User data found for Spotify playlist creation')
 			logToFile('-------------------------')
@@ -27,7 +27,6 @@ const createSpotifyPlaylist = async () => {
 			logToFile('No valid Spotify access token available')
 			throw new Error('No valid Spotify access token available')
 		}
-		const spotifyUserId = user.spotifyUserId
 		const playlistName = `Twitch Stream Playlist - ${getCurrentDate()}`
 
 		const data = {
@@ -39,13 +38,12 @@ const createSpotifyPlaylist = async () => {
 		logToFile('Creating new Spotify playlist...')
 		logToFile('-------------------------')
 		logToFile(`Access token: ${accessToken}`)
-		logToFile(`User ID: ${spotifyUserId}`)
 		logToFile(`Playlist name: ${playlistName}`)
 
 
 		try {
 			const response = await axios.post(
-				`https://api.spotify.com/v1/users/${spotifyUserId}/playlists`,
+				`https://api.spotify.com/v1/me/playlists`,
 				data,
 				{
 					headers: {

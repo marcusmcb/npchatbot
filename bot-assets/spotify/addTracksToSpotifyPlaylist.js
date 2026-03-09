@@ -18,7 +18,7 @@ const addTracksToSpotifyPlaylist = async (playlistId, trackUris, wss) => {
 		const batch = trackUris.slice(i, i + batchSize)
 		try {
 			await axios.post(
-				`https://api.spotify.com/v1/playlists/${playlistId}/tracks`,
+				`https://api.spotify.com/v1/playlists/${playlistId}/items`,
 				{ uris: batch },
 				{
 					headers: {
