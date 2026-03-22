@@ -156,6 +156,6 @@ The real time command use by viewers also gives DJs streaming on Twitch some ins
 
 The added Spotify integration gives streaming DJs an easily shareable playlist with their communities, further fortifying the bond with their respective audiences.
 
-This began as a simple Node script, running on a Raspberry Pi here in my office to give viewers in my own channel an easy way to look up the song "now playing".  It's now a fully-fledged desktop app, ready for you to download and try out for yourself.
+This began as a simple Node script, running on a Raspberry Pi in my office to give viewers in my own channel an easy way to look up the song "now playing" while streaming.  It's now a fully-fledged desktop app, ready for you to download and try out for yourself.
 
 Marcus McBride, 2026.
