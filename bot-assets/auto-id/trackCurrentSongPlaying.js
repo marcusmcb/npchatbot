@@ -5,12 +5,9 @@ const {
 	cleanQueryString,
 } = require('../spotify/helpers/spotifyPlaylistHelpers')
 
-const { getSpotifySongData } = require('../spotify/getSpotifySongData')
-const { getSpotifyPlaylistData } = require('../spotify/getSpotifyPlaylistData')
-
 const {
-	addTracksToSpotifyPlaylist,
-} = require('../spotify/addTracksToSpotifyPlaylist')
+	getEnabledPlaylistProviders,
+} = require('../playlist-providers/providerRegistry')
 
 const {
 	getSeratoPlaylistData,
@@ -32,162 +29,159 @@ let { setCurrentPlaylistSummary } = require('../command-use/commandUse')
 /* GLOBAL VALUES */
 
 let trackingInterval = null
-let songsPlayed = [] // only used to avoid adding true duplicates to Spotify
-let hasSeededSongsPlayedForContinuedPlaylist = false
+// Only used to avoid adding true duplicates to provider playlists.
+// Kept per-provider so future services do not interfere with one another.
+let songsPlayedByProvider = {}
+let hasSeededSongsPlayedForContinuedPlaylistByProvider = {}
 // Remember the last Serato scrape state so we don't
 // repeatedly count the same back-to-back double on
 // every polling interval.
 let lastSeratoCurrent = null
 let lastSeratoPrevious = null
 
-const prepSongForSpotifyPlaylist = async (
-	spotifyPlaylistId,
-	currentSong,
-	wss
-) => {
-	let uri = []
-	let spotifySongUri = null
-	const songQuery = cleanCurrentSongInfo(currentSong)
-	const spotifyQuery = cleanQueryString(songQuery)
-	const playedSongs = getUniqueSongs(songsPlayed)
-	const doNotAddToSpotify = hasSongBeenPlayed(spotifyQuery, playedSongs) // returns false if the song has NOT been played
-	if (doNotAddToSpotify) {
-		console.log('Song has already been played.')
-	} else {
-		spotifySongUri = await getSpotifySongData(spotifyQuery)
-		uri.push(spotifySongUri)
+const ensureProviderState = (providerId) => {
+	if (!songsPlayedByProvider[providerId]) songsPlayedByProvider[providerId] = []
+	if (!hasSeededSongsPlayedForContinuedPlaylistByProvider[providerId]) {
+		hasSeededSongsPlayedForContinuedPlaylistByProvider[providerId] = false
 	}
-	if (spotifySongUri !== null) {
-		await addTracksToSpotifyPlaylist(spotifyPlaylistId, uri, wss)
+}
+
+const prepSongForProviderPlaylist = async (provider, playlistId, currentSong, wss) => {
+	ensureProviderState(provider.id)
+
+	let refs = []
+	let trackRef = null
+	const songQuery = cleanCurrentSongInfo(currentSong)
+	const providerQuery = cleanQueryString(songQuery)
+	const playedSongs = getUniqueSongs(songsPlayedByProvider[provider.id])
+	const doNotAdd = hasSongBeenPlayed(providerQuery, playedSongs) // returns false if the song has NOT been played
+
+	if (doNotAdd) {
+		console.log('Song has already been played.')
+		return
+	}
+
+	trackRef = await provider.searchTrackRef(providerQuery)
+	refs.push(trackRef)
+
+	if (trackRef !== null) {
+		await provider.addTracksToPlaylist(playlistId, refs, wss)
 	}
 }
 
 // method to resume updating the user's last Spotify playlist
 // based on their Serato Live Playlist
-const resumeSpotifyPlaylist = async (
-	spotifyPlaylistId,
-	url,
-	isAutoIDCleanupEnabled,
-	wss
-) => {
-	// add played songs to current session summary
-	const reportData = await createLiveReport(url)
-	setCurrentPlaylistSummary(reportData)
-
-	// create songsPlayed array for tracking
-	const results = await getSeratoPlaylistData(url)
+const seedProviderPlayedSongsFromSerato = (providerId, results) => {
+	ensureProviderState(providerId)
 	for (let i = 0; i < results.length; i++) {
 		const songQuery = cleanCurrentSongInfo(results[i].children[0].data.trim())
 		const query = cleanQueryString(songQuery)
-		songsPlayed.push(query)
-	}
-
-	// compare the current Serato & Spotify playlist lengths and
-	// add any missing songs to the Spotify playlist
-
-	// update this logic to accurately compare the results of the two playlists
-
-	const seratoPlaylistLength = results.length
-	const spotifyPlaylistLength = await getSpotifyPlaylistData(spotifyPlaylistId)
-
-	console.log('Serato Playlist Length: ', seratoPlaylistLength)
-	console.log('Spotify Playlist Length: ', spotifyPlaylistLength)
-
-	if (spotifyPlaylistLength === seratoPlaylistLength) {
-		if (spotifyPlaylistLength === 0 && seratoPlaylistLength === 0) {
-			console.log('No songs found in either playlist.')
-			console.log('--------------------')
-			return
-		}
-		console.log('Spotify playlist is up to date with Serato playlist.')
-		console.log('--------------------')
-		currentSong = results[0].children[0].data.trim()
-		if (isAutoIDCleanupEnabled === true) {
-			currentSong = cleanCurrentSongInfo(currentSong)
-		}
-	} else {
-		console.log('Serato Playlist Length: ', seratoPlaylistLength)
-		console.log('Spotify Playlist Length: ', spotifyPlaylistLength)
-		console.log('--------------------')
-		console.log('Songs in Serato Playlist but not in Spotify Playlist: ')
-		console.log('--------------------')
-
-		let songUris = []
-		const lengthDifference = seratoPlaylistLength - spotifyPlaylistLength
-		for (let i = 0; i < lengthDifference; i++) {
-			console.log(results[i].children[0].data.trim())
-			const songQuery = cleanCurrentSongInfo(results[i].children[0].data.trim())
-			const query = cleanQueryString(songQuery)
-			const spotifySongUri = await getSpotifySongData(query)
-			if (spotifySongUri !== null) {
-				songUris.push(spotifySongUri)
-			}
-		}
-		if (songUris.length > 0) {
-			songUris = [...new Set(songUris)]
-			setTimeout(async () => {
-				await addTracksToSpotifyPlaylist(spotifyPlaylistId, songUris, wss)
-			}, 1000)
-			currentSong = results[0].children[0].data.trim()
-			if (isAutoIDCleanupEnabled === true) {
-				currentSong = cleanCurrentSongInfo(currentSong)
-			}
-		} else {
-			console.log('No Spotify URIs found for songs in Serato Live Playlist.')
-			console.log('--------------------')
-		}
+		songsPlayedByProvider[providerId].push(query)
 	}
 }
 
-// method to create and initially populate the user's Spotify playlist
-// based on their Serato Live Playlist
-const initSpotifyPlaylist = async (
-	spotifyPlaylistId,
+const syncProviderPlaylistFromSerato = async (
+	provider,
+	playlistId,
 	url,
 	isAutoIDCleanupEnabled,
-	wss
+	wss,
+	{
+		mode, // 'init' | 'resume'
+	}
 ) => {
-	console.log(
-		'Adding all songs from Serato Live Playlist scrape to Spotify playlist...'
-	)
-	console.log('--------------------')
-
-	// add played songs to current session summary
-	const reportData = await createLiveReport(url)
-	setCurrentPlaylistSummary(reportData)
+	ensureProviderState(provider.id)
 
 	const results = await getSeratoPlaylistData(url)
-	if (!results || results.length === 0) {
-		console.log('No songs found in Serato Live Playlist scrape.')
-		console.log('Check that your Serato Live Playlist is active and public.')
-		console.log('--------------------')
-	} else if (results.length > 0) {
-		let songUris = []
+	seedProviderPlayedSongsFromSerato(provider.id, results)
+
+	const seratoPlaylistLength = results.length
+	const providerPlaylistLength = await provider.getPlaylistLength(playlistId)
+
+	console.log('Serato Playlist Length: ', seratoPlaylistLength)
+	console.log(`${provider.id} Playlist Length: `, providerPlaylistLength)
+
+	// INIT: add everything from Serato scrape
+	if (mode === 'init') {
+		if (!results || results.length === 0) {
+			console.log('No songs found in Serato Live Playlist scrape.')
+			console.log('Check that your Serato Live Playlist is active and public.')
+			console.log('--------------------')
+			return
+		}
+
+		let trackRefs = []
 		for (let i = 0; i < results.length; i++) {
 			const songQuery = cleanCurrentSongInfo(results[i].children[0].data.trim())
 			const query = cleanQueryString(songQuery)
-			songsPlayed.push(query)
-			const spotifySongUri = await getSpotifySongData(query)
-			if (spotifySongUri !== null) {
-				songUris.push(spotifySongUri)
-			}
+			const ref = await provider.searchTrackRef(query)
+			if (ref !== null) trackRefs.push(ref)
 		}
-		if (songUris.length > 0) {
-			songUris = [...new Set(songUris)]
+		if (trackRefs.length > 0) {
+			trackRefs = [...new Set(trackRefs)]
 			setTimeout(async () => {
-				await addTracksToSpotifyPlaylist(spotifyPlaylistId, songUris, wss)
+				await provider.addTracksToPlaylist(playlistId, trackRefs, wss)
 			}, 1000)
-			currentSong = results[0].children[0].data.trim()
+			// Preserve prior behavior: compute but do not otherwise use currentSong.
+			let currentSong = results[0].children[0].data.trim()
 			if (isAutoIDCleanupEnabled === true) {
 				currentSong = cleanCurrentSongInfo(currentSong)
 			}
 			console.log('Serato Playlist Length: ', results.length)
 		} else {
-			console.log('No Spotify URIs found for songs in Serato Live Playlist.')
+			console.log('No matching track refs found for songs in Serato Live Playlist.')
 			console.log('--------------------')
 		}
+		return
+	}
+
+	// RESUME: compare playlist lengths and add the missing front segment
+	if (providerPlaylistLength === seratoPlaylistLength) {
+		if (providerPlaylistLength === 0 && seratoPlaylistLength === 0) {
+			console.log('No songs found in either playlist.')
+			console.log('--------------------')
+			return
+		}
+		console.log(`${provider.id} playlist is up to date with Serato playlist.`)
+		console.log('--------------------')
+		let currentSong = results[0].children[0].data.trim()
+		if (isAutoIDCleanupEnabled === true) {
+			currentSong = cleanCurrentSongInfo(currentSong)
+		}
+		return
+	}
+
+	console.log('Serato Playlist Length: ', seratoPlaylistLength)
+	console.log(`${provider.id} Playlist Length: `, providerPlaylistLength)
+	console.log('--------------------')
+	console.log(`Songs in Serato Playlist but not in ${provider.id} Playlist:`)
+	console.log('--------------------')
+
+	let trackRefs = []
+	const lengthDifference = seratoPlaylistLength - providerPlaylistLength
+	for (let i = 0; i < lengthDifference; i++) {
+		console.log(results[i].children[0].data.trim())
+		const songQuery = cleanCurrentSongInfo(results[i].children[0].data.trim())
+		const query = cleanQueryString(songQuery)
+		const ref = await provider.searchTrackRef(query)
+		if (ref !== null) trackRefs.push(ref)
+	}
+	if (trackRefs.length > 0) {
+		trackRefs = [...new Set(trackRefs)]
+		setTimeout(async () => {
+			await provider.addTracksToPlaylist(playlistId, trackRefs, wss)
+		}, 1000)
+		let currentSong = results[0].children[0].data.trim()
+		if (isAutoIDCleanupEnabled === true) {
+			currentSong = cleanCurrentSongInfo(currentSong)
+		}
+	} else {
+		console.log('No matching track refs found for songs in Serato Live Playlist.')
+		console.log('--------------------')
 	}
 }
+
+// (Spotify implementation was historically embedded here; now handled via provider adapter)
 
 const trackCurrentSongPlaying = async (config, url, twitchClient, wss) => {
 	const channel = `#${config.twitchChannelName}`
@@ -197,29 +191,44 @@ const trackCurrentSongPlaying = async (config, url, twitchClient, wss) => {
 	const spotifyPlaylistId = config.currentSpotifyPlaylistId
 	const continueLastPlaylist = config.continueLastPlaylist
 
+	const enabledProviders = getEnabledPlaylistProviders(config)
+
 	// once the user's playlist is live and public,
-	// load the tracks found into the user's Spotify playlist
+	// load the tracks found into the user's enabled provider playlist(s)
 
 	if (!trackLogStore.getCurrentSong()) {
-		if (isSpotifyEnabled === true) {
-			if (continueLastPlaylist === true) {
-				console.log('Continuing last playlist...')
-				console.log('--------------------')
-				await resumeSpotifyPlaylist(
-					spotifyPlaylistId,
-					url,
-					isAutoIDCleanupEnabled,
-					wss
-				)
-			} else {
-				console.log('Initializing new playlist...')
-				console.log('--------------------')
-				await initSpotifyPlaylist(
-					spotifyPlaylistId,
-					url,
-					isAutoIDCleanupEnabled,
-					wss
-				)
+		if (enabledProviders.length > 0) {
+			// add played songs to current session summary
+			const reportData = await createLiveReport(url)
+			setCurrentPlaylistSummary(reportData)
+
+			for (const provider of enabledProviders) {
+				const playlistId = provider.getPlaylistId(config)
+				if (!playlistId) continue
+
+				if (continueLastPlaylist === true) {
+					console.log(`Continuing last ${provider.id} playlist...`)
+					console.log('--------------------')
+					await syncProviderPlaylistFromSerato(
+						provider,
+						playlistId,
+						url,
+						isAutoIDCleanupEnabled,
+						wss,
+						{ mode: 'resume' }
+					)
+				} else {
+					console.log(`Initializing new ${provider.id} playlist...`)
+					console.log('--------------------')
+					await syncProviderPlaylistFromSerato(
+						provider,
+						playlistId,
+						url,
+						isAutoIDCleanupEnabled,
+						wss,
+						{ mode: 'init' }
+					)
+				}
 			}
 		}
 
@@ -233,20 +242,33 @@ const trackCurrentSongPlaying = async (config, url, twitchClient, wss) => {
 		setCurrentPlaylistSummary(initialLiveReport)
 
 		// Initialize songsPlayed from the seeded track log so we don't
-		// re-add those songs to Spotify, but continue to add new ones.
+		// re-add those songs to provider playlists, but continue to add new ones.
 		// For continued playlists, only seed once per app run so that
 		// reconnects don't double-count history.
-		if (!continueLastPlaylist || !hasSeededSongsPlayedForContinuedPlaylist) {
-			const seededLog = trackLogStore.getCurrentTracklog()
-			const seededPlayed = seededLog.map((entry) => {
-				const songId = isAutoIDCleanupEnabled
-					? cleanCurrentSongInfo(entry.track_id)
-					: entry.track_id
-				return cleanQueryString(songId)
-			})
-			songsPlayed = [...new Set([...songsPlayed, ...seededPlayed])]
-			if (continueLastPlaylist) {
-				hasSeededSongsPlayedForContinuedPlaylist = true
+		if (enabledProviders.length > 0) {
+			for (const provider of enabledProviders) {
+				ensureProviderState(provider.id)
+				const alreadySeededForProvider =
+					!!hasSeededSongsPlayedForContinuedPlaylistByProvider[provider.id]
+
+				if (!continueLastPlaylist || !alreadySeededForProvider) {
+					const seededLog = trackLogStore.getCurrentTracklog()
+					const seededPlayed = seededLog.map((entry) => {
+						const songId = isAutoIDCleanupEnabled
+							? cleanCurrentSongInfo(entry.track_id)
+							: entry.track_id
+						return cleanQueryString(songId)
+					})
+					songsPlayedByProvider[provider.id] = [
+						...new Set([
+							...songsPlayedByProvider[provider.id],
+							...seededPlayed,
+						]),
+					]
+					if (continueLastPlaylist) {
+						hasSeededSongsPlayedForContinuedPlaylistByProvider[provider.id] = true
+					}
+				}
 			}
 		}
 
@@ -338,9 +360,13 @@ const trackCurrentSongPlaying = async (config, url, twitchClient, wss) => {
 				twitchClient.say(channel, `Now playing: ${liveCurrent}`)
 			}
 			// update the user's Spotify playlist with the current song playing
-			if (isSpotifyEnabled === true) {
+			if (enabledProviders.length > 0) {
 				const liveCurrent = trackLogStore.getCurrentSong()
-				await prepSongForSpotifyPlaylist(spotifyPlaylistId, liveCurrent, wss)
+				for (const provider of enabledProviders) {
+					const playlistId = provider.getPlaylistId(config)
+					if (!playlistId) continue
+					await prepSongForProviderPlaylist(provider, playlistId, liveCurrent, wss)
+				}
 			}
 		}
 
@@ -357,7 +383,8 @@ const endTrackCurrentSongPlaying = () => {
 		clearInterval(trackingInterval)
 		trackingInterval = null
 		trackLogStore.reset()
-		hasSeededSongsPlayedForContinuedPlaylist = false
+		hasSeededSongsPlayedForContinuedPlaylistByProvider = {}
+		songsPlayedByProvider = {}
 		lastSeratoCurrent = null
 		lastSeratoPrevious = null
 		console.log('Auto ID tracking interval successfully ended.')
