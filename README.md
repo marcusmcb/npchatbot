@@ -115,10 +115,10 @@ When you've completed your live stream, simply click "Disconnect" to disconnect 
 - Electron (back end logic, data API, and handlers)
 - Electron-Forge (desktop build and packaging)
 - NodeJS (ES modules for chatbot scripting, web scraping, and playlist analysis)
-- Twitch API / TMI.js (app authorization & chat event listeners)
-- OBS-Websocket-JS (OBS text integration)
+- Twitch API (app authorization & chat event listeners)
 - Spotify API (playlist creation, song-level queries, real-time playlist updates)
 - Discord API (channel webhook creation for sharing Spotify playlists)
+- OBS-Websocket-JS (OBS text integration)
 
 <hr>
 
