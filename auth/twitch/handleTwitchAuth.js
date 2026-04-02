@@ -46,7 +46,7 @@ const handleTwitchAuth = async (event, arg, mainWindow, wss) => {
 		console.log('AUTHCODE ON CLOSE: ', authCode)
 		if (authError) {
 			console.log('NO AUTH CODE RETURNED: ', authError)
-			wss.clients.forEach(function each(client) {
+			wss.clients.forEach((client) => {
 				if (client.readyState === WebSocket.OPEN) {
 					client.send('npChatbot authorization with Twitch was cancelled.')
 				}

@@ -111,14 +111,14 @@ const initTwitchAuthToken = async (code, wss, mainWindow) => {
 				console.error('Error storing twitch token in keystore (insert):', msg)
 			}
 		}
-		wss.clients.forEach(function each(client) {
+		wss.clients.forEach((client) => {
 			if (client.readyState === WebSocket.OPEN) {
 				client.send('npChatbot successfully linked to your Twitch account')
 			}
 		})
 	} catch (error) {
 		console.error('Error exchanging code for token:', error)
-		wss.clients.forEach(function each(client) {
+		wss.clients.forEach((client) => {
 			if (client.readyState === WebSocket.OPEN) {
 				client.send(`Error during authorization 01: ${error}`)
 			}

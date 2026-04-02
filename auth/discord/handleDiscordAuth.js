@@ -117,7 +117,7 @@ const initDiscordAuthToken = async (code, wss, mainWindow) => {
 				console.error('Error persisting Discord tokens:', err)
 			}
 
-		wss.clients.forEach(function each(client) {
+		wss.clients.forEach((client) => {
 			if (client.readyState === WebSocket.OPEN) {
 				client.send('npChatbot successfully linked to your Discord channel')
 			}
@@ -126,7 +126,7 @@ const initDiscordAuthToken = async (code, wss, mainWindow) => {
 		// mainWindow.webContents.send('discord-auth-success', tokenData)
 	} catch (error) {
 		console.error('Error exchanging code for token:', error)
-		wss.clients.forEach(function each(client) {
+		wss.clients.forEach((client) => {
 			if (client.readyState === WebSocket.OPEN) {
 				client.send(`Error during Discord auth: ${error}`)
 			}
