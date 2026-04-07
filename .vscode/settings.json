@@ -3,5 +3,7 @@
     "keytar",
     "scrollbars",
     "Serato"
-  ]
+  ],
+  "typescript.tsdk": "client/node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true
 }
