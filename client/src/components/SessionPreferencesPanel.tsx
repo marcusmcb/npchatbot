@@ -135,7 +135,7 @@ const SessionPreferencesPanel: React.FC<SessionPreferencesPanelProps> = (props) 
 							: ''
 					}
 				>
-					Duration (in seconds):
+					Duration (in minutes):
 				</label>
 
 				<input
