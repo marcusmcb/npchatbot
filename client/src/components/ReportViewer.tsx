@@ -29,6 +29,9 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
 		string | null
 	>(null)
 
+	const canGoOlder = currentReportIndex < playlistSummaries.length - 1
+	const canGoNewer = currentReportIndex > 0
+
 	// (Removed) explicit navigation logging at user's request
 
 	// Helper to render set length with colored numbers
@@ -80,14 +83,14 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
 	}
 
 	const handleLeftArrowClick = () => {
-		if (currentReportIndex < playlistSummaries.length - 1) {
+		if (canGoOlder) {
 			const nextIndex = currentReportIndex + 1
 			setCurrentReportIndex(nextIndex)
 		}
 	}
 
 	const handleRightArrowClick = () => {
-		if (currentReportIndex > 0) {
+		if (canGoNewer) {
 			const nextIndex = currentReportIndex - 1
 			setCurrentReportIndex(nextIndex)
 		}
@@ -134,8 +137,12 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
 						<button
 							className='report-date-selector-arrow'
 							onClick={handleLeftArrowClick}
+							disabled={!canGoOlder}
+							aria-hidden={!canGoOlder}
 							aria-label='Previous report'
 							type='button'
+							style={{ visibility: canGoOlder ? 'visible' : 'hidden' }}
+							tabIndex={canGoOlder ? 0 : -1}
 						>
 							<MdArrowBack size={16} />
 						</button>
@@ -145,8 +152,12 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
 						<button
 							className='report-date-selector-arrow'
 							onClick={handleRightArrowClick}
+							disabled={!canGoNewer}
+							aria-hidden={!canGoNewer}
 							aria-label='Next report'
 							type='button'
+							style={{ visibility: canGoNewer ? 'visible' : 'hidden' }}
+							tabIndex={canGoNewer ? 0 : -1}
 						>
 							<MdArrowForward size={16} />
 						</button>
