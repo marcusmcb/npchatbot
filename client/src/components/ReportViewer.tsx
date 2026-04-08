@@ -168,7 +168,7 @@ const ReportViewer: React.FC<ReportViewerProps> = ({
 						<div className='report-panel-item'>Set Start Time:</div>
 						<div className='report-panel-item'>
 							<span className='report-panel-item-value'>
-								{reportData?.set_start_time}
+								{reportData?.set_start_time || '—'}
 							</span>
 						</div>
 					</div>

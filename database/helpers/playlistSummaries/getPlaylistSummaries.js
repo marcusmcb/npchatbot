@@ -34,6 +34,16 @@ const computeFromTrackLog = (trackLog = []) => {
 	return { earliest, latest, hours, minutes, seconds }
 }
 
+const formatTime12Hour = (date) => {
+	if (!(date instanceof Date) || isNaN(date.getTime())) return null
+	let hours = date.getHours()
+	const minutes = date.getMinutes()
+	const period = hours >= 12 ? 'PM' : 'AM'
+	hours = hours % 12
+	hours = hours === 0 ? 12 : hours
+	return `${hours}:${minutes.toString().padStart(2, '0')} ${period}`
+}
+
 const monthIndexFromName = (name = '') => {
 	const months = [
 		'january',
@@ -155,6 +165,7 @@ const getPlaylistSummaries = async () => {
 						}
 
 						const startForDate = canonicalStart || logComputed.earliest
+						const startForTime = canonicalStart || logComputed.earliest
 						if (startForDate) {
 							const startDateStr = formatDateWithSuffix(startForDate)
 							// Always set for UI
@@ -162,6 +173,16 @@ const getPlaylistSummaries = async () => {
 							// Persist if DB differs
 							if (doc.playlist_date !== startDateStr) {
 								setOps.playlist_date = startDateStr
+							}
+						}
+
+						// If older docs are missing set_start_time, backfill from canonical ISO or earliest track_log timestamp.
+						// Do not overwrite an existing value.
+						if (!doc.set_start_time && startForTime) {
+							const derived = formatTime12Hour(startForTime)
+							if (derived) {
+								patched.set_start_time = derived
+								setOps.set_start_time = derived
 							}
 						}
 
