@@ -73,8 +73,24 @@ const SessionPanel: React.FC<SessionPanelProps> = (props) => {
 				<button
 					className='bot-control-button default-button'
 					type='button'
-					onClick={() => {
-						props.setReportView(true)
+					onClick={async () => {
+						try {
+							const result = await window.electron.ipcRenderer.invoke(
+								'open-playlist-summaries-in-browser',
+								{
+									playlistSummaries: props.playlistSummaries,
+									currentReportIndex: props.currentReportIndex,
+								}
+							)
+							if (!result || result.success !== true) {
+								console.error(
+									'Failed to open playlist summaries in browser:',
+									result
+								)
+							}
+						} catch (e) {
+							console.error('Failed to open playlist summaries in browser:', e)
+						}
 					}}
 					disabled={!props.isReportReady || props.isBotConnected}
 				>
