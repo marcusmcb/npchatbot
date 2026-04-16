@@ -429,6 +429,10 @@ const buildPlaylistSummariesHtml = ({
 				font-family: var(--fira-sans);
 				font-weight: 600;
 			}
+			.cmd {
+				color: var(--session-info-label-color);
+				font-weight: 700;
+			}
 			.list {
 				margin: 8px 0 0;
 				padding-left: 18px;
@@ -753,7 +757,7 @@ const buildPlaylistSummariesHtml = ({
 					if (!np.length) {
 						npHeader.style.display = 'none';
 						npEmptyEl.style.display = 'block';
-						npEmptyEl.textContent = 'The !np command was not used during this stream.';
+						npEmptyEl.innerHTML = 'The <span class="cmd">!np</span> command was not used during this stream.';
 						npListEl.style.display = 'none';
 					} else {
 						npHeader.style.display = 'block';
@@ -774,7 +778,7 @@ const buildPlaylistSummariesHtml = ({
 					if (!dyp.length) {
 						dypHeader.style.display = 'none';
 						dypEmptyEl.style.display = 'block';
-						dypEmptyEl.textContent = 'The !dyp command was not used during this stream.';
+						dypEmptyEl.innerHTML = 'The <span class="cmd">!dyp</span> command was not used during this stream.';
 						dypListEl.style.display = 'none';
 					} else {
 						dypHeader.style.display = 'block';
