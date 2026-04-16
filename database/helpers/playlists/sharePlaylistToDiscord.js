@@ -6,8 +6,21 @@ const sharePlaylistToDiscord = async (
 	twitchChannelName,
 	sessionDate,
 	event
-) => {	
+) => {
+	const reply = (payload) => {
+		try {
+			if (event && typeof event.reply === 'function') {
+				event.reply('share-playlist-to-discord-response', payload)
+			}
+		} catch {}
+	}
+
 	try {
+		if (!spotifyURL || !webhookURL) {
+			reply({ success: false })
+			return false
+		}
+
 		const formattedDate = sessionDate
 			? new Date(sessionDate).toLocaleDateString(undefined, {
 					year: 'numeric',
@@ -15,24 +28,28 @@ const sharePlaylistToDiscord = async (
 					day: 'numeric',
 			  })
 			: null
-		const message = `Check out the Spotify playlist from ${twitchChannelName}'s ${formattedDate} stream on Twitch! - ${spotifyURL}`
+		const safeName = twitchChannelName || 'Unknown'
+		const message = `Check out the Spotify playlist from ${safeName}'s ${formattedDate} stream on Twitch! - ${spotifyURL}`
 
 		const resp = await axios.post(webhookURL, { content: message })
 
 		if (resp.status >= 200 && resp.status < 300) {
 			console.log('Message sent to Discord via webhook successfully.')
-			event.reply('share-playlist-to-discord-response', { success: true })
-			return
-		} else {
-			console.error('Webhook post failed:', resp.status, resp.data)
-			// if webhook fails, fall back to token-based post below
-			event.reply('share-playlist-to-discord-response', {
-				success: false,
-			})
+			reply({ success: true })
+			return true
 		}
+
+		console.error('Webhook post failed:', resp.status, resp.data)
+		reply({ success: false })
+		return false
 	} catch (err) {
-		console.error('Error posting via webhook:', err.response?.status, err.response?.data || err.message)
-		event.reply('share-playlist-to-discord-response', { success: false })
+		console.error(
+			'Error posting via webhook:',
+			err.response?.status,
+			err.response?.data || err.message
+		)
+		reply({ success: false })
+		return false
 	}
 }
 

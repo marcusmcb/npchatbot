@@ -6,7 +6,9 @@ import './styles/sessionpanel.css'
 
 const SessionPanel: React.FC<SessionPanelProps> = (props) => {
 	const [uptimeSeconds, setUptimeSeconds] = useState(0)
-	const { isTwitchAuthorized, isConnectionReady } = useUserContext()
+	const { isTwitchAuthorized, isConnectionReady, isDiscordAuthorized, formData } =
+		useUserContext()
+	const twitchChannelName = formData?.twitchChannelName || ''
 
 	useEffect(() => {
 		if (!props.isBotConnected) return
@@ -80,6 +82,8 @@ const SessionPanel: React.FC<SessionPanelProps> = (props) => {
 								{
 									playlistSummaries: props.playlistSummaries,
 									currentReportIndex: props.currentReportIndex,
+									isDiscordAuthorized,
+									twitchChannelName,
 								}
 							)
 							if (!result || result.success !== true) {
