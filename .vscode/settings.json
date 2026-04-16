@@ -1,7 +1,13 @@
 {
   "cSpell.words": [
+    "fira",
     "keytar",
+    "labelledby",
+    "noopener",
+    "noreferrer",
+    "Noto",
     "scrollbars",
+    "Segoe",
     "Serato"
   ],
   "typescript.tsdk": "client/node_modules/typescript/lib",

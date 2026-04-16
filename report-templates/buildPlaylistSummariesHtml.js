@@ -272,6 +272,74 @@ module.exports = ({
 				font-size: 13px;
 				font-family: var(--dm-sans);
 			}
+
+			/* Top songs section */
+			.top-songs-controls {
+				display: flex;
+				gap: 10px;
+				align-items: center;
+				flex-wrap: wrap;
+				margin: 6px 0 10px;
+			}
+			.top-songs-controls .radio {
+				display: inline-flex;
+				align-items: center;
+				gap: 6px;
+				font-size: 13px;
+				font-family: var(--dm-sans);
+				opacity: 0.95;
+			}
+			.top-songs-controls .radio input {
+				accent-color: var(--accent);
+			}
+			.top-songs-controls .sep {
+				opacity: 0.75;
+				font-size: 12px;
+				font-family: var(--dm-sans);
+			}
+			input[type="date"] {
+				background: var(--panel);
+				color: var(--text);
+				border: 2px solid var(--accent);
+				border-radius: 5px;
+				padding: 8px 10px;
+				font-size: 14px;
+				font-family: var(--fira-sans);
+			}
+			.top-songs-meta {
+				margin-top: 2px;
+				color: var(--text);
+				opacity: 0.85;
+				font-size: 12px;
+				font-family: var(--dm-sans);
+			}
+			.top-songs-list {
+				margin: 10px 0 0;
+				padding-left: 18px;
+				font-size: 13px;
+				font-family: var(--dm-sans);
+			}
+			.top-songs-list li {
+				display: flex;
+				gap: 12px;
+				justify-content: flex-start;
+				align-items: flex-start;
+				margin: 6px 0;
+			}
+			.top-songs-name {
+				flex: 1;
+				min-width: 0;
+				word-break: break-word;
+			}
+			.top-songs-count {
+				white-space: nowrap;
+				min-width: 72px;
+				text-align: left;
+				color: var(--session-info-label-color);
+				font-family: var(--fira-sans);
+				font-weight: 700;
+			}
+
 			footer {
 				margin-top: 14px;
 				color: var(--text);
@@ -332,6 +400,28 @@ module.exports = ({
 					<div id="dypEmpty" class="emptyHeader" style="display:none;"></div>
 					<ul id="dypList" class="list"></ul>
 				</div>
+			</div>
+
+			<div id="topSongsPanel" class="panel" style="display:none; margin-top: 14px;">
+				<h2>Top 10 songs played</h2>
+				<div class="top-songs-controls">
+					<label class="radio"><input id="topSongsModeStreams" type="radio" name="topSongsMode" value="streams" checked /> Last</label>
+					<select id="topSongsStreamCount" aria-label="Select stream count">
+						<option value="5">5 streams</option>
+						<option value="10" selected>10 streams</option>
+						<option value="20">20 streams</option>
+						<option value="50">50 streams</option>
+					</select>
+					<span class="sep">|</span>
+					<label class="radio"><input id="topSongsModeDates" type="radio" name="topSongsMode" value="dates" /> Date range</label>
+					<input id="topSongsStartDate" type="date" aria-label="Start date" />
+					<span class="sep">to</span>
+					<input id="topSongsEndDate" type="date" aria-label="End date" />
+					<button id="topSongsApplyBtn" type="button">Apply</button>
+				</div>
+				<div id="topSongsMeta" class="top-songs-meta"></div>
+				<div id="topSongsEmpty" class="empty" style="display:none;"></div>
+				<ol id="topSongsList" class="top-songs-list"></ol>
 			</div>
 
 			<footer>
@@ -465,6 +555,18 @@ module.exports = ({
 				const deleteCancelBtn = $('deleteCancelBtn');
 				const deleteConfirmBtn = $('deleteConfirmBtn');
 
+				// Top songs UI
+				const topSongsPanel = $('topSongsPanel');
+				const topSongsModeStreams = $('topSongsModeStreams');
+				const topSongsModeDates = $('topSongsModeDates');
+				const topSongsStreamCount = $('topSongsStreamCount');
+				const topSongsStartDate = $('topSongsStartDate');
+				const topSongsEndDate = $('topSongsEndDate');
+				const topSongsApplyBtn = $('topSongsApplyBtn');
+				const topSongsMeta = $('topSongsMeta');
+				const topSongsEmpty = $('topSongsEmpty');
+				const topSongsList = $('topSongsList');
+
 				let pendingDeleteId = '';
 
 				const openDeleteModal = (playlistId) => {
@@ -481,6 +583,154 @@ module.exports = ({
 					deleteModal.setAttribute('aria-hidden', 'true');
 				};
 
+				const clearChildren = (el) => {
+					if (!el) return;
+					while (el.firstChild) el.removeChild(el.firstChild);
+				};
+
+				const getSummaryTimestampMs = (summary) => {
+					const iso =
+						(summary && typeof summary.set_start_iso === 'string' && summary.set_start_iso) ||
+						(summary && typeof summary.session_date === 'string' && summary.session_date) ||
+						'';
+					if (!iso) return null;
+					const d = new Date(iso);
+					const t = d.getTime();
+					return Number.isFinite(t) ? t : null;
+				};
+
+				const parseDateInput = (value, endOfDay) => {
+					if (!value || typeof value !== 'string') return null;
+					const parts = value.split('-');
+					if (parts.length !== 3) return null;
+					const y = Number(parts[0]);
+					const m = Number(parts[1]);
+					const d = Number(parts[2]);
+					if (!Number.isFinite(y) || !Number.isFinite(m) || !Number.isFinite(d)) return null;
+					const dt = endOfDay
+						? new Date(y, m - 1, d, 23, 59, 59, 999)
+						: new Date(y, m - 1, d, 0, 0, 0, 0);
+					return Number.isNaN(dt.getTime()) ? null : dt;
+				};
+
+				const computeTopSongs = (subsetSummaries, limit) => {
+					const counts = new Map();
+					for (const s of safeArray(subsetSummaries)) {
+						const log = safeArray(s && s.track_log);
+						for (const entry of log) {
+							const raw = entry && (entry.full_track_id || entry.track_id);
+							const name = typeof raw === 'string' ? raw.trim() : '';
+							if (!name) continue;
+							counts.set(name, (counts.get(name) || 0) + 1);
+						}
+					}
+
+					return Array.from(counts.entries())
+						.map(([name, count]) => ({ name, count }))
+						.sort((a, b) => b.count - a.count || a.name.localeCompare(b.name))
+						.slice(0, Math.max(0, Number(limit) || 10));
+				};
+
+				const renderTopSongs = () => {
+					if (!summaries.length) {
+						if (topSongsPanel) topSongsPanel.style.display = 'none';
+						return;
+					}
+
+					if (topSongsPanel) topSongsPanel.style.display = 'block';
+					if (topSongsEmpty) {
+						topSongsEmpty.style.display = 'none';
+						topSongsEmpty.textContent = '';
+					}
+					if (topSongsMeta) topSongsMeta.textContent = '';
+					clearChildren(topSongsList);
+
+					const mode = (topSongsModeDates && topSongsModeDates.checked) ? 'dates' : 'streams';
+
+					let subset = [];
+					let meta = '';
+					if (mode === 'dates') {
+						const start = parseDateInput(topSongsStartDate && topSongsStartDate.value, false);
+						const end = parseDateInput(topSongsEndDate && topSongsEndDate.value, true);
+						subset = summaries.filter((s) => {
+							const t = getSummaryTimestampMs(s);
+							if (t == null) return false;
+							if (start && t < start.getTime()) return false;
+							if (end && t > end.getTime()) return false;
+							return true;
+						});
+
+						const startLabel = start ? start.toLocaleDateString() : 'Any';
+						const endLabel = end ? end.toLocaleDateString() : 'Any';
+						meta = 'Range: ' + startLabel + ' to ' + endLabel + ' (' + subset.length + ' stream' + (subset.length === 1 ? '' : 's') + ')';
+					} else {
+						const n = Math.max(1, Math.min(500, Number(topSongsStreamCount && topSongsStreamCount.value) || 10));
+						subset = summaries.slice(0, n);
+
+						const times = subset
+							.map(getSummaryTimestampMs)
+							.filter((t) => typeof t === 'number' && Number.isFinite(t));
+						if (times.length) {
+							const min = new Date(Math.min(...times));
+							const max = new Date(Math.max(...times));
+							meta = 'Range: last ' + n + ' streams (' + min.toLocaleDateString() + ' to ' + max.toLocaleDateString() + ')';
+						} else {
+							meta = 'Range: last ' + n + ' streams';
+						}
+					}
+
+					if (topSongsMeta) topSongsMeta.textContent = meta;
+
+					const top = computeTopSongs(subset, 10);
+					if (!top.length) {
+						if (topSongsEmpty) {
+							topSongsEmpty.style.display = 'block';
+							topSongsEmpty.textContent = 'No song history was found for this range.';
+						}
+						return;
+					}
+
+					for (const item of top) {
+						const li = document.createElement('li');
+						const count = document.createElement('span');
+						count.className = 'top-songs-count';
+						count.textContent = String(item.count) + ' play' + (item.count === 1 ? '' : 's');
+						const name = document.createElement('span');
+						name.className = 'top-songs-name';
+						name.textContent = item.name;
+						li.appendChild(count);
+						li.appendChild(name);
+						topSongsList.appendChild(li);
+					}
+				};
+
+				const setTopSongsMode = (mode) => {
+					const streams = mode !== 'dates';
+					if (topSongsModeStreams) topSongsModeStreams.checked = streams;
+					if (topSongsModeDates) topSongsModeDates.checked = !streams;
+					// Disable irrelevant inputs so tab order and focus feel correct
+					if (topSongsStreamCount) topSongsStreamCount.disabled = !streams;
+					if (topSongsStartDate) topSongsStartDate.disabled = streams;
+					if (topSongsEndDate) topSongsEndDate.disabled = streams;
+				};
+
+				setTopSongsMode('streams');
+				if (topSongsModeStreams) topSongsModeStreams.addEventListener('change', () => {
+					setTopSongsMode('streams');
+					renderTopSongs();
+				});
+				if (topSongsModeDates) topSongsModeDates.addEventListener('change', () => {
+					setTopSongsMode('dates');
+					renderTopSongs();
+				});
+				if (topSongsStreamCount) topSongsStreamCount.addEventListener('change', () => {
+					setTopSongsMode('streams');
+					renderTopSongs();
+				});
+				if (topSongsApplyBtn) topSongsApplyBtn.addEventListener('click', () => {
+					renderTopSongs();
+				});
+
 				const render = () => {
 					if (!summaries.length) {
 						$('report').style.display = 'none';
@@ -491,6 +741,7 @@ module.exports = ({
 						newerBtn.disabled = true;
 						sessionSelect.disabled = true;
 						deleteBtn.disabled = true;
+						renderTopSongs();
 						return;
 					}
 
@@ -655,6 +906,8 @@ module.exports = ({
 							addListItem(dypListEl, '"' + item.name + '"' + (item.count > 1 ? ' (' + item.count + ' times)' : ''));
 						}
 					}
+
+					renderTopSongs();
 				};
 
 				// Build session dropdown
