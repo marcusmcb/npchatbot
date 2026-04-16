@@ -18,6 +18,7 @@ const startDiscordCallbackServer = ({
 	getMainWindow,
 	isShareNonceValid,
 	onSharePlaylist,
+	onDeletePlaylist,
 }) => {
 	if (!wss) {
 		throw new Error(
@@ -117,6 +118,64 @@ const startDiscordCallbackServer = ({
 				sendJson(400, {
 					success: false,
 					message: result?.message || 'Failed to share to Discord.',
+				})
+				return
+			}
+
+			if (req.url && req.url.startsWith('/playlists/delete')) {
+				setCorsHeaders()
+
+				if (req.method === 'OPTIONS') {
+					res.writeHead(204)
+					res.end()
+					return
+				}
+
+				if (req.method !== 'POST') {
+					sendJson(405, { success: false, message: 'Method not allowed.' })
+					return
+				}
+
+				if (typeof onDeletePlaylist !== 'function') {
+					sendJson(501, {
+						success: false,
+						message: 'Delete is not available.',
+					})
+					return
+				}
+
+				let body = null
+				try {
+					body = await readJsonBody()
+				} catch {
+					sendJson(400, { success: false, message: 'Invalid request body.' })
+					return
+				}
+
+				const nonce = body?.nonce
+				if (typeof isShareNonceValid === 'function') {
+					const ok = isShareNonceValid(nonce)
+					if (ok !== true) {
+						sendJson(403, { success: false, message: 'Unauthorized request.' })
+						return
+					}
+				}
+
+				const playlistId = body?.playlistId
+				if (!playlistId || typeof playlistId !== 'string') {
+					sendJson(400, { success: false, message: 'Missing playlistId.' })
+					return
+				}
+
+				const result = await onDeletePlaylist({ playlistId })
+				if (result && result.success === true) {
+					sendJson(200, { success: true, numRemoved: result.numRemoved || 0 })
+					return
+				}
+
+				sendJson(400, {
+					success: false,
+					message: result?.message || 'Failed to delete playlist.',
 				})
 				return
 			}

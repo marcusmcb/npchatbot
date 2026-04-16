@@ -196,6 +196,21 @@ try {
 				return { success: false, message: 'Internal error sharing to Discord.' }
 			}
 		},
+		onDeletePlaylist: async ({ playlistId }) => {
+			try {
+				if (!playlistId || typeof playlistId !== 'string') {
+					return { success: false, message: 'Missing playlistId.' }
+				}
+
+				const result = await deletePlaylist(playlistId)
+				return result && result.success === true
+					? { success: true, numRemoved: result.numRemoved || 0 }
+					: { success: false, message: 'Failed to delete playlist.' }
+			} catch (e) {
+				console.error('Delete playlist endpoint failed:', e)
+				return { success: false, message: 'Internal error deleting playlist.' }
+			}
+		},
 	})
 } catch (e) {
 	console.error('Failed to start Discord callback server:', e)
@@ -307,6 +322,51 @@ const buildPlaylistSummariesHtml = ({
 				gap: 8px;
 				align-items: center;
 				margin: 12px 0 16px;
+			}
+			.danger {
+				border-color: #ff6b6b;
+				color: #ff6b6b;
+			}
+			.danger:hover {
+				border-color: #ff6b6b;
+				color: #fff;
+				background: #ff6b6b;
+			}
+			.modal-backdrop {
+				position: fixed;
+				inset: 0;
+				background: rgba(0,0,0,0.6);
+				display: none;
+				align-items: center;
+				justify-content: center;
+				padding: 18px;
+				z-index: 9999;
+			}
+			.modal {
+				width: min(520px, 100%);
+				background: var(--panel);
+				border: 1px solid var(--border);
+				border-radius: 12px;
+				padding: 14px;
+			}
+			.modal h3 {
+				margin: 0 0 10px;
+				font-size: 16px;
+				color: var(--accent);
+				font-family: var(--fira-sans);
+				font-weight: 700;
+			}
+			.modal p {
+				margin: 0 0 14px;
+				color: var(--text);
+				opacity: 0.9;
+				font-family: var(--dm-sans);
+				font-size: 13px;
+			}
+			.modal-actions {
+				display: flex;
+				gap: 10px;
+				justify-content: flex-end;
 			}
 			button, select {
 				background: var(--panel);
@@ -466,8 +526,9 @@ const buildPlaylistSummariesHtml = ({
 
 			<div class="controls">
 				<button id="olderBtn" type="button">Older</button>
-				<select id="sessionSelect" aria-label="Select a playlist summary"></select>
 				<button id="newerBtn" type="button">Newer</button>
+				<select id="sessionSelect" aria-label="Select a playlist summary"></select>
+				<button id="deleteBtn" class="danger" type="button" title="Delete" aria-label="Delete selected playlist summary">✕</button>
 			</div>
 
 			<div id="emptyState" class="panel empty" style="display:none;"></div>
@@ -509,6 +570,17 @@ const buildPlaylistSummariesHtml = ({
 			<footer>
 				This page is generated locally by npChatbot. It contains your playlist summary data and is stored on your machine.
 			</footer>
+		</div>
+
+		<div id="deleteModal" class="modal-backdrop" aria-hidden="true">
+			<div class="modal" role="dialog" aria-modal="true" aria-labelledby="deleteModalTitle">
+				<h3 id="deleteModalTitle">Delete playlist summary?</h3>
+				<p id="deleteModalBody">This will permanently delete the selected playlist summary.</p>
+				<div class="modal-actions">
+					<button id="deleteCancelBtn" type="button">Cancel</button>
+					<button id="deleteConfirmBtn" class="danger" type="button">Delete</button>
+				</div>
+			</div>
 		</div>
 
 		<script>
@@ -616,6 +688,27 @@ const buildPlaylistSummariesHtml = ({
 				const olderBtn = $('olderBtn');
 				const newerBtn = $('newerBtn');
 				const sessionSelect = $('sessionSelect');
+				const deleteBtn = $('deleteBtn');
+
+				const deleteModal = $('deleteModal');
+				const deleteCancelBtn = $('deleteCancelBtn');
+				const deleteConfirmBtn = $('deleteConfirmBtn');
+
+				let pendingDeleteId = '';
+
+				const openDeleteModal = (playlistId) => {
+					pendingDeleteId = typeof playlistId === 'string' ? playlistId : '';
+					if (!pendingDeleteId) return;
+					deleteModal.style.display = 'flex';
+					deleteModal.setAttribute('aria-hidden', 'false');
+					deleteConfirmBtn.focus();
+				};
+
+				const closeDeleteModal = () => {
+					pendingDeleteId = '';
+					deleteModal.style.display = 'none';
+					deleteModal.setAttribute('aria-hidden', 'true');
+				};
 
 				const render = () => {
 					if (!summaries.length) {
@@ -626,12 +719,14 @@ const buildPlaylistSummariesHtml = ({
 						olderBtn.disabled = true;
 						newerBtn.disabled = true;
 						sessionSelect.disabled = true;
+						deleteBtn.disabled = true;
 						return;
 					}
 
 					$('emptyState').style.display = 'none';
 					$('report').style.display = 'grid';
 					sessionSelect.disabled = false;
+					deleteBtn.disabled = false;
 
 					index = clamp(index, 0, summaries.length - 1);
 					const report = summaries[index];
@@ -792,16 +887,19 @@ const buildPlaylistSummariesHtml = ({
 				};
 
 				// Build session dropdown
-				while (sessionSelect.firstChild) sessionSelect.removeChild(sessionSelect.firstChild);
-				for (let i = 0; i < summaries.length; i++) {
-					const s = summaries[i] || {};
-					const date = typeof s.playlist_date === 'string' ? s.playlist_date : ('Session ' + (i + 1));
-					const dj = typeof s.dj_name === 'string' ? s.dj_name : '';
-					const opt = document.createElement('option');
-					opt.value = String(i);
-					opt.textContent = dj ? (date + ' — ' + dj) : date;
-					sessionSelect.appendChild(opt);
-				}
+				const rebuildSelect = () => {
+					while (sessionSelect.firstChild) sessionSelect.removeChild(sessionSelect.firstChild);
+					for (let i = 0; i < summaries.length; i++) {
+						const s = summaries[i] || {};
+						const date = typeof s.playlist_date === 'string' ? s.playlist_date : ('Session ' + (i + 1));
+						const dj = typeof s.dj_name === 'string' ? s.dj_name : '';
+						const opt = document.createElement('option');
+						opt.value = String(i);
+						opt.textContent = dj ? (date + ' — ' + dj) : date;
+						sessionSelect.appendChild(opt);
+					}
+				};
+				rebuildSelect();
 
 				const syncSelect = () => {
 					sessionSelect.value = String(index);
@@ -823,6 +921,65 @@ const buildPlaylistSummariesHtml = ({
 					const next = Number(sessionSelect.value);
 					if (Number.isFinite(next)) index = clamp(next, 0, summaries.length - 1);
 					render();
+				});
+
+				deleteBtn.addEventListener('click', () => {
+					const report = summaries[index];
+					const playlistId = report && typeof report._id === 'string' ? report._id : '';
+					openDeleteModal(playlistId);
+				});
+
+				deleteCancelBtn.addEventListener('click', () => {
+					closeDeleteModal();
+				});
+
+				deleteModal.addEventListener('click', (e) => {
+					if (e && e.target === deleteModal) closeDeleteModal();
+				});
+
+				document.addEventListener('keydown', (e) => {
+					if (e && e.key === 'Escape') closeDeleteModal();
+				});
+
+				deleteConfirmBtn.addEventListener('click', async () => {
+					if (!pendingDeleteId) return;
+					if (!discordShareNonce) return;
+
+					deleteConfirmBtn.disabled = true;
+					deleteCancelBtn.disabled = true;
+					try {
+						const resp = await fetch('http://127.0.0.1:5003/playlists/delete', {
+							method: 'POST',
+							headers: { 'Content-Type': 'application/json' },
+							body: JSON.stringify({
+								playlistId: pendingDeleteId,
+								nonce: discordShareNonce,
+							}),
+						});
+						let data = null;
+						try { data = await resp.json(); } catch {}
+
+						if (resp.ok && data && data.success === true) {
+							const removedIdx = summaries.findIndex(
+								(s) => s && typeof s._id === 'string' && s._id === pendingDeleteId
+							);
+							if (removedIdx >= 0) {
+								summaries.splice(removedIdx, 1);
+								index = clamp(index, 0, Math.max(0, summaries.length - 1));
+							}
+							rebuildSelect();
+							syncSelect();
+							render();
+							closeDeleteModal();
+						} else {
+							alert((data && data.message) ? data.message : 'Failed to delete playlist.');
+						}
+					} catch {
+						alert('Failed to delete playlist.');
+					} finally {
+						deleteConfirmBtn.disabled = false;
+						deleteCancelBtn.disabled = false;
+					}
 				});
 
 				syncSelect();
