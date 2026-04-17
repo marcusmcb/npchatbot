@@ -274,6 +274,13 @@ module.exports = ({
 			}
 
 			/* Top songs section */
+			.top-songs-heading {
+				margin: 0 0 6px;
+				font-size: 16px;
+				color: var(--accent);
+				font-family: var(--fira-sans);
+				font-weight: 600;
+			}
 			.top-songs-controls {
 				display: flex;
 				gap: 10px;
@@ -402,8 +409,8 @@ module.exports = ({
 				</div>
 			</div>
 
-			<div id="topSongsPanel" class="panel" style="display:none; margin-top: 14px;">
-				<h2>Top 10 songs played</h2>
+			<div id="topSongsSection" style="display:none; margin-top: 14px;">
+				<div class="top-songs-heading">Top Songs Played</div>
 				<div class="top-songs-controls">
 					<label class="radio"><input id="topSongsModeStreams" type="radio" name="topSongsMode" value="streams" checked /> Last</label>
 					<select id="topSongsStreamCount" aria-label="Select stream count">
@@ -419,9 +426,11 @@ module.exports = ({
 					<input id="topSongsEndDate" type="date" aria-label="End date" />
 					<button id="topSongsApplyBtn" type="button">Apply</button>
 				</div>
-				<div id="topSongsMeta" class="top-songs-meta"></div>
-				<div id="topSongsEmpty" class="empty" style="display:none;"></div>
-				<ol id="topSongsList" class="top-songs-list"></ol>
+				<div id="topSongsPanel" class="panel">
+					<div id="topSongsMeta" class="top-songs-meta"></div>
+					<div id="topSongsEmpty" class="empty" style="display:none;"></div>
+					<ol id="topSongsList" class="top-songs-list"></ol>
+				</div>
 			</div>
 
 			<footer>
@@ -556,6 +565,7 @@ module.exports = ({
 				const deleteConfirmBtn = $('deleteConfirmBtn');
 
 				// Top songs UI
+				const topSongsSection = $('topSongsSection');
 				const topSongsPanel = $('topSongsPanel');
 				const topSongsModeStreams = $('topSongsModeStreams');
 				const topSongsModeDates = $('topSongsModeDates');
@@ -633,10 +643,11 @@ module.exports = ({
 
 				const renderTopSongs = () => {
 					if (!summaries.length) {
-						if (topSongsPanel) topSongsPanel.style.display = 'none';
+						if (topSongsSection) topSongsSection.style.display = 'none';
 						return;
 					}
 
+					if (topSongsSection) topSongsSection.style.display = 'block';
 					if (topSongsPanel) topSongsPanel.style.display = 'block';
 					if (topSongsEmpty) {
 						topSongsEmpty.style.display = 'none';
