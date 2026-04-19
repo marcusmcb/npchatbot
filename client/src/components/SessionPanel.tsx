@@ -98,7 +98,7 @@ const SessionPanel: React.FC<SessionPanelProps> = (props) => {
 					}}
 					disabled={!props.isReportReady || props.isBotConnected}
 				>
-					View Summary
+					Analytics
 				</button>
 			</div>
 			<div className='session-info-bottom'>

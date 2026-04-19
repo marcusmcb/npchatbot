@@ -336,6 +336,20 @@ module.exports = ({
 				font-size: 12px;
 				font-family: var(--dm-sans);
 			}
+			.top-songs-controls .stream-count-input {
+				background: var(--panel);
+				color: var(--text);
+				border: 2px solid var(--accent);
+				border-radius: 5px;
+				padding: 8px 10px;
+				font-size: 14px;
+				font-family: var(--fira-sans);
+				width: 90px;
+			}
+			.top-songs-controls .stream-count-quick {
+				flex: 0 0 auto;
+				width: 110px;
+			}
 			input[type="date"] {
 				background: var(--panel);
 				color: var(--text);
@@ -469,6 +483,60 @@ module.exports = ({
 			.shortlong-col-header .commanduse-times {
 				color: var(--text);
 			}
+			.stats-chart {
+				width: 100%;
+				height: 220px;
+				margin-top: 10px;
+				overflow: visible;
+			}
+			.stats-axis {
+				stroke: var(--border);
+				stroke-width: 1;
+			}
+			.stats-line {
+				fill: none;
+				stroke: var(--accent);
+				stroke-width: 2;
+				opacity: 0.95;
+			}
+			.stats-point {
+				fill: var(--session-info-label-color);
+				stroke: rgba(0,0,0,0.35);
+				stroke-width: 1;
+				cursor: pointer;
+			}
+			.stats-point:hover {
+				fill: var(--success-color);
+			}
+			.stats-tick {
+				fill: var(--text);
+				opacity: 0.85;
+				font-size: 12px;
+			}
+			.stats-chart-wrap {
+				position: relative;
+			}
+			.stats-tooltip {
+				position: absolute;
+				z-index: 5;
+				pointer-events: none;
+				background: var(--panel);
+				border: 1px solid var(--border);
+				border-radius: 10px;
+				padding: 8px 10px;
+				color: var(--text);
+				font-size: 12px;
+				max-width: 220px;
+				box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+			}
+			.stats-tooltip .stats-tooltip-date {
+				color: var(--accent);
+				font-weight: 600;
+			}
+			.stats-tooltip .stats-tooltip-avg {
+				color: var(--session-info-label-color);
+				margin-top: 3px;
+			}
 
 			footer {
 				margin-top: 14px;
@@ -538,15 +606,22 @@ module.exports = ({
 					<button id="topTabShortLong" class="top-section-tab" type="button" role="tab" aria-selected="false" aria-controls="shortLongPanel">Shortest / Longest</button>
 					<button id="topTabDoubles" class="top-section-tab" type="button" role="tab" aria-selected="false" aria-controls="doublesPanel">Doubles Played</button>
 					<button id="topTabCommandUse" class="top-section-tab" type="button" role="tab" aria-selected="false" aria-controls="commandUsePanel">Command Use</button>
+					<button id="topTabStats" class="top-section-tab" type="button" role="tab" aria-selected="false" aria-controls="statsPanel">Song Length</button>
+					<button id="topTabSongsPlayed" class="top-section-tab" type="button" role="tab" aria-selected="false" aria-controls="songsPlayedPanel">Songs Played</button>
 				</div>
 				<div class="top-songs-controls">
 					<label class="radio"><input id="topSongsModeStreams" type="radio" name="topSongsMode" value="streams" checked /> Last</label>
-					<select id="topSongsStreamCount" aria-label="Select stream count">
+					<input id="topSongsStreamNumber" class="stream-count-input" type="number" min="1" max="500" step="1" value="" aria-label="Enter stream count" />
+					<select id="topSongsStreamCount" class="stream-count-quick" aria-label="Quick stream range">
+						<option value="">streams</option>
 						<option value="5">5 streams</option>
 						<option value="10" selected>10 streams</option>
+						<option value="15">15 streams</option>
 						<option value="20">20 streams</option>
+						<option value="30">30 streams</option>
+						<option value="40">40 streams</option>
 						<option value="50">50 streams</option>
-						<option value="all">All streams</option>
+						<option value="all">all</option>
 					</select>
 					<span class="sep">|</span>
 					<label class="radio"><input id="topSongsModeDates" type="radio" name="topSongsMode" value="dates" /> Date range</label>
@@ -596,6 +671,24 @@ module.exports = ({
 						</div>
 					</div>
 					<div id="commandUseMeta" class="top-songs-meta"></div>
+				</div>
+				<div id="statsPanel" class="panel" style="display:none;">
+					<div class="shortlong-header">Average Song Length</div>
+					<div id="statsEmpty" class="empty" style="display:none;"></div>
+					<div class="stats-chart-wrap">
+						<svg id="statsChart" class="stats-chart" viewBox="0 0 1000 220" role="img" aria-label="Average song length over time"></svg>
+						<div id="statsTooltip" class="stats-tooltip" style="display:none;"></div>
+					</div>
+					<div id="statsMeta" class="top-songs-meta"></div>
+				</div>
+				<div id="songsPlayedPanel" class="panel" style="display:none;">
+					<div class="shortlong-header">Songs Played</div>
+					<div id="songsPlayedEmpty" class="empty" style="display:none;"></div>
+					<div class="stats-chart-wrap">
+						<svg id="songsPlayedChart" class="stats-chart" viewBox="0 0 1000 220" role="img" aria-label="Total songs played over time"></svg>
+						<div id="songsPlayedTooltip" class="stats-tooltip" style="display:none;"></div>
+					</div>
+					<div id="songsPlayedMeta" class="top-songs-meta"></div>
 				</div>
 			</div>
 
@@ -736,13 +829,18 @@ module.exports = ({
 				const topTabShortLong = $('topTabShortLong');
 				const topTabDoubles = $('topTabDoubles');
 				const topTabCommandUse = $('topTabCommandUse');
+				const topTabStats = $('topTabStats');
+				const topTabSongsPlayed = $('topTabSongsPlayed');
 				const topSongsPanel = $('topSongsPanel');
 				const shortLongPanel = $('shortLongPanel');
 				const doublesPanel = $('doublesPanel');
 				const commandUsePanel = $('commandUsePanel');
+				const statsPanel = $('statsPanel');
+				const songsPlayedPanel = $('songsPlayedPanel');
 				const topSongsModeStreams = $('topSongsModeStreams');
 				const topSongsModeDates = $('topSongsModeDates');
 				const topSongsStreamCount = $('topSongsStreamCount');
+				const topSongsStreamNumber = $('topSongsStreamNumber');
 				const topSongsStartDate = $('topSongsStartDate');
 				const topSongsEndDate = $('topSongsEndDate');
 				const topSongsApplyBtn = $('topSongsApplyBtn');
@@ -762,8 +860,30 @@ module.exports = ({
 				const cmdDypCount = $('cmdDypCount');
 				const cmdNpList = $('cmdNpList');
 				const cmdDypList = $('cmdDypList');
+				const statsMeta = $('statsMeta');
+				const statsEmpty = $('statsEmpty');
+				const statsChart = $('statsChart');
+				const statsTooltip = $('statsTooltip');
+				const songsPlayedMeta = $('songsPlayedMeta');
+				const songsPlayedEmpty = $('songsPlayedEmpty');
+				const songsPlayedChart = $('songsPlayedChart');
+				const songsPlayedTooltip = $('songsPlayedTooltip');
 
 				let pendingDeleteId = '';
+				let isSelectingFromChart = false;
+
+				const selectSummaryIndex = (nextIndex) => {
+					if (!Number.isFinite(nextIndex)) return;
+					index = clamp(Number(nextIndex), 0, summaries.length - 1);
+					syncSelect();
+					// Avoid accidental recursion when a click triggers renderAnalytics -> chart -> click
+					isSelectingFromChart = true;
+					try {
+						render();
+					} finally {
+						isSelectingFromChart = false;
+					}
+				};
 
 				const openDeleteModal = (playlistId) => {
 					pendingDeleteId = typeof playlistId === 'string' ? playlistId : '';
@@ -948,11 +1068,14 @@ module.exports = ({
 						const rangeLabel = formatHumanRange(start, end) || 'Any';
 						meta = 'Range: ' + rangeLabel + ' (' + subset.length + ' stream' + (subset.length === 1 ? '' : 's') + ')';
 					} else {
-						const raw = topSongsStreamCount && typeof topSongsStreamCount.value === 'string'
+						const rawQuick = topSongsStreamCount && typeof topSongsStreamCount.value === 'string'
 							? topSongsStreamCount.value
 							: '';
-						const isAll = raw === 'all';
-						const n = isAll ? null : Math.max(1, Math.min(500, Number(raw) || 10));
+						const isAll = rawQuick === 'all';
+						const rawN = topSongsStreamNumber && typeof topSongsStreamNumber.value === 'string'
+							? topSongsStreamNumber.value
+							: '';
+						const n = isAll ? null : Math.max(1, Math.min(500, Number(rawN) || 10));
 						subset = isAll ? summaries.slice() : summaries.slice(0, n);
 
 						const times = subset
@@ -1246,13 +1369,309 @@ module.exports = ({
 					}
 				};
 
+				const parseAvgLengthSeconds = (summary) => {
+					const mmRaw = summary && summary.average_track_length_minutes != null
+						? String(summary.average_track_length_minutes).trim()
+						: '';
+					const ssRaw = summary && summary.average_track_length_seconds != null
+						? String(summary.average_track_length_seconds).trim()
+						: '';
+					const mm = Number(mmRaw);
+					const ss = Number(ssRaw);
+					if (!Number.isFinite(mm) || !Number.isFinite(ss) || mm < 0 || ss < 0) return null;
+					return mm * 60 + ss;
+				};
+
+				const formatSecondsToClock = (seconds) => {
+					const s = Number(seconds);
+					if (!Number.isFinite(s) || s < 0) return '0:00';
+					return formatMsToClock(Math.round(s * 1000));
+				};
+
+				const formatCount = (n) => {
+					const num = Number(n);
+					if (!Number.isFinite(num) || num < 0) return '0';
+					return String(Math.round(num));
+				};
+
+				const svgEl = (name) => document.createElementNS('http://www.w3.org/2000/svg', name);
+				const svgClear = (svg) => {
+					if (!svg) return;
+					while (svg.firstChild) svg.removeChild(svg.firstChild);
+				};
+
+				const getOrderedPointsForSubset = (subset, valueGetter) => {
+					return safeArray(subset)
+						.slice()
+						.map((s) => ({
+							summary: s,
+							t: getSummaryTimestampMs(s),
+							v: valueGetter(s),
+							idx: summaries.indexOf(s),
+						}))
+						.filter((p) => p && p.idx >= 0 && typeof p.v === 'number' && Number.isFinite(p.v))
+						.sort((a, b) => (a.t == null ? 0 : a.t) - (b.t == null ? 0 : b.t));
+				};
+
+				const computeIncludeYearForTooltip = (ordered) => {
+					if (!ordered || ordered.length < 2) return false;
+					const firstT = ordered[0] && typeof ordered[0].t === 'number' ? ordered[0].t : null;
+					const lastT = ordered[ordered.length - 1] && typeof ordered[ordered.length - 1].t === 'number'
+						? ordered[ordered.length - 1].t
+						: null;
+					if (!Number.isFinite(firstT) || !Number.isFinite(lastT)) return false;
+					const span = Math.abs(lastT - firstT);
+					return span > (365 * 24 * 60 * 60 * 1000);
+				};
+
+				const renderMiniLineChart = (opts) => {
+					const chart = opts && opts.chart;
+					const tooltip = opts && opts.tooltip;
+					const emptyEl = opts && opts.emptyEl;
+					const metaEl = opts && opts.metaEl;
+					const meta = opts && typeof opts.meta === 'string' ? opts.meta : '';
+					const subset = opts && opts.subset;
+					const valueGetter = opts && typeof opts.valueGetter === 'function' ? opts.valueGetter : null;
+					const valueFormatter = opts && typeof opts.valueFormatter === 'function' ? opts.valueFormatter : (v) => String(v);
+					const tooltipPrefix = opts && typeof opts.tooltipPrefix === 'string' ? opts.tooltipPrefix : '';
+					const emptyText = opts && typeof opts.emptyText === 'string' ? opts.emptyText : 'No data was found for this range.';
+					if (!chart || !valueGetter) return;
+					if (tooltip) tooltip.style.display = 'none';
+					if (emptyEl) {
+						emptyEl.style.display = 'none';
+						emptyEl.textContent = '';
+					}
+					if (metaEl) metaEl.textContent = meta;
+					svgClear(chart);
+
+					const ordered = getOrderedPointsForSubset(subset, valueGetter);
+					if (!ordered.length) {
+						if (emptyEl) {
+							emptyEl.style.display = 'block';
+							emptyEl.textContent = emptyText;
+						}
+						return;
+					}
+
+					const includeYearForTooltip = computeIncludeYearForTooltip(ordered);
+					const padL = 40;
+					const padR = 20;
+					const padT = 18;
+					const padB = 26;
+					const W = 1000;
+					const H = 220;
+					const plotW = W - padL - padR;
+					const plotH = H - padT - padB;
+
+					const ys = ordered.map((p) => p.v);
+					let minY = Math.min.apply(null, ys);
+					let maxY = Math.max.apply(null, ys);
+					if (!Number.isFinite(minY) || !Number.isFinite(maxY)) {
+						minY = 0;
+						maxY = 1;
+					}
+					if (minY === maxY) {
+						minY = Math.max(0, minY - 1);
+						maxY = maxY + 1;
+					}
+
+					// Add a little headroom/footroom so points don't touch the axes.
+					const dataRange = Math.max(1e-9, maxY - minY);
+					const padAmount = Math.max(dataRange * 0.08, 1);
+					const scaleMin = Math.max(0, minY - padAmount);
+					const scaleMax = maxY + padAmount;
+
+					const addTickLabel = (label, y) => {
+						const t = svgEl('text');
+						t.setAttribute('x', String(padL - 8));
+						t.setAttribute('y', String(y));
+						t.setAttribute('text-anchor', 'end');
+						t.setAttribute('dominant-baseline', 'middle');
+						t.setAttribute('class', 'stats-tick');
+						t.textContent = String(label);
+						chart.appendChild(t);
+					};
+
+					const axisX = svgEl('line');
+					axisX.setAttribute('x1', String(padL));
+					axisX.setAttribute('y1', String(padT + plotH));
+					axisX.setAttribute('x2', String(padL + plotW));
+					axisX.setAttribute('y2', String(padT + plotH));
+					axisX.setAttribute('class', 'stats-axis');
+					chart.appendChild(axisX);
+
+					const axisY = svgEl('line');
+					axisY.setAttribute('x1', String(padL));
+					axisY.setAttribute('y1', String(padT));
+					axisY.setAttribute('x2', String(padL));
+					axisY.setAttribute('y2', String(padT + plotH));
+					axisY.setAttribute('class', 'stats-axis');
+					chart.appendChild(axisY);
+
+					// Labels reflect the data min/max (not the padded scale).
+					addTickLabel(valueFormatter(maxY), padT);
+					addTickLabel(valueFormatter((minY + maxY) / 2), padT + plotH / 2);
+					addTickLabel(valueFormatter(minY), padT + plotH);
+
+					const points = [];
+					const n = ordered.length;
+					for (let i = 0; i < n; i++) {
+						const p = ordered[i];
+						const x = n === 1
+							? (padL + plotW / 2)
+							: (padL + (i * plotW) / (n - 1));
+						const denom = Math.max(1e-9, scaleMax - scaleMin);
+						const norm = (scaleMax - p.v) / denom;
+						const y = padT + norm * plotH;
+						points.push({ x, y, idx: p.idx, v: p.v, t: p.t, includeYearForTooltip });
+					}
+
+					const path = points
+						.map((pt, i) => (i === 0 ? 'M' : 'L') + ' ' + pt.x.toFixed(2) + ' ' + pt.y.toFixed(2))
+						.join(' ');
+					const line = svgEl('path');
+					line.setAttribute('d', path);
+					line.setAttribute('class', 'stats-line');
+					chart.appendChild(line);
+
+					for (const pt of points) {
+						const c = svgEl('circle');
+						c.setAttribute('cx', pt.x.toFixed(2));
+						c.setAttribute('cy', pt.y.toFixed(2));
+						c.setAttribute('r', '5');
+						c.setAttribute('class', 'stats-point');
+						c.setAttribute('data-summary-index', String(pt.idx));
+						c.setAttribute('data-val', String(pt.v));
+						c.setAttribute('data-ts', pt.t != null ? String(pt.t) : '');
+						c.setAttribute('data-include-year', pt.includeYearForTooltip ? '1' : '0');
+						c.setAttribute('tabindex', '0');
+						c.setAttribute('role', 'button');
+						c.setAttribute('aria-label', 'Select stream');
+						chart.appendChild(c);
+					}
+
+					const hideTooltip = () => {
+						if (!tooltip) return;
+						tooltip.style.display = 'none';
+						while (tooltip.firstChild) tooltip.removeChild(tooltip.firstChild);
+					};
+					const showTooltip = (e, target) => {
+						if (!tooltip || !chart) return;
+						const valRaw = target && target.getAttribute ? target.getAttribute('data-val') : '';
+						const tsRaw = target && target.getAttribute ? target.getAttribute('data-ts') : '';
+						const includeYearRaw = target && target.getAttribute ? target.getAttribute('data-include-year') : '0';
+						const val = Number(valRaw);
+						const ts = Number(tsRaw);
+						if (!Number.isFinite(val) || !Number.isFinite(ts)) {
+							hideTooltip();
+							return;
+						}
+						const includeYear = includeYearRaw === '1';
+						const d = new Date(ts);
+						const dateLabel = formatHumanDate(d, includeYear);
+						const valueLabel = valueFormatter(val);
+						while (tooltip.firstChild) tooltip.removeChild(tooltip.firstChild);
+						const dateEl = document.createElement('div');
+						dateEl.className = 'stats-tooltip-date';
+						dateEl.textContent = dateLabel;
+						const valEl = document.createElement('div');
+						valEl.className = 'stats-tooltip-avg';
+						valEl.textContent = tooltipPrefix + valueLabel;
+						tooltip.appendChild(dateEl);
+						tooltip.appendChild(valEl);
+
+						const wrap = chart.parentElement;
+						if (!wrap) return;
+						const rect = wrap.getBoundingClientRect();
+						const x = (e && typeof e.clientX === 'number') ? e.clientX - rect.left : 0;
+						const y = (e && typeof e.clientY === 'number') ? e.clientY - rect.top : 0;
+						const pad = 12;
+						tooltip.style.display = 'block';
+						const maxLeft = Math.max(0, rect.width - 20);
+						const maxTop = Math.max(0, rect.height - 20);
+						tooltip.style.left = String(clamp(x + pad, 0, maxLeft)) + 'px';
+						tooltip.style.top = String(clamp(y - pad, 0, maxTop)) + 'px';
+					};
+
+					chart.addEventListener('mousemove', (e) => {
+						const target = e && e.target ? e.target : null;
+						if (!target || !target.getAttribute) {
+							hideTooltip();
+							return;
+						}
+						const idx = target.getAttribute('data-summary-index');
+						if (idx == null) {
+							hideTooltip();
+							return;
+						}
+						showTooltip(e, target);
+					});
+					chart.addEventListener('mouseleave', () => hideTooltip());
+
+					chart.addEventListener('click', (e) => {
+						if (isSelectingFromChart) return;
+						const target = e && e.target ? e.target : null;
+						if (!target || !target.getAttribute) return;
+						const raw = target.getAttribute('data-summary-index');
+						const next = Number(raw);
+						if (!Number.isFinite(next)) return;
+						selectSummaryIndex(next);
+					});
+					chart.addEventListener('keydown', (e) => {
+						if (isSelectingFromChart) return;
+						if (!e || (e.key !== 'Enter' && e.key !== ' ')) return;
+						const target = e.target;
+						if (!target || !target.getAttribute) return;
+						const raw = target.getAttribute('data-summary-index');
+						const next = Number(raw);
+						if (!Number.isFinite(next)) return;
+						e.preventDefault();
+						selectSummaryIndex(next);
+					});
+				};
+
+				const renderStatsWith = (subset, meta) => {
+					renderMiniLineChart({
+						chart: statsChart,
+						tooltip: statsTooltip,
+						emptyEl: statsEmpty,
+						metaEl: statsMeta,
+						meta,
+						subset,
+						valueGetter: (s) => parseAvgLengthSeconds(s),
+						valueFormatter: (v) => formatSecondsToClock(v),
+						tooltipPrefix: 'Avg: ',
+						emptyText: 'No average track length data was found for this range.',
+					});
+				};
+
+				const renderSongsPlayedWith = (subset, meta) => {
+					renderMiniLineChart({
+						chart: songsPlayedChart,
+						tooltip: songsPlayedTooltip,
+						emptyEl: songsPlayedEmpty,
+						metaEl: songsPlayedMeta,
+						meta,
+						subset,
+						valueGetter: (s) => {
+							const v = s && typeof s.total_tracks_played === 'number' ? s.total_tracks_played : null;
+							return (typeof v === 'number' && Number.isFinite(v)) ? v : null;
+						},
+						valueFormatter: (v) => formatCount(v),
+						tooltipPrefix: 'Songs: ',
+						emptyText: 'No song counts were found for this range.',
+					});
+				};
+
 				let analyticsTab = 'topSongs';
 				const setAnalyticsTab = (tab) => {
 					analyticsTab = tab === 'shortLong'
 						? 'shortLong'
 						: (tab === 'doubles'
 							? 'doubles'
-							: (tab === 'commandUse' ? 'commandUse' : 'topSongs'));
+							: (tab === 'commandUse'
+								? 'commandUse'
+								: (tab === 'stats' ? 'stats' : (tab === 'songsPlayed' ? 'songsPlayed' : 'topSongs'))));
 					if (topTabTopSongs) {
 						topTabTopSongs.classList.toggle('active', analyticsTab === 'topSongs');
 						topTabTopSongs.setAttribute('aria-selected', analyticsTab === 'topSongs' ? 'true' : 'false');
@@ -1269,10 +1688,20 @@ module.exports = ({
 						topTabCommandUse.classList.toggle('active', analyticsTab === 'commandUse');
 						topTabCommandUse.setAttribute('aria-selected', analyticsTab === 'commandUse' ? 'true' : 'false');
 					}
+					if (topTabStats) {
+						topTabStats.classList.toggle('active', analyticsTab === 'stats');
+						topTabStats.setAttribute('aria-selected', analyticsTab === 'stats' ? 'true' : 'false');
+					}
+					if (topTabSongsPlayed) {
+						topTabSongsPlayed.classList.toggle('active', analyticsTab === 'songsPlayed');
+						topTabSongsPlayed.setAttribute('aria-selected', analyticsTab === 'songsPlayed' ? 'true' : 'false');
+					}
 					if (topSongsPanel) topSongsPanel.style.display = analyticsTab === 'topSongs' ? 'block' : 'none';
 					if (shortLongPanel) shortLongPanel.style.display = analyticsTab === 'shortLong' ? 'block' : 'none';
 					if (doublesPanel) doublesPanel.style.display = analyticsTab === 'doubles' ? 'block' : 'none';
 					if (commandUsePanel) commandUsePanel.style.display = analyticsTab === 'commandUse' ? 'block' : 'none';
+					if (statsPanel) statsPanel.style.display = analyticsTab === 'stats' ? 'block' : 'none';
+					if (songsPlayedPanel) songsPlayedPanel.style.display = analyticsTab === 'songsPlayed' ? 'block' : 'none';
 				};
 
 				const renderAnalytics = () => {
@@ -1286,6 +1715,8 @@ module.exports = ({
 					renderShortestLongestWith(subset, meta);
 					renderDoublesWith(subset, meta);
 					renderCommandUseWith(subset, meta);
+					renderStatsWith(subset, meta);
+					renderSongsPlayedWith(subset, meta);
 					setAnalyticsTab(analyticsTab);
 				};
 
@@ -1295,6 +1726,11 @@ module.exports = ({
 					if (topSongsModeDates) topSongsModeDates.checked = !streams;
 					// Disable irrelevant inputs so tab order and focus feel correct
 					if (topSongsStreamCount) topSongsStreamCount.disabled = !streams;
+					const isAll = streams && topSongsStreamCount && topSongsStreamCount.value === 'all';
+					if (topSongsStreamNumber) {
+						topSongsStreamNumber.disabled = !streams || isAll;
+						topSongsStreamNumber.style.display = (!streams || isAll) ? 'none' : '';
+					}
 					if (topSongsStartDate) topSongsStartDate.disabled = streams;
 					if (topSongsEndDate) topSongsEndDate.disabled = streams;
 				};
@@ -1310,6 +1746,31 @@ module.exports = ({
 				});
 				if (topSongsStreamCount) topSongsStreamCount.addEventListener('change', () => {
 					setTopSongsMode('streams');
+					const raw = topSongsStreamCount.value;
+					if (raw === 'all') {
+						// number input will be hidden/disabled by setTopSongsMode
+					} else {
+						const picked = Number(raw);
+						if (Number.isFinite(picked) && picked > 0 && topSongsStreamNumber) {
+							topSongsStreamNumber.value = String(Math.max(1, Math.min(500, picked)));
+						}
+					}
+					renderAnalytics();
+				});
+				if (topSongsStreamNumber) topSongsStreamNumber.addEventListener('change', () => {
+					setTopSongsMode('streams');
+					if (topSongsStreamCount) {
+						const n = Number(topSongsStreamNumber.value);
+						const normalized = Number.isFinite(n) ? Math.max(1, Math.min(500, Math.round(n))) : 10;
+						topSongsStreamNumber.value = String(normalized);
+						const quickOptions = new Set([5, 10, 15, 20, 30, 40, 50]);
+						if (quickOptions.has(normalized)) {
+							topSongsStreamCount.value = String(normalized);
+						} else {
+							// mark as custom
+							topSongsStreamCount.value = '';
+						}
+					}
 					renderAnalytics();
 				});
 				if (topSongsApplyBtn) topSongsApplyBtn.addEventListener('click', () => {
@@ -1329,6 +1790,14 @@ module.exports = ({
 				});
 				if (topTabCommandUse) topTabCommandUse.addEventListener('click', () => {
 					setAnalyticsTab('commandUse');
+					renderAnalytics();
+				});
+				if (topTabStats) topTabStats.addEventListener('click', () => {
+					setAnalyticsTab('stats');
+					renderAnalytics();
+				});
+				if (topTabSongsPlayed) topTabSongsPlayed.addEventListener('click', () => {
+					setAnalyticsTab('songsPlayed');
 					renderAnalytics();
 				});
 
