@@ -436,6 +436,36 @@ module.exports = ({
 				min-width: 0;
 				word-break: break-word;
 			}
+			.commanduse-subheader {
+				margin-top: 12px;
+				margin-bottom: 2px;
+				color: var(--accent);
+				font-family: var(--fira-sans);
+				font-weight: 600;
+				font-size: 14px;
+				opacity: 1;
+			}
+			.commanduse-list {
+				margin: 8px 0 0;
+				padding-left: 18px;
+				font-size: 13px;
+				font-family: var(--dm-sans);
+			}
+			.commanduse-list li {
+				margin: 6px 0;
+				word-break: break-word;
+			}
+			.commanduse-value {
+				color: var(--session-info-label-color);
+				font-family: var(--fira-sans);
+				font-weight: 700;
+			}
+			.commanduse-dupe {
+				color: var(--session-info-label-color);
+				font-family: var(--fira-sans);
+				font-weight: 700;
+				white-space: nowrap;
+			}
 
 			footer {
 				margin-top: 14px;
@@ -504,6 +534,7 @@ module.exports = ({
 					<button id="topTabTopSongs" class="top-section-tab active" type="button" role="tab" aria-selected="true" aria-controls="topSongsPanel">Top Songs Played</button>
 					<button id="topTabShortLong" class="top-section-tab" type="button" role="tab" aria-selected="false" aria-controls="shortLongPanel">Shortest / Longest</button>
 					<button id="topTabDoubles" class="top-section-tab" type="button" role="tab" aria-selected="false" aria-controls="doublesPanel">Doubles Played</button>
+					<button id="topTabCommandUse" class="top-section-tab" type="button" role="tab" aria-selected="false" aria-controls="commandUsePanel">Command Use</button>
 				</div>
 				<div class="top-songs-controls">
 					<label class="radio"><input id="topSongsModeStreams" type="radio" name="topSongsMode" value="streams" checked /> Last</label>
@@ -544,6 +575,24 @@ module.exports = ({
 					<div id="doublesPanelEmpty" class="empty" style="display:none;"></div>
 					<ol id="doublesPanelList" class="top-songs-list"></ol>
 					<div id="doublesPanelMeta" class="top-songs-meta"></div>
+				</div>
+				<div id="commandUsePanel" class="panel" style="display:none;">
+					<div class="shortlong-columns" aria-hidden="true">
+						<div class="shortlong-col-header">np Commands Used: <span id="cmdNpCount" class="commanduse-value">0</span> times</div>
+						<div class="shortlong-col-header">Terms Searched: <span id="cmdDypCount" class="commanduse-value">0</span> times</div>
+					</div>
+					<div id="commandUseEmpty" class="empty" style="display:none;"></div>
+					<div class="shortlong-columns">
+						<div>
+							<div class="commanduse-subheader">Songs Identified</div>
+							<ul id="cmdNpList" class="commanduse-list"></ul>
+						</div>
+						<div>
+							<div class="commanduse-subheader">Terms Searched:</div>
+							<ol id="cmdDypList" class="commanduse-list"></ol>
+						</div>
+					</div>
+					<div id="commandUseMeta" class="top-songs-meta"></div>
 				</div>
 			</div>
 
@@ -683,9 +732,11 @@ module.exports = ({
 				const topTabTopSongs = $('topTabTopSongs');
 				const topTabShortLong = $('topTabShortLong');
 				const topTabDoubles = $('topTabDoubles');
+				const topTabCommandUse = $('topTabCommandUse');
 				const topSongsPanel = $('topSongsPanel');
 				const shortLongPanel = $('shortLongPanel');
 				const doublesPanel = $('doublesPanel');
+				const commandUsePanel = $('commandUsePanel');
 				const topSongsModeStreams = $('topSongsModeStreams');
 				const topSongsModeDates = $('topSongsModeDates');
 				const topSongsStreamCount = $('topSongsStreamCount');
@@ -702,6 +753,12 @@ module.exports = ({
 				const doublesMeta = $('doublesPanelMeta');
 				const doublesEmpty = $('doublesPanelEmpty');
 				const doublesList = $('doublesPanelList');
+				const commandUseMeta = $('commandUseMeta');
+				const commandUseEmpty = $('commandUseEmpty');
+				const cmdNpCount = $('cmdNpCount');
+				const cmdDypCount = $('cmdDypCount');
+				const cmdNpList = $('cmdNpList');
+				const cmdDypList = $('cmdDypList');
 
 				let pendingDeleteId = '';
 
@@ -1080,9 +1137,119 @@ module.exports = ({
 					}
 				};
 
+				const flattenCommandUse = (subsetSummaries) => {
+					const ordered = safeArray(subsetSummaries)
+						.slice()
+						.sort((a, b) => {
+							const ta = getSummaryTimestampMs(a);
+							const tb = getSummaryTimestampMs(b);
+							return (ta == null ? 0 : ta) - (tb == null ? 0 : tb);
+						});
+
+					const np = [];
+					const dyp = [];
+					for (const s of ordered) {
+						for (const item of safeArray(s && s.np_songs_queried)) {
+							const name = item && typeof item.name === 'string' ? item.name.trim() : '';
+							if (name) np.push(name);
+						}
+						for (const item of safeArray(s && s.dyp_search_terms)) {
+							const name = item && typeof item.name === 'string' ? item.name.trim() : '';
+							if (name) dyp.push(name);
+						}
+					}
+					return { np, dyp };
+				};
+
+				const uniqueWithRecency = (names) => {
+					const arr = safeArray(names);
+					const counts = new Map();
+					const lastIndex = new Map();
+					for (let i = 0; i < arr.length; i++) {
+						const name = arr[i];
+						if (typeof name !== 'string' || !name) continue;
+						counts.set(name, (counts.get(name) || 0) + 1);
+						lastIndex.set(name, i);
+					}
+					return Array.from(counts.entries())
+						.map(([name, count]) => ({ name, count, last: lastIndex.get(name) || 0 }))
+						.sort((a, b) => b.last - a.last || b.count - a.count || a.name.localeCompare(b.name));
+				};
+
+				const uniqueMostIdentified = (names) => {
+					const arr = safeArray(names);
+					const counts = new Map();
+					const lastIndex = new Map();
+					for (let i = 0; i < arr.length; i++) {
+						const name = arr[i];
+						if (typeof name !== 'string' || !name) continue;
+						counts.set(name, (counts.get(name) || 0) + 1);
+						lastIndex.set(name, i);
+					}
+					return Array.from(counts.entries())
+						.map(([name, count]) => ({ name, count, last: lastIndex.get(name) || 0 }))
+						.sort((a, b) => b.count - a.count || b.last - a.last || a.name.localeCompare(b.name));
+				};
+
+				const renderCommandUseWith = (subset, meta) => {
+					if (!cmdNpList || !cmdDypList) return;
+					if (commandUseEmpty) {
+						commandUseEmpty.style.display = 'none';
+						commandUseEmpty.textContent = '';
+					}
+					if (commandUseMeta) commandUseMeta.textContent = meta;
+					clearChildren(cmdNpList);
+					clearChildren(cmdDypList);
+
+					const flat = flattenCommandUse(subset);
+					const npTotal = flat.np.length;
+					const dypTotal = flat.dyp.length;
+					if (cmdNpCount) cmdNpCount.textContent = String(npTotal);
+					if (cmdDypCount) cmdDypCount.textContent = String(dypTotal);
+
+					const songs = uniqueMostIdentified(flat.np).slice(0, 10);
+					const terms = uniqueMostIdentified(flat.dyp).slice(0, 10);
+
+					if (!songs.length && !terms.length) {
+						if (commandUseEmpty) {
+							commandUseEmpty.style.display = 'block';
+							commandUseEmpty.textContent = 'No command usage was recorded for this range.';
+						}
+						return;
+					}
+
+					for (const s of songs) {
+						const li = document.createElement('li');
+						li.appendChild(document.createTextNode(s.name));
+						if (s.count > 1) {
+							const dupe = document.createElement('span');
+							dupe.className = 'commanduse-dupe';
+							dupe.textContent = ' (x' + String(s.count) + ')';
+							li.appendChild(dupe);
+						}
+						cmdNpList.appendChild(li);
+					}
+
+					for (const t of terms) {
+						const li = document.createElement('li');
+						li.appendChild(document.createTextNode(t.name));
+						if (t.count > 1) {
+							const dupe = document.createElement('span');
+							dupe.className = 'commanduse-dupe';
+							dupe.textContent = ' (x' + String(t.count) + ')';
+							li.appendChild(dupe);
+						}
+						cmdDypList.appendChild(li);
+					}
+				};
+
 				let analyticsTab = 'topSongs';
 				const setAnalyticsTab = (tab) => {
-					analyticsTab = tab === 'shortLong' ? 'shortLong' : (tab === 'doubles' ? 'doubles' : 'topSongs');
+					analyticsTab = tab === 'shortLong'
+						? 'shortLong'
+						: (tab === 'doubles'
+							? 'doubles'
+							: (tab === 'commandUse' ? 'commandUse' : 'topSongs'));
 					if (topTabTopSongs) {
 						topTabTopSongs.classList.toggle('active', analyticsTab === 'topSongs');
 						topTabTopSongs.setAttribute('aria-selected', analyticsTab === 'topSongs' ? 'true' : 'false');
@@ -1095,9 +1262,14 @@ module.exports = ({
 						topTabDoubles.classList.toggle('active', analyticsTab === 'doubles');
 						topTabDoubles.setAttribute('aria-selected', analyticsTab === 'doubles' ? 'true' : 'false');
 					}
+					if (topTabCommandUse) {
+						topTabCommandUse.classList.toggle('active', analyticsTab === 'commandUse');
+						topTabCommandUse.setAttribute('aria-selected', analyticsTab === 'commandUse' ? 'true' : 'false');
+					}
 					if (topSongsPanel) topSongsPanel.style.display = analyticsTab === 'topSongs' ? 'block' : 'none';
 					if (shortLongPanel) shortLongPanel.style.display = analyticsTab === 'shortLong' ? 'block' : 'none';
 					if (doublesPanel) doublesPanel.style.display = analyticsTab === 'doubles' ? 'block' : 'none';
+					if (commandUsePanel) commandUsePanel.style.display = analyticsTab === 'commandUse' ? 'block' : 'none';
 				};
 
 				const renderAnalytics = () => {
@@ -1110,6 +1282,7 @@ module.exports = ({
 					renderTopSongsWith(subset, meta);
 					renderShortestLongestWith(subset, meta);
 					renderDoublesWith(subset, meta);
+					renderCommandUseWith(subset, meta);
 					setAnalyticsTab(analyticsTab);
 				};
 
@@ -1149,6 +1322,10 @@ module.exports = ({
 				});
 				if (topTabDoubles) topTabDoubles.addEventListener('click', () => {
 					setAnalyticsTab('doubles');
+					renderAnalytics();
+				});
+				if (topTabCommandUse) topTabCommandUse.addEventListener('click', () => {
+					setAnalyticsTab('commandUse');
 					renderAnalytics();
 				});
 
