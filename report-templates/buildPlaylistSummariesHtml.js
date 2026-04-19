@@ -466,6 +466,9 @@ module.exports = ({
 				font-weight: 700;
 				white-space: nowrap;
 			}
+			.shortlong-col-header .commanduse-times {
+				color: var(--text);
+			}
 
 			footer {
 				margin-top: 14px;
@@ -578,8 +581,8 @@ module.exports = ({
 				</div>
 				<div id="commandUsePanel" class="panel" style="display:none;">
 					<div class="shortlong-columns" aria-hidden="true">
-						<div class="shortlong-col-header">np Commands Used: <span id="cmdNpCount" class="commanduse-value">0</span> times</div>
-						<div class="shortlong-col-header">Terms Searched: <span id="cmdDypCount" class="commanduse-value">0</span> times</div>
+						<div class="shortlong-col-header">np Commands Used: <span id="cmdNpCount" class="commanduse-value">0</span><span class="commanduse-times"> times</span></div>
+						<div class="shortlong-col-header">Terms Searched: <span id="cmdDypCount" class="commanduse-value">0</span><span class="commanduse-times"> times</span></div>
 					</div>
 					<div id="commandUseEmpty" class="empty" style="display:none;"></div>
 					<div class="shortlong-columns">
@@ -1224,7 +1227,7 @@ module.exports = ({
 						if (s.count > 1) {
 							const dupe = document.createElement('span');
 							dupe.className = 'commanduse-dupe';
-							dupe.textContent = ' (x' + String(s.count) + ')';
+							dupe.textContent = ' (' + String(s.count) + 'x)';
 							li.appendChild(dupe);
 						}
 						cmdNpList.appendChild(li);
@@ -1236,7 +1239,7 @@ module.exports = ({
 						if (t.count > 1) {
 							const dupe = document.createElement('span');
 							dupe.className = 'commanduse-dupe';
-							dupe.textContent = ' (x' + String(t.count) + ')';
+							dupe.textContent = ' (' + String(t.count) + 'x)';
 							li.appendChild(dupe);
 						}
 						cmdDypList.appendChild(li);
