@@ -109,6 +109,16 @@ When you've completed your live stream, simply click "Disconnect" to disconnect 
 
 <hr>
 
+### Playlist Analytics
+
+Clicking the "Analytics" control in the UI will open a new page in your default web browser that will display the npChatbot Playlist Summaries and Analytics sections.
+
+The top section will display a summary section for the playlist selected, beginning with the most recent.  You can select the summary for any previous stream from the dropdown or by using the navigation icons.  Clicking the red X to the right will prompt you to delete that summary from your play histories.
+
+The bottom section displays a deeper dive into your play histories based on a number of factors that you can select from in the UI.  You can specify the range of play histories shown in the analytics section using the dropdown selector or by entering a specific date/stream range.
+
+<hr>
+
 ### Development Stack:
 
 - React + TypeScript (client UI)
