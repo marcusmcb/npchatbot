@@ -1,28 +1,4 @@
-'use strict'
-
-module.exports = ({
-	playlistSummaries,
-	currentReportIndex,
-	isDiscordAuthorized,
-	twitchChannelName,
-	discordShareNonce,
-}) => {
-	const payload = {
-		generatedAt: new Date().toISOString(),
-		currentReportIndex,
-		playlistSummaries,
-		isDiscordAuthorized: isDiscordAuthorized === true,
-		twitchChannelName:
-			typeof twitchChannelName === 'string' ? twitchChannelName : '',
-		discordShareNonce:
-			typeof discordShareNonce === 'string' ? discordShareNonce : '',
-	}
-
-	const payloadB64 = Buffer.from(JSON.stringify(payload), 'utf8').toString(
-		'base64'
-	)
-
-	return `<!doctype html>
+<!doctype html>
 <html lang="en">
 	<head>
 		<meta charset="utf-8" />
@@ -388,35 +364,6 @@ module.exports = ({
 				font-size: 13px;
 				font-family: var(--dm-sans);
 			}
-			.shortlong-columns {
-				display: grid;
-				grid-template-columns: 1fr 1fr;
-				column-gap: 24px;
-			}
-			@media (max-width: 700px) {
-				.shortlong-columns {
-					grid-template-columns: 1fr;
-					row-gap: 12px;
-				}
-			}
-			.shortlong-col {
-				display: grid;
-				grid-template-columns: max-content 1fr;
-				row-gap: 8px;
-				column-gap: 2ch;
-				margin-top: 10px;
-				font-size: 13px;
-				font-family: var(--dm-sans);
-			}
-			.shortlong-col-header {
-				margin-top: 0;
-				margin-bottom: 2px;
-				color: var(--accent);
-				font-family: var(--fira-sans);
-				font-weight: 600;
-				font-size: 16px;
-				opacity: 1;
-			}
 			.shortlong-header {
 				margin-top: 0;
 				margin-bottom: 2px;
@@ -528,15 +475,14 @@ module.exports = ({
 					<div id="topSongsMeta" class="top-songs-meta"></div>
 				</div>
 				<div id="shortLongPanel" class="panel" style="display:none;">
-					<div class="shortlong-columns" aria-hidden="true">
-						<div class="shortlong-col-header">Longest Songs</div>
-						<div class="shortlong-col-header">Shortest Songs</div>
+					<div class="shortlong-grid shortlong-header" aria-hidden="true">
+						<div>Longest Songs</div>
+						<div></div>
+						<div>Shortest Songs</div>
+						<div></div>
 					</div>
 					<div id="shortLongEmpty" class="empty" style="display:none;"></div>
-					<div class="shortlong-columns">
-						<div id="longestGrid" class="shortlong-col"></div>
-						<div id="shortestGrid" class="shortlong-col"></div>
-					</div>
+					<div id="shortLongGrid" class="shortlong-grid"></div>
 					<div id="shortLongMeta" class="top-songs-meta"></div>
 				</div>
 				<div id="doublesPanel" class="panel" style="display:none;">
@@ -565,7 +511,7 @@ module.exports = ({
 
 		<script>
 			(() => {
-				const payloadB64 = ${JSON.stringify(payloadB64)};
+				const payloadB64 = "eyJnZW5lcmF0ZWRBdCI6IjIwMjYtMDQtMTlUMDE6MjQ6NDUuNzA3WiIsImN1cnJlbnRSZXBvcnRJbmRleCI6MCwicGxheWxpc3RTdW1tYXJpZXMiOltdLCJpc0Rpc2NvcmRBdXRob3JpemVkIjpmYWxzZSwidHdpdGNoQ2hhbm5lbE5hbWUiOiIiLCJkaXNjb3JkU2hhcmVOb25jZSI6IiJ9";
 
 				const $ = (id) => document.getElementById(id);
 				const clamp = (n, min, max) => Math.min(max, Math.max(min, n));
@@ -697,8 +643,7 @@ module.exports = ({
 				const topSongsList = $('topSongsList');
 				const shortLongMeta = $('shortLongMeta');
 				const shortLongEmpty = $('shortLongEmpty');
-				const longestGrid = $('longestGrid');
-				const shortestGrid = $('shortestGrid');
+				const shortLongGrid = $('shortLongGrid');
 				const doublesMeta = $('doublesPanelMeta');
 				const doublesEmpty = $('doublesPanelEmpty');
 				const doublesList = $('doublesPanelList');
@@ -738,7 +683,7 @@ module.exports = ({
 					// Fallback: many summaries store only a human playlist_date like "3/27/2026" or "3/27/26".
 					const rawDate = summary && typeof summary.playlist_date === 'string' ? summary.playlist_date.trim() : '';
 					if (!rawDate) return null;
-					const m = rawDate.match(/^(\\d{1,2})\\/(\\d{1,2})\\/(\\d{2}|\\d{4})$/);
+					const m = rawDate.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2}|\d{4})$/);
 					if (!m) return null;
 					const month = Number(m[1]);
 					const day = Number(m[2]);
@@ -981,11 +926,11 @@ module.exports = ({
 						shortLongEmpty.textContent = '';
 					}
 					if (shortLongMeta) shortLongMeta.textContent = meta;
-					clearChildren(longestGrid);
-					clearChildren(shortestGrid);
+					clearChildren(shortLongGrid);
 
 					const { longest, shortest } = computeShortestLongest(subset, 10);
-					if (!longest.length && !shortest.length) {
+					const rows = Math.max(longest.length, shortest.length);
+					if (!rows) {
 						if (shortLongEmpty) {
 							shortLongEmpty.style.display = 'block';
 							shortLongEmpty.textContent = 'No song lengths were found for this range.';
@@ -993,30 +938,30 @@ module.exports = ({
 						return;
 					}
 
-					for (const long of longest) {
+					for (let i = 0; i < rows; i++) {
+						const long = longest[i] || null;
+						const short = shortest[i] || null;
+
 						const longLen = document.createElement('div');
 						longLen.className = 'shortlong-len';
-						longLen.textContent = formatMsToClock(long.ms);
+						longLen.textContent = long ? formatMsToClock(long.ms) : '';
 
 						const longName = document.createElement('div');
 						longName.className = 'shortlong-name';
-						longName.textContent = long.name;
+						longName.textContent = long ? long.name : '';
 
-						longestGrid.appendChild(longLen);
-						longestGrid.appendChild(longName);
-					}
-
-					for (const short of shortest) {
 						const shortLen = document.createElement('div');
 						shortLen.className = 'shortlong-len';
-						shortLen.textContent = formatMsToClock(short.ms);
+						shortLen.textContent = short ? formatMsToClock(short.ms) : '';
 
 						const shortName = document.createElement('div');
 						shortName.className = 'shortlong-name';
-						shortName.textContent = short.name;
+						shortName.textContent = short ? short.name : '';
 
-						shortestGrid.appendChild(shortLen);
-						shortestGrid.appendChild(shortName);
+						shortLongGrid.appendChild(longLen);
+						shortLongGrid.appendChild(longName);
+						shortLongGrid.appendChild(shortLen);
+						shortLongGrid.appendChild(shortName);
 					}
 				};
 
@@ -1432,5 +1377,4 @@ module.exports = ({
 			})();
 		</script>
 	</body>
-</html>`
-}
+</html>
