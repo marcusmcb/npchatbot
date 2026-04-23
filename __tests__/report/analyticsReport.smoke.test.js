@@ -41,8 +41,10 @@ describe('Browser analytics report smoke', () => {
 		expect($('#topTabCommandUse').length).toBe(1)
 		expect($('#topTabStats').length).toBe(1)
 		expect($('#topTabSongsPlayed').length).toBe(1)
+		expect($('#topTabSearchSongs').length).toBe(1)
 		expect($('#topTabStats').text()).toContain('Song Length')
 		expect($('#topTabSongsPlayed').text()).toContain('Songs Played')
+		expect($('#topTabSearchSongs').text()).toContain('Search Songs')
 
 		// Shared range controls
 		expect($('#topSongsModeStreams').length).toBe(1)
@@ -73,6 +75,13 @@ describe('Browser analytics report smoke', () => {
 		expect($('#songsPlayedPanel').length).toBe(1)
 		expect($('#songsPlayedChart').length).toBe(1)
 		expect($('#songsPlayedTooltip').length).toBe(1)
+
+		// Search songs panel + controls
+		expect($('#searchSongsPanel').length).toBe(1)
+		expect($('#searchSongsTerm').length).toBe(1)
+		expect($('#searchSongsBtn').length).toBe(1)
+		expect($('#searchSongsBtn').text()).toContain('Search')
+		expect($('#searchSongsList').length).toBe(1)
 
 		// The inline script should contain the expected tab id wiring
 		const scriptText = $('script').last().text() || ''

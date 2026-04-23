@@ -379,6 +379,34 @@ module.exports = ({
 				align-items: flex-start;
 				margin: 6px 0;
 			}
+			#searchSongsList li {
+				display: block;
+			}
+			.search-songs-controls {
+				margin-top: 10px;
+				display: flex;
+				flex-direction: column;
+				gap: 8px;
+				font-family: var(--fira-sans);
+				font-size: 13px;
+				color: var(--text);
+			}
+			.search-songs-row {
+				display: flex;
+				gap: 10px;
+				align-items: center;
+			}
+			.search-songs-row input[type="text"] {
+				flex: 1;
+				min-width: 0;
+				background: var(--panel);
+				color: var(--text);
+				border: 2px solid var(--accent);
+				border-radius: 5px;
+				padding: 8px 10px;
+				font-size: 14px;
+				font-family: var(--fira-sans);
+			}
 			.top-songs-name {
 				flex: 1;
 				min-width: 0;
@@ -608,6 +636,7 @@ module.exports = ({
 					<button id="topTabCommandUse" class="top-section-tab" type="button" role="tab" aria-selected="false" aria-controls="commandUsePanel">Command Use</button>
 					<button id="topTabStats" class="top-section-tab" type="button" role="tab" aria-selected="false" aria-controls="statsPanel">Song Length</button>
 					<button id="topTabSongsPlayed" class="top-section-tab" type="button" role="tab" aria-selected="false" aria-controls="songsPlayedPanel">Songs Played</button>
+					<button id="topTabSearchSongs" class="top-section-tab" type="button" role="tab" aria-selected="false" aria-controls="searchSongsPanel">Search Songs</button>
 				</div>
 				<div class="top-songs-controls">
 					<label class="radio"><input id="topSongsModeStreams" type="radio" name="topSongsMode" value="streams" checked /> Last</label>
@@ -689,6 +718,18 @@ module.exports = ({
 						<div id="songsPlayedTooltip" class="stats-tooltip" style="display:none;"></div>
 					</div>
 					<div id="songsPlayedMeta" class="top-songs-meta"></div>
+				</div>
+				<div id="searchSongsPanel" class="panel" style="display:none;">
+					<div class="shortlong-header">Search Songs</div>
+					<div class="search-songs-controls">
+						<label for="searchSongsTerm">Search past streams by artist or title</label>
+						<div class="search-songs-row">
+							<input id="searchSongsTerm" type="text" aria-label="Search past streams by artist or title" />
+							<button id="searchSongsBtn" type="button">Search</button>
+						</div>
+					</div>
+					<div id="searchSongsEmpty" class="empty" style="display:none;"></div>
+					<ol id="searchSongsList" class="top-songs-list"></ol>
 				</div>
 			</div>
 
@@ -831,12 +872,14 @@ module.exports = ({
 				const topTabCommandUse = $('topTabCommandUse');
 				const topTabStats = $('topTabStats');
 				const topTabSongsPlayed = $('topTabSongsPlayed');
+				const topTabSearchSongs = $('topTabSearchSongs');
 				const topSongsPanel = $('topSongsPanel');
 				const shortLongPanel = $('shortLongPanel');
 				const doublesPanel = $('doublesPanel');
 				const commandUsePanel = $('commandUsePanel');
 				const statsPanel = $('statsPanel');
 				const songsPlayedPanel = $('songsPlayedPanel');
+				const searchSongsPanel = $('searchSongsPanel');
 				const topSongsModeStreams = $('topSongsModeStreams');
 				const topSongsModeDates = $('topSongsModeDates');
 				const topSongsStreamCount = $('topSongsStreamCount');
@@ -868,9 +911,14 @@ module.exports = ({
 				const songsPlayedEmpty = $('songsPlayedEmpty');
 				const songsPlayedChart = $('songsPlayedChart');
 				const songsPlayedTooltip = $('songsPlayedTooltip');
+				const searchSongsTerm = $('searchSongsTerm');
+				const searchSongsBtn = $('searchSongsBtn');
+				const searchSongsEmpty = $('searchSongsEmpty');
+				const searchSongsList = $('searchSongsList');
 
 				let pendingDeleteId = '';
 				let isSelectingFromChart = false;
+				let searchSongsHasSearched = false;
 
 				const selectSummaryIndex = (nextIndex) => {
 					if (!Number.isFinite(nextIndex)) return;
@@ -1018,6 +1066,31 @@ module.exports = ({
 						.slice(0, Math.max(0, Number(limit) || 10));
 				};
 
+				const normalizeSearchTerm = (value) => {
+					if (typeof value !== 'string') return '';
+					return value.trim().toLowerCase();
+				};
+
+				const computeSearchSongs = (subsetSummaries, term) => {
+					const q = normalizeSearchTerm(term);
+					if (!q) return [];
+					const counts = new Map();
+					for (const s of safeArray(subsetSummaries)) {
+						const log = safeArray(s && s.track_log);
+						for (const entry of log) {
+							const raw = entry && (entry.full_track_id || entry.track_id);
+							const name = typeof raw === 'string' ? raw.trim() : '';
+							if (!name) continue;
+							if (name.toLowerCase().indexOf(q) === -1) continue;
+							counts.set(name, (counts.get(name) || 0) + 1);
+						}
+					}
+
+					return Array.from(counts.entries())
+						.map(([name, count]) => ({ name, count }))
+						.sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+				};
+
 				const parseLengthMs = (value) => {
 					if (typeof value !== 'string') return null;
 					const trimmed = value.trim();
@@ -1123,6 +1196,44 @@ module.exports = ({
 						li.appendChild(count);
 						li.appendChild(name);
 						topSongsList.appendChild(li);
+					}
+				};
+
+				const renderSearchSongsWith = (subset) => {
+					if (searchSongsEmpty) {
+						searchSongsEmpty.style.display = 'none';
+						searchSongsEmpty.textContent = '';
+					}
+					clearChildren(searchSongsList);
+					const term = searchSongsTerm && typeof searchSongsTerm.value === 'string' ? searchSongsTerm.value : '';
+					const q = normalizeSearchTerm(term);
+					if (!q) {
+						if (searchSongsHasSearched && searchSongsEmpty) {
+							searchSongsEmpty.style.display = 'block';
+							searchSongsEmpty.textContent = 'Enter a search term to see results.';
+						}
+						return;
+					}
+
+					const results = computeSearchSongs(subset, q);
+					if (!results.length) {
+						if (searchSongsEmpty) {
+							searchSongsEmpty.style.display = 'block';
+							searchSongsEmpty.textContent = 'No songs matched "' + term.trim() + '".';
+						}
+						return;
+					}
+
+					for (const item of results) {
+						const li = document.createElement('li');
+						li.appendChild(document.createTextNode(item.name));
+						if (item.count > 1) {
+							const dupe = document.createElement('span');
+							dupe.className = 'commanduse-dupe';
+							dupe.textContent = ' (' + String(item.count) + 'x)';
+							li.appendChild(dupe);
+						}
+						searchSongsList.appendChild(li);
 					}
 				};
 
@@ -1671,7 +1782,11 @@ module.exports = ({
 							? 'doubles'
 							: (tab === 'commandUse'
 								? 'commandUse'
-								: (tab === 'stats' ? 'stats' : (tab === 'songsPlayed' ? 'songsPlayed' : 'topSongs'))));
+								: (tab === 'stats'
+									? 'stats'
+									: (tab === 'songsPlayed'
+										? 'songsPlayed'
+										: (tab === 'searchSongs' ? 'searchSongs' : 'topSongs')))));
 					if (topTabTopSongs) {
 						topTabTopSongs.classList.toggle('active', analyticsTab === 'topSongs');
 						topTabTopSongs.setAttribute('aria-selected', analyticsTab === 'topSongs' ? 'true' : 'false');
@@ -1696,12 +1811,17 @@ module.exports = ({
 						topTabSongsPlayed.classList.toggle('active', analyticsTab === 'songsPlayed');
 						topTabSongsPlayed.setAttribute('aria-selected', analyticsTab === 'songsPlayed' ? 'true' : 'false');
 					}
+					if (topTabSearchSongs) {
+						topTabSearchSongs.classList.toggle('active', analyticsTab === 'searchSongs');
+						topTabSearchSongs.setAttribute('aria-selected', analyticsTab === 'searchSongs' ? 'true' : 'false');
+					}
 					if (topSongsPanel) topSongsPanel.style.display = analyticsTab === 'topSongs' ? 'block' : 'none';
 					if (shortLongPanel) shortLongPanel.style.display = analyticsTab === 'shortLong' ? 'block' : 'none';
 					if (doublesPanel) doublesPanel.style.display = analyticsTab === 'doubles' ? 'block' : 'none';
 					if (commandUsePanel) commandUsePanel.style.display = analyticsTab === 'commandUse' ? 'block' : 'none';
 					if (statsPanel) statsPanel.style.display = analyticsTab === 'stats' ? 'block' : 'none';
 					if (songsPlayedPanel) songsPlayedPanel.style.display = analyticsTab === 'songsPlayed' ? 'block' : 'none';
+					if (searchSongsPanel) searchSongsPanel.style.display = analyticsTab === 'searchSongs' ? 'block' : 'none';
 				};
 
 				const renderAnalytics = () => {
@@ -1717,6 +1837,7 @@ module.exports = ({
 					renderCommandUseWith(subset, meta);
 					renderStatsWith(subset, meta);
 					renderSongsPlayedWith(subset, meta);
+					if (searchSongsHasSearched) renderSearchSongsWith(subset);
 					setAnalyticsTab(analyticsTab);
 				};
 
@@ -1798,6 +1919,20 @@ module.exports = ({
 				});
 				if (topTabSongsPlayed) topTabSongsPlayed.addEventListener('click', () => {
 					setAnalyticsTab('songsPlayed');
+					renderAnalytics();
+				});
+				if (topTabSearchSongs) topTabSearchSongs.addEventListener('click', () => {
+					setAnalyticsTab('searchSongs');
+					renderAnalytics();
+				});
+				if (searchSongsBtn) searchSongsBtn.addEventListener('click', () => {
+					searchSongsHasSearched = true;
+					renderAnalytics();
+				});
+				if (searchSongsTerm) searchSongsTerm.addEventListener('keydown', (e) => {
+					if (!e || e.key !== 'Enter') return;
+					searchSongsHasSearched = true;
+					e.preventDefault();
 					renderAnalytics();
 				});
 
