@@ -184,15 +184,15 @@ try {
 					spotifyURL,
 					webhookURL,
 					effectiveTwitchName,
-					sessionDate || null
+					sessionDate || null,
 				)
 				return ok
 					? { success: true }
 					: {
-						success: false,
-						message:
-							'Failed to share playlist to Discord. Please re-authorize Discord.',
-					}
+							success: false,
+							message:
+								'Failed to share playlist to Discord. Please re-authorize Discord.',
+						}
 			} catch (e) {
 				console.error('Discord share endpoint failed:', e)
 				return { success: false, message: 'Internal error sharing to Discord.' }
@@ -235,47 +235,51 @@ server.get('/', (req, res) => {
 	res.send('NPChatbot is up and running')
 })
 
-
 ipcMain.on('open-auth-settings', (event, url) => {
 	shell.openExternal(url)
 })
 
-ipcMain.handle('open-playlist-summaries-in-browser', async (_event, payload) => {
-	try {
-		const playlistSummaries = Array.isArray(payload?.playlistSummaries)
-			? payload.playlistSummaries
-			: []
-		const idxRaw = Number(payload?.currentReportIndex ?? 0)
-		const currentReportIndex = Number.isFinite(idxRaw) ? idxRaw : 0
-		const isDiscordAuthorized = payload?.isDiscordAuthorized === true
-		const twitchChannelName =
-			typeof payload?.twitchChannelName === 'string' ? payload.twitchChannelName : ''
+ipcMain.handle(
+	'open-playlist-summaries-in-browser',
+	async (_event, payload) => {
+		try {
+			const playlistSummaries = Array.isArray(payload?.playlistSummaries)
+				? payload.playlistSummaries
+				: []
+			const idxRaw = Number(payload?.currentReportIndex ?? 0)
+			const currentReportIndex = Number.isFinite(idxRaw) ? idxRaw : 0
+			const isDiscordAuthorized = payload?.isDiscordAuthorized === true
+			const twitchChannelName =
+				typeof payload?.twitchChannelName === 'string'
+					? payload.twitchChannelName
+					: ''
 
-		const discordShareNonce = crypto.randomBytes(16).toString('hex')
-		registerDiscordShareNonce(discordShareNonce)
+			const discordShareNonce = crypto.randomBytes(16).toString('hex')
+			registerDiscordShareNonce(discordShareNonce)
 
-		const reportsDir = path.join(app.getPath('userData'), 'reports')
-		await fs.promises.mkdir(reportsDir, { recursive: true })
+			const reportsDir = path.join(app.getPath('userData'), 'reports')
+			await fs.promises.mkdir(reportsDir, { recursive: true })
 
-		const filePath = path.join(reportsDir, 'playlist-summaries.html')
-		const html = buildPlaylistSummariesHtml({
-			playlistSummaries,
-			currentReportIndex,
-			isDiscordAuthorized,
-			twitchChannelName,
-			discordShareNonce,
-		})
-		await fs.promises.writeFile(filePath, html, { encoding: 'utf8' })
+			const filePath = path.join(reportsDir, 'playlist-summaries.html')
+			const html = buildPlaylistSummariesHtml({
+				playlistSummaries,
+				currentReportIndex,
+				isDiscordAuthorized,
+				twitchChannelName,
+				discordShareNonce,
+			})
+			await fs.promises.writeFile(filePath, html, { encoding: 'utf8' })
 
-		const fileUrl = pathToFileURL(filePath).toString()
-		await shell.openExternal(fileUrl)
+			const fileUrl = pathToFileURL(filePath).toString()
+			await shell.openExternal(fileUrl)
 
-		return { success: true, fileUrl }
-	} catch (e) {
-		console.error('Failed to open playlist summaries in browser:', e)
-		return { success: false, error: String(e?.message || e) }
-	}
-})
+			return { success: true, fileUrl }
+		} catch (e) {
+			console.error('Failed to open playlist summaries in browser:', e)
+			return { success: false, error: String(e?.message || e) }
+		}
+	},
+)
 
 // Accept logs forwarded from renderer process (preload.logToMain)
 ipcMain.on('renderer-log', (_event, message) => {
@@ -323,7 +327,7 @@ ipcMain.on('get-playlist-summaries', async (event, _arg) => {
 		const summaries = await getPlaylistSummaries()
 		event.reply(
 			'get-playlist-summaries-response',
-			Array.isArray(summaries) ? summaries : []
+			Array.isArray(summaries) ? summaries : [],
 		)
 	} catch (e) {
 		console.error('Failed to fetch playlist summaries:', e)
@@ -377,7 +381,7 @@ ipcMain.on('share-playlist-to-discord', async (event, payload) => {
 		webhookURL,
 		twitchChannelName,
 		sessionDate,
-		event
+		event,
 	)
 })
 
@@ -418,7 +422,7 @@ ipcMain.on('start-bot-script', async (event, arg) => {
 ipcMain.on('stop-bot-script', async (event, arg) => {
 	const playlistData = await getCurrentPlaylistSummary()
 	console.log('Playlist data: ', playlistData)
-	if (playlistData) {
+	if (playlistData && playlistData.total_tracks_played > 0) {
 		const finalPlaylistData = await createPlaylistSummary(playlistData)
 		const user = await getUserData(db)
 		if (user) {
@@ -529,7 +533,7 @@ app.on('ready', async () => {
 							console.log('Startup token migration completed. Summary:')
 							console.log(`  usersScanned: ${summary.usersScanned}`)
 							console.log(
-								`  migrated: spotify=${summary.migrated.spotify}, discord=${summary.migrated.discord}, twitch=${summary.migrated.twitch}`
+								`  migrated: spotify=${summary.migrated.spotify}, discord=${summary.migrated.discord}, twitch=${summary.migrated.twitch}`,
 							)
 							if (summary.errors && summary.errors.length > 0) {
 								console.error('  migration errors:')
@@ -548,12 +552,12 @@ app.on('ready', async () => {
 		} catch (e) {
 			console.error(
 				'Migration module not available during startup migration:',
-				e
+				e,
 			)
 		}
 	} else {
 		console.log(
-			'MIGRATE_ON_STARTUP is set to false, skipping startup migration.'
+			'MIGRATE_ON_STARTUP is set to false, skipping startup migration.',
 		)
 	}
 	await initMainWindow()
