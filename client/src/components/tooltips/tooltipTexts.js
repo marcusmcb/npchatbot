@@ -1,5 +1,5 @@
 const tooltipTexts = {
-	twitchChannelName: 'Enter your main Twitch© channel name here.',
+	twitchChannelName: 'Enter the Twitch© channel name you stream from here.',
 	twitchChatbotName:
 		"Enter the name of the Twitch© channel you've linked npChatbot with here. More details can be found <a href='https://www.npchatbot.com/' rel='noreferrer' target='_blank'>here</a>.",
 	obsClearDisplayTime:

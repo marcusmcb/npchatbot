@@ -1,6 +1,8 @@
 {
   "cSpell.words": [
+    "commanduse",
     "fira",
+    "footroom",
     "keytar",
     "labelledby",
     "noopener",
@@ -8,7 +10,8 @@
     "Noto",
     "scrollbars",
     "Segoe",
-    "Serato"
+    "Serato",
+    "shortlong"
   ],
   "typescript.tsdk": "client/node_modules/typescript/lib",
   "typescript.enablePromptUseWorkspaceTsdk": true
