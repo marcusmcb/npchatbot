@@ -32,10 +32,12 @@ describe('handleTwitchAuth (happy path)', () => {
       class MockBrowserWindow {
         constructor() {
           this._willNavigate = null
+		  this._willRedirect = null
           this._onClosed = null
           this.webContents = {
             on: (event, cb) => {
               if (event === 'will-navigate') this._willNavigate = cb
+			  if (event === 'will-redirect') this._willRedirect = cb
             },
           }
           this.loadURL = jest.fn()
@@ -49,6 +51,9 @@ describe('handleTwitchAuth (happy path)', () => {
         __emitWillNavigate(url) {
           if (this._willNavigate) this._willNavigate({}, url)
         }
+		__emitWillRedirect(url) {
+		  if (this._willRedirect) this._willRedirect({ preventDefault: jest.fn() }, url)
+		}
       }
       return {
         BrowserWindow: function (...args) {
@@ -97,5 +102,71 @@ describe('handleTwitchAuth (happy path)', () => {
 
     // No error broadcast should have occurred in the happy path
     expect(wsClient.send).not.toHaveBeenCalled()
+  })
+
+  it('fires initTwitchAuthToken after will-redirect with code (Twitch redirect path)', async () => {
+    const initMock = jest.fn()
+    jest.doMock('../../auth/twitch/createTwitchAccessToken', () => ({
+      initTwitchAuthToken: initMock,
+    }))
+
+    let lastWindow = null
+    jest.doMock('electron', () => {
+      class MockBrowserWindow {
+        constructor() {
+          this._willNavigate = null
+          this._willRedirect = null
+          this._onClosed = null
+          this.webContents = {
+            on: (event, cb) => {
+              if (event === 'will-navigate') this._willNavigate = cb
+              if (event === 'will-redirect') this._willRedirect = cb
+            },
+          }
+          this.loadURL = jest.fn()
+        }
+        on(event, cb) {
+          if (event === 'closed') this._onClosed = cb
+        }
+        close() {
+          if (this._onClosed) this._onClosed()
+        }
+        __emitWillRedirect(url) {
+          const e = { preventDefault: jest.fn() }
+          if (this._willRedirect) this._willRedirect(e, url)
+          return e
+        }
+      }
+      return {
+        BrowserWindow: function (...args) {
+          const win = new MockBrowserWindow(...args)
+          lastWindow = win
+          return win
+        },
+        __getLastWindow: () => lastWindow,
+      }
+    })
+
+    let handleTwitchAuth
+    await jest.isolateModulesAsync(async () => {
+      ;({ handleTwitchAuth } = require('../../auth/twitch/handleTwitchAuth'))
+    })
+
+    const mainWindow = { webContents: { send: jest.fn() } }
+    const wsClient = { readyState: 1, send: jest.fn() }
+    const wss = { clients: [wsClient] }
+
+    await handleTwitchAuth(null, null, mainWindow, wss)
+    const electron = require('electron')
+    const win = electron.__getLastWindow()
+    expect(win).toBeTruthy()
+    const navEvent = win.__emitWillRedirect(`${REDIRECT}?code=${CODE}`)
+    expect(navEvent.preventDefault).toHaveBeenCalledTimes(1)
+
+    await new Promise((r) => setTimeout(r, 0))
+    expect(mainWindow.webContents.send).toHaveBeenCalledWith('auth-code', {
+      auth_code_on_close: CODE,
+    })
+    expect(initMock).toHaveBeenCalledWith(CODE, wss, mainWindow)
   })
 })
