@@ -1,10 +1,37 @@
-const axios = require('axios')
-const MockAdapter = require('axios-mock-adapter')
-
 describe('Discord exchangeCodeForDiscordToken', () => {
+  let axios
+  let MockAdapter
   let mock
-  beforeEach(() => { mock = new MockAdapter(axios) })
-  afterEach(() => { mock.restore(); jest.restoreAllMocks() })
+
+  beforeEach(() => {
+    jest.resetModules()
+    axios = require('axios')
+    MockAdapter = require('axios-mock-adapter')
+    mock = new MockAdapter(axios)
+  })
+
+  afterEach(() => {
+    mock.restore()
+    jest.restoreAllMocks()
+  })
+
+  it('getDiscordAuthUrl reads env vars at call-time (packaged build scenario)', async () => {
+    delete process.env.DISCORD_CLIENT_ID
+    delete process.env.DISCORD_CLIENT_SECRET
+    delete process.env.DISCORD_REDIRECT_URI
+
+    const { getDiscordAuthUrl } = require('../../auth/discord/handleDiscordAuth')
+
+    process.env.DISCORD_CLIENT_ID = 'late-client-id'
+    process.env.DISCORD_REDIRECT_URI =
+      'http://localhost:5003/auth/discord/callback'
+
+    const url = getDiscordAuthUrl('state123')
+    expect(url).toContain('client_id=late-client-id')
+    expect(url).toContain(
+      'redirect_uri=http%3A%2F%2Flocalhost%3A5003%2Fauth%2Fdiscord%2Fcallback'
+    )
+  })
 
   it('returns token payload on success', async () => {
     process.env.DISCORD_CLIENT_ID = 'disc-client-id'

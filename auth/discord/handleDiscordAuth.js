@@ -4,13 +4,15 @@ const db = require('../../database/database')
 const WebSocket = require('ws')
 const { storeToken } = require('../../database/helpers/tokens')
 
-const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID
-const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET
-const DISCORD_REDIRECT_URI =
+const getDiscordClientId = () => process.env.DISCORD_CLIENT_ID
+const getDiscordClientSecret = () => process.env.DISCORD_CLIENT_SECRET
+const getDiscordRedirectUri = () =>
 	process.env.DISCORD_REDIRECT_URI ||
 	'http://localhost:5003/auth/discord/callback'
 
 const getDiscordAuthUrl = (state) => {
+	const DISCORD_CLIENT_ID = getDiscordClientId()
+	const DISCORD_REDIRECT_URI = getDiscordRedirectUri()
 	const params = querystring.stringify({
 		client_id: DISCORD_CLIENT_ID,
 		redirect_uri: DISCORD_REDIRECT_URI,
@@ -24,6 +26,10 @@ const getDiscordAuthUrl = (state) => {
 
 const exchangeCodeForDiscordToken = async (code) => {
 	try {
+		const DISCORD_CLIENT_ID = getDiscordClientId()
+		const DISCORD_CLIENT_SECRET = getDiscordClientSecret()
+		const DISCORD_REDIRECT_URI = getDiscordRedirectUri()
+
 		console.log('Discord Token Exchange called.')
 		console.log('-------------------------------')
 		const params = new URLSearchParams()
@@ -33,8 +39,7 @@ const exchangeCodeForDiscordToken = async (code) => {
 		params.append('code', code)
 		params.append('redirect_uri', DISCORD_REDIRECT_URI)
 		params.append('scope', 'identify guilds webhook.incoming')
-
-		console.log('Token exchange params: ', params)
+		console.log('Discord redirect URI:', DISCORD_REDIRECT_URI)
 		console.log('-------------------------------')
 
 		const response = await axios.post(
