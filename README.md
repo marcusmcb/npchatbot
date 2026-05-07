@@ -124,7 +124,7 @@ The bottom section displays a deeper dive into your play histories based on a nu
 - React + TypeScript (client UI)
 - Electron (back end logic, data API, and handlers)
 - Electron-Forge (desktop build and packaging)
-- NodeJS (ES modules for chatbot scripting, web scraping, and playlist analysis)
+- NodeJS (ES modules for chatbot scripting, web scraping, playlist analytics, and API/auth handlers)
 - Twitch API (app authorization & chat event listeners)
 - Spotify API (playlist creation, song-level queries, real-time playlist updates)
 - Discord API (channel webhook creation for sharing Spotify playlists)
