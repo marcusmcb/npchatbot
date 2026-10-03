@@ -28,8 +28,6 @@ const updateOBSWithText = (obs, text, obsClearDisplayTime, config) => {
 }
 
 // !np test response
-// test this command to either remove it here
-// or from the test-command directory
 const handleTest = (channel, twitchClient, tags) => {
 	twitchClient.say(
 		channel,
@@ -358,9 +356,7 @@ const npCommands = async (
 			handler(channel, twitchClient)
 			return
 		}
-		// replace createLiveReport call with the user's
-		// Serato Live Playlist data stored as
-
+		
 		const reportData = getCurrentPlaylistSummary()
 		// const reportData = await createLiveReport(url)
 		if (reportData === undefined) {
