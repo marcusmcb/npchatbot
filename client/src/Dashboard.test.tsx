@@ -80,7 +80,7 @@ test('groups every control under the SVG sections and shows the welcome message'
 	expect(within(screen.getByRole('region', { name: 'Messages' })).getByText('Welcome to npChatbot!')).toBeVisible()
 
 	expect(within(screen.getByRole('region', { name: 'Chatbot Controls' })).getAllByRole('button')).toHaveLength(2)
-	expect(within(screen.getByRole('region', { name: 'Analytics Controls' })).getByRole('button', { name: 'Search Your Play Histories' })).toBeInTheDocument()
+	expect(within(screen.getByRole('region', { name: 'Playlist Analytics' })).getByRole('button', { name: 'Search Your Play Histories' })).toBeInTheDocument()
 })
 
 test('linked accounts reauthorize and analytics keeps its existing browser action', async () => {

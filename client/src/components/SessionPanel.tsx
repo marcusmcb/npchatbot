@@ -67,7 +67,7 @@ const SessionPanel: React.FC<SessionPanelProps> = (props) => {
 			)}
 		</section>
 		<section className='dashboard-card analytics-controls' aria-labelledby='analytics-heading'>
-			<h2 className='app-form-title' id='analytics-heading'>Analytics Controls</h2>
+			<h2 className='app-form-title' id='analytics-heading'>Playlist Analytics</h2>
 				<button
 					className='bot-control-button default-button'
 					type='button'

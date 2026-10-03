@@ -102,6 +102,8 @@ You can tap or click this button at any time to test the current status and visi
 
 ### Chatbot Controls
 
+The desktop window is fixed at 1130 x 575 pixels, with space reserved for native window controls and the dashboard's lower borders.
+
 Once your user credentials and preferences have been saved, click "Connect" to start the npChatbot script. The header displays connection status, and Chatbot Controls displays uptime while connected.
 
 With a Serato Live Playlist successfully running, you'll now be able to use all of the commands within the npChatbot app in your Twitch chat while live-streaming.

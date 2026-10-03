@@ -28,11 +28,12 @@ const createMainWindow = async ({
 }) => {
 	const mainWindow = new BrowserWindow({
 		width: 1130,
-		height: 525,
+		height: 575,
 		titleBarStyle: 'hidden',
 		titleBarOverlay: {
 			color: 'rgb(49, 49, 49)',
 			symbolColor: 'white',
+			height: 30,
 		},
 		resizable: false,
 		webPreferences: {
