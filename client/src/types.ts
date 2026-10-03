@@ -111,6 +111,6 @@ export type CredentialsFieldConfig = {
 export type CredentialsPanelProps = {
 	showTooltip: string | null
 	setShowTooltip: (value: string | null) => void
-	handleSubmit: (event: React.FormEvent<HTMLFormElement>) => void
 	isBotConnected: boolean
+	section: 'credentials' | 'obs'
 }

@@ -9,166 +9,119 @@ type SessionPreferencesPanelProps = {
 	isBotConnected: boolean
 }
 
+type SessionSetting = {
+	id: string
+	label: string
+	enabled: boolean
+	disabled: boolean
+	onToggle: () => void
+	fieldId: string
+	fieldName?: string
+	fieldLabel: string
+	value: string | number
+	onChange: (event: React.ChangeEvent<HTMLInputElement>) => void
+	tooltipKey: string
+	type?: 'number'
+	min?: number
+	max?: number
+}
+
 const SessionPreferencesPanel: React.FC<SessionPreferencesPanelProps> = (props) => {
 	const {
-		formData,
-		setFormData,
-		isTwitchAuthorized,
-		isObsResponseEnabled,
-		setIsObsResponseEnabled,
-		isIntervalEnabled,
-		setIsIntervalEnabled,
+		formData, setFormData, isTwitchAuthorized,
+		isObsResponseEnabled, setIsObsResponseEnabled,
+		isIntervalEnabled, setIsIntervalEnabled,
+		isAutoIDEnabled, isAutoIDDelayEnabled, setIsAutoIDDelayEnabled,
+		autoIDDelaySeconds, setAutoIDDelaySeconds,
 	} = useUserContext()
 
-	const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-		const { name, value } = event.target
-		setFormData({ [name]: value } as any)
-	}
-
-	const isObsToggleDisabled =
-		!isTwitchAuthorized || !formData.obsWebsocketAddress || props.isBotConnected
-	const isIntervalToggleDisabled = !isTwitchAuthorized || props.isBotConnected
+	const settings: SessionSetting[] = [
+		{
+			id: 'obsResponseToggle',
+			label: 'Enable OBS Responses',
+			enabled: isObsResponseEnabled,
+			disabled: !isTwitchAuthorized || !formData.obsWebsocketAddress || props.isBotConnected,
+			onToggle: () => setIsObsResponseEnabled(!isObsResponseEnabled),
+			fieldId: 'obs-clear-display-time',
+			fieldName: 'obsClearDisplayTime',
+			fieldLabel: 'Display time (in seconds):',
+			value: formData.obsClearDisplayTime,
+			onChange: (event) => setFormData({ obsClearDisplayTime: event.target.value }),
+			tooltipKey: 'obsClearDisplayTime',
+		},
+		{
+			id: 'intervalMessageToggle',
+			label: 'Enable Interval Messages',
+			enabled: isIntervalEnabled,
+			disabled: !isTwitchAuthorized || props.isBotConnected,
+			onToggle: () => setIsIntervalEnabled(!isIntervalEnabled),
+			fieldId: 'obs-interval-duration',
+			fieldName: 'intervalMessageDuration',
+			fieldLabel: 'Duration (in minutes):',
+			value: formData.intervalMessageDuration,
+			onChange: (event) => setFormData({ intervalMessageDuration: event.target.value }),
+			tooltipKey: 'intervalMessageDuration',
+		},
+		{
+			id: 'autoIDDelayEnabled',
+			label: 'Auto ID Delay',
+			enabled: isAutoIDDelayEnabled,
+			disabled: !isTwitchAuthorized || !isAutoIDEnabled || props.isBotConnected,
+			onToggle: () => setIsAutoIDDelayEnabled(!isAutoIDDelayEnabled),
+			fieldId: 'autoIDDelaySeconds',
+			fieldLabel: 'Duration (in seconds):',
+			value: autoIDDelaySeconds,
+			onChange: (event) => setAutoIDDelaySeconds(Math.max(0, Math.min(99, Number(event.target.value)))),
+			tooltipKey: 'autoIDDelayEnabled',
+			type: 'number',
+			min: 0,
+			max: 99,
+		},
+	]
 
 	return (
-		<div className='app-container-column'>
-			<div className='app-form-title session-prefs-title-spacer' aria-hidden='true'>
-				Session Preferences:
-			</div>
-
-			{/* OBS preferences */}
-			<div className='toggle-field obs-prefs-element'>
-				<input
-					type='checkbox'
-					id='obsResponseToggle'
-					checked={isObsResponseEnabled}
-					disabled={isObsToggleDisabled}
-					onChange={() => {
-						setIsObsResponseEnabled(!isObsResponseEnabled)
-					}}
-					className={isObsToggleDisabled ? 'disabled-toggle' : ''}
-				/>
-				<label
-					htmlFor='obsResponseToggle'
-					className={
-						(!isObsResponseEnabled || isObsToggleDisabled
-							? 'disabled-label'
-							: '') +
-						(!isObsResponseEnabled || isObsToggleDisabled
-							? ' greyed-out-label'
-							: '')
-					}
-				>
-					Enable OBS Responses
-				</label>
-			</div>
-
-			<div className='form-field session-pref-field'>
-				<label
-					htmlFor='obs-clear-display-time'
-					className={
-						!isObsResponseEnabled || props.isBotConnected
-							? 'disabled-label'
-							: ''
-					}
-				>
-					Display time (in seconds):
-				</label>
-
-				<input
-					className={
-						!isObsResponseEnabled || props.isBotConnected
-							? 'pref-input disabled-label'
-							: 'pref-input'
-					}
-					type='text'
-					id='obs-clear-display-time'
-					name='obsClearDisplayTime'
-					value={formData.obsClearDisplayTime}
-					onChange={handleInputChange}
-					disabled={!isObsResponseEnabled || props.isBotConnected}
-				/>
-				<span
-					className={`question-icon ${
-						props.showTooltip === 'obsClearDisplayTime' ? 'active-icon' : ''
-					}`}
-					onClick={() =>
-						props.setShowTooltip(
-							props.showTooltip === 'obsClearDisplayTime'
-								? null
-								: 'obsClearDisplayTime'
-						)
-					}
-				>
-					?
-				</span>
-			</div>
-
-			{/* Interval Message preferences */}
-			<div className='toggle-field interval-prefs-element'>
-				<input
-					type='checkbox'
-					disabled={isIntervalToggleDisabled}
-					id='intervalMessageToggle'
-					checked={isIntervalEnabled}
-					onChange={() => setIsIntervalEnabled(!isIntervalEnabled)}
-					className={isIntervalToggleDisabled ? 'disabled-toggle' : ''}
-				/>
-
-				<label
-					htmlFor='intervalMessageToggle'
-					className={
-						(!isIntervalEnabled || isIntervalToggleDisabled
-							? 'disabled-label'
-							: '') + (props.isBotConnected ? ' greyed-out-label' : '')
-					}
-				>
-					Enable Interval Messages
-				</label>
-			</div>
-
-			<div className='form-field session-pref-field'>
-				<label
-					htmlFor='obs-interval-duration'
-					className={
-						!isIntervalEnabled || props.isBotConnected
-							? 'disabled-label'
-							: ''
-					}
-				>
-					Duration (in minutes):
-				</label>
-
-				<input
-					className={
-						!isIntervalEnabled || props.isBotConnected
-							? 'disabled-label pref-input'
-							: 'pref-input'
-					}
-					type='text'
-					id='obs-interval-duration'
-					name='intervalMessageDuration'
-					value={formData.intervalMessageDuration}
-					onChange={handleInputChange}
-					disabled={!isIntervalEnabled || props.isBotConnected}
-				/>
-				<span
-					className={`question-icon ${
-						props.showTooltip === 'intervalMessageDuration'
-							? 'active-icon'
-							: ''
-					}`}
-					onClick={() =>
-						props.setShowTooltip(
-							props.showTooltip === 'intervalMessageDuration'
-								? null
-								: 'intervalMessageDuration'
-						)
-					}
-				>
-					?
-				</span>
-			</div>
-		</div>
+		<section className='app-container-column' aria-labelledby='session-heading'>
+			<h2 className='app-form-title' id='session-heading'>Session</h2>
+			{settings.map((setting) => (
+				<div className='session-setting' key={setting.id}>
+					<div className='toggle-field'>
+						<input
+							type='checkbox'
+							id={setting.id}
+							checked={setting.enabled}
+							disabled={setting.disabled}
+							onChange={setting.onToggle}
+							className={setting.disabled ? 'disabled-toggle' : ''}
+						/>
+						<label htmlFor={setting.id} className={!setting.enabled || setting.disabled ? 'disabled-label' : ''}>
+							{setting.label}
+						</label>
+					</div>
+					<div className='form-field session-pref-field'>
+						<label htmlFor={setting.fieldId} className={!setting.enabled || setting.disabled ? 'disabled-label' : ''}>
+							{setting.fieldLabel}
+						</label>
+						<input
+							type={setting.type || 'text'}
+							id={setting.fieldId}
+							name={setting.fieldName}
+							value={setting.value}
+							disabled={!setting.enabled || setting.disabled}
+							onChange={setting.onChange}
+							min={setting.min}
+							max={setting.max}
+							className={`pref-input ${setting.type === 'number' ? 'auto-id-delay-input' : ''}`}
+						/>
+						<span
+							className={`question-icon ${props.showTooltip === setting.tooltipKey ? 'active-icon' : ''}`}
+							onClick={() => props.setShowTooltip(props.showTooltip === setting.tooltipKey ? null : setting.tooltipKey)}
+						>
+							?
+						</span>
+					</div>
+				</div>
+			))}
+		</section>
 	)
 }
 

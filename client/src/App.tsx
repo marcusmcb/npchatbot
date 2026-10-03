@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import TitleBar from './components/TitleBar'
+import LinkedAccountsPanel from './components/LinkedAccountsPanel'
 import CredentialsPanel from './components/CredentialsPanel'
 import PreferencesPanel from './components/PreferencesPanel'
 import SessionPreferencesPanel from './components/SessionPreferencesPanel'
@@ -47,6 +48,8 @@ const App = (): JSX.Element => {
 		formData,
 		setFormData,		
 		commitInitial,
+		isTwitchAuthorized,
+		isFormModified,
 	} = userContext
 
 	/* STATE VALUES */
@@ -292,17 +295,22 @@ const App = (): JSX.Element => {
 
 	return (
 		<div className='App'>
-			<div className='top-panel'>
+			<div className='top-panel app-header'>
 				{reportView ? (
 					<></>
 				) : (
 					<>
 						<TitleBar isBotConnected={isBotConnected} />
-						<MessagePanel
-							message={currentMessage || ''}
-							error={error}
-							showTooltip={showTooltip}
-						/>
+						<button
+							className={`default-button header-update-button ${
+								isFormModified ? 'button-modified' : ''
+							}`}
+							type='submit'
+							form='credentials-form'
+							disabled={isBotConnected || !isTwitchAuthorized}
+						>
+							Update
+						</button>
 					</>
 				)}
 			</div>
@@ -322,55 +330,71 @@ const App = (): JSX.Element => {
 						</div>
 					</div>
 				) : (
-					<div className='app-container'>
-						<div className='main-layout'>
-							<div className='left-col'>
+					<form
+						className='app-container dashboard-form'
+						id='credentials-form'
+						onSubmit={handleSubmitWrapper}
+					>
+						<div className='dashboard-toolbar'>
+							<SessionPanel
+								handleConnect={handleConnectWrapper}
+								handleDisconnect={handleDisconnectWrapper}
+								isBotConnected={isBotConnected}
+								reportData={reportData || ({} as ReportData)}
+								isReportReady={isReportReady}
+								setReportView={setReportView}
+								reportView={reportView}
+								validateLivePlaylist={validateLivePlaylistWrapper}
+								playlistSummaries={playlistSummaries}
+								currentReportIndex={currentReportIndex}
+								setCurrentReportIndex={setCurrentReportIndex}
+								reloadPlaylistSummaries={reloadPlaylistSummaries}
+								setPlaylistSummaries={setPlaylistSummaries}
+							/>
+						</div>
+
+						<div className='dashboard-layout'>
+							<div className='dashboard-accounts dashboard-card'>
+								<LinkedAccountsPanel isBotConnected={isBotConnected} />
 								<CredentialsPanel
 									showTooltip={showTooltip}
 									setShowTooltip={setShowTooltip}
-									handleSubmit={handleSubmitWrapper}
 									isBotConnected={isBotConnected}
+									section='credentials'
 								/>
 							</div>
 
-							<div className='right-col'>
-								<div className='right-top'>
-									<div className='prefs-col'>
-										<PreferencesPanel
-											showTooltip={showTooltip}
-											setShowTooltip={setShowTooltip}
-											isBotConnected={isBotConnected}
-										/>
-									</div>
-									<div className='session-prefs-col'>
-										<SessionPreferencesPanel
-											showTooltip={showTooltip}
-											setShowTooltip={setShowTooltip}
-											isBotConnected={isBotConnected}
-										/>
-									</div>
-								</div>
-
-								<div className='right-bottom'>
-									<SessionPanel
-										handleConnect={handleConnectWrapper}
-										handleDisconnect={handleDisconnectWrapper}
-										isBotConnected={isBotConnected}
-										reportData={reportData || ({} as ReportData)}
-										isReportReady={isReportReady}
-										setReportView={setReportView}
-										reportView={reportView}
-										validateLivePlaylist={validateLivePlaylistWrapper}
-										playlistSummaries={playlistSummaries}
-										currentReportIndex={currentReportIndex}
-										setCurrentReportIndex={setCurrentReportIndex}
-										reloadPlaylistSummaries={reloadPlaylistSummaries}
-										setPlaylistSummaries={setPlaylistSummaries}
-									/>
-								</div>
+							<div className='dashboard-card dashboard-preferences'>
+								<PreferencesPanel
+									showTooltip={showTooltip}
+									setShowTooltip={setShowTooltip}
+									isBotConnected={isBotConnected}
+								/>
+							</div>
+							<div className='dashboard-card dashboard-obs'>
+								<CredentialsPanel
+									showTooltip={showTooltip}
+									setShowTooltip={setShowTooltip}
+									isBotConnected={isBotConnected}
+									section='obs'
+								/>
+							</div>
+							<div className='dashboard-card dashboard-session-preferences'>
+								<SessionPreferencesPanel
+									showTooltip={showTooltip}
+									setShowTooltip={setShowTooltip}
+									isBotConnected={isBotConnected}
+								/>
+							</div>
+							<div className='dashboard-card dashboard-messages'>
+								<MessagePanel
+									message={currentMessage || ''}
+									error={error}
+									showTooltip={showTooltip}
+								/>
 							</div>
 						</div>
-					</div>
+					</form>
 				)}
 			</div>
 		</div>

@@ -22,7 +22,7 @@ You can view the full command list <a href="https://www.npchatbot.com/commands">
 
 ### Authorizing via Twitch:
 
-When starting the app for the first time, in the upper left hand of the client UI, you'll see an option to authorize the app with Twitch. After clicking the link, you'll be prompted to authorize the app and, once completed, you'll be returned to npChatbot with an update to note that the app is now authorized.
+When starting the app for the first time, choose Twitch in the Linked Accounts section on the left. After completing authorization, the account row will show Linked. Clicking an already-linked account starts its authorization workflow again.
 
 <b>NOTE:</b> Most live-streamers on Twitch will typically use a second, dedicated chatbot account for utilities such as npChatbot, but the app can be configured to use your primary Twitch channel to receive npChatbot's responses.
 
@@ -37,7 +37,8 @@ Once authorized, you can then enter in your user credentials:
 - Twitch Channel Name (your primary streaming channel)
 - Twitch Chatbot Name (the account you've authorized npChatbot with)
 - Serato Display Name (your Serato user profile name)
-- OBS Websocket Address & Password (optional - see below)
+
+Use the Update button in the header to save credentials and preferences across all sections.
 
 <hr>
 
@@ -45,7 +46,7 @@ Once authorized, you can then enter in your user credentials:
 
 To display command responses on-screen via OBS during your livestream, you'll need to enable/configure a <a href="https://obsproject.com/forum/resources/obs-websocket-remote-control-obs-studio-using-websockets.466/">web socket</a> connection for OBS.
 
-Once done, you can store the OBS websocket address and password (if secured) values in the npChatbot app's Credentials section which will then enable the "Enable On-Screen OBS Responses" option in the Preferences section.
+Once done, store the OBS websocket address and password (if secured) in the OBS section. Use Hide Sensitive Fields to mask or reveal them. The "Enable OBS Responses" option and display time are in the Session section.
 
 <hr>
 
@@ -73,7 +74,7 @@ When enabled, npChatbot will automatically send a message to your channel's chat
 
 ### Automated/Interval Messages (optional)
 
-In the Preferences section, when "Enable Interval Message" is enabled, npChatbot will periodically add a message to your chat that prompts your viewers to try out the various npChatbot commands.
+In the Session section, when "Enable Interval Messages" is enabled, npChatbot will periodically add a message to your chat that prompts your viewers to try out the various npChatbot commands.
 
 The "interval duration" value (given in minutes) determines how often these message will appear if enabled; a value of 15 minutes is set by default if this option is enabled but no value is entered.
 
@@ -93,7 +94,7 @@ NOTE: To ensure the accuracy of the analysis in several commands' responses, the
 
 As mentioned above, your Serato Live Playlist's status will need to be set as "public" in order for npChatbot to work properly.
 
-In the Session Controls section of the UI, you'll see a control marked "Playlist Status".  
+In the Chatbot Controls section of the UI, you'll see a control marked "Playlist Status".
 
 You can tap or click this button at any time to test the current status and visibility of your Serato Live Playlist.  If configured properly, you'll see a message in the UI indicating this and, if not, a message will provide guidance on how to properly configure your live playlist.  
 
@@ -101,17 +102,17 @@ You can tap or click this button at any time to test the current status and visi
 
 ### Chatbot Controls
 
-Once your user credentials and preferences have been set, click "Connect" to start the npChatbot script. The Session Info panel will update to display the current connection status and uptime.
+Once your user credentials and preferences have been saved, click "Connect" to start the npChatbot script. The header displays connection status, and Chatbot Controls displays uptime while connected.
 
 With a Serato Live Playlist successfully running, you'll now be able to use all of the commands within the npChatbot app in your Twitch chat while live-streaming.
 
-When you've completed your live stream, simply click "Disconnect" to disconnect the npChatbot script.
+When connected, the same button changes to "Disconnect". Click it when you've completed your live stream to disconnect the npChatbot script. The Messages section displays status, errors, and contextual help; when idle it displays a welcome message.
 
 <hr>
 
 ### Playlist Analytics
 
-Clicking the "Analytics" control in the UI will open a new page in your default web browser that will display the npChatbot Playlist Summaries and Analytics sections.
+Clicking "Search Your Play Histories" in Analytics Controls will open a new page in your default web browser that displays the npChatbot Playlist Summaries and Analytics sections.
 
 The top section will display a summary section for the playlist selected, beginning with the most recent.  You can select the summary for any previous stream from the dropdown or by using the navigation icons.  Clicking the red X to the right will prompt you to delete that summary from your play histories.
 

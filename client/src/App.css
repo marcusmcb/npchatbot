@@ -453,3 +453,514 @@ input[type='checkbox']:checked:before {
 		flex-direction: column;
 	}
 }
+
+* {
+	box-sizing: border-box;
+}
+
+.App {
+	padding: 12px 14px;
+	min-height: 0;
+}
+
+.app-header {
+	align-items: center;
+	flex: 0 0 56px;
+	gap: 12px;
+	margin-bottom: 8px;
+}
+
+.app-header > .titlebar {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+.app-header > .header-update-button {
+	flex: 0 0 100px;
+	width: 100px;
+	margin: 0;
+	padding: 8px 12px;
+	font-weight: 600;
+	align-self: flex-end;
+}
+
+.titlebar {
+	display: flex;
+	align-items: center;
+	gap: 24px;
+	min-width: 0;
+}
+
+.titlebar-brand {
+	flex: 0 0 auto;
+}
+
+.titlebar .app-title {
+	padding: 0;
+	font-size: 30px;
+	line-height: 1.1;
+}
+
+.titlebar .app-version {
+	margin: 1px 0 0 2px;
+	font-size: 12px;
+	line-height: 1.2;
+}
+
+.titlebar .auth-button-row {
+	align-items: center;
+	gap: 5px;
+	min-width: 0;
+}
+
+.titlebar .auth-button-row button {
+	width: 38px;
+	height: 38px;
+	margin: 0;
+	padding: 6px;
+}
+
+.titlebar .auth-button-label {
+	margin: 0 0 0 4px;
+	white-space: nowrap;
+}
+
+.titlebar-status {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	flex: 0 0 auto;
+	color: var(--error-color);
+	font-family: var(--fira-sans);
+	font-size: 14px;
+	font-weight: 600;
+	white-space: nowrap;
+}
+
+.titlebar-status-connected {
+	color: var(--success-color);
+}
+
+.titlebar-status-dot {
+	width: 10px;
+	height: 10px;
+	border-radius: 50%;
+	background: var(--error-color);
+}
+
+.titlebar-status-connected .titlebar-status-dot {
+	background: var(--success-color);
+}
+
+.content-panel,
+.content-panel > .app-container {
+	min-height: 0;
+}
+
+.dashboard-toolbar {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 10px;
+	flex: 0 0 82px;
+	margin-bottom: 10px;
+}
+
+.dashboard-layout {
+	display: grid;
+	grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.95fr) minmax(0, 1.05fr);
+	grid-template-rows: minmax(142px, 0.85fr) minmax(185px, 1.15fr);
+	gap: 10px;
+	flex: 1;
+	min-height: 0;
+	overflow: hidden;
+}
+
+.dashboard-card,
+.chatbot-controls {
+	min-width: 0;
+	padding: 10px 12px;
+	border: 1px solid #238d8b;
+	border-radius: 8px;
+	background: #242828;
+}
+
+.dashboard-accounts,
+.dashboard-obs,
+.dashboard-preferences,
+.dashboard-session-preferences,
+.dashboard-messages {
+	min-height: 0;
+	overflow: auto;
+}
+
+.dashboard-card .app-container-column {
+	margin-right: 0;
+}
+
+.dashboard-card .app-form-title {
+	padding: 0 0 7px;
+	margin-top: 0;
+	margin-bottom: 8px;
+	border-bottom: 1px solid #444;
+	font-size: 14px;
+	font-weight: 600;
+	text-transform: uppercase;
+}
+
+.dashboard-card .app-form {
+	gap: 0;
+	padding: 2px 0 0;
+}
+
+.dashboard-card .creds-panel .app-form-title {
+	padding: 0 0 7px;
+}
+
+.dashboard-card .creds-panel .app-form {
+	padding: 2px 0 0;
+}
+
+.dashboard-card .creds-panel .form-field {
+	width: 100%;
+	margin-bottom: 7px;
+}
+
+.dashboard-card .creds-panel .form-field label {
+	flex: 0 0 158px;
+	min-width: 0;
+	margin-left: 0;
+	font-size: 13px;
+}
+
+.dashboard-card .creds-panel .form-field input {
+	flex: 1 1 auto;
+	width: 0;
+	min-width: 50px;
+}
+
+.dashboard-card .question-icon {
+	width: 20px;
+	height: 20px;
+	min-width: 20px;
+	min-height: 20px;
+	flex-basis: 20px;
+	margin-left: 6px;
+}
+
+.dashboard-card .hide-sensitive-toggle {
+	margin: 4px 0 0;
+}
+
+.dashboard-card .sensitive-fields-text {
+	min-width: 0;
+	font-size: 13px;
+}
+
+.dashboard-options {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+	gap: 10px;
+	min-width: 0;
+	min-height: 0;
+}
+
+.dashboard-side-column {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	min-width: 0;
+	min-height: 0;
+}
+
+.dashboard-session-preferences {
+	flex: 1 1 auto;
+}
+
+.dashboard-session-preferences .app-container-column {
+	margin-right: 0;
+}
+
+.dashboard-session-preferences .session-prefs-title-spacer {
+	display: none;
+}
+
+.dashboard-session-preferences .toggle-field,
+.dashboard-preferences .toggle-field {
+	margin: 0;
+}
+
+.dashboard-session-preferences label,
+.dashboard-preferences label {
+	min-width: 0;
+	font-size: 13px;
+}
+
+.dashboard-session-preferences .session-pref-field {
+	margin: 0;
+}
+
+.dashboard-session-preferences .session-pref-field label {
+	flex: 1 1 auto;
+	white-space: normal;
+}
+
+.dashboard-session-preferences .pref-input {
+	flex: 0 0 48px;
+	width: 48px;
+}
+
+.dashboard-preferences .question-icon,
+.dashboard-session-preferences .question-icon {
+	width: 20px;
+	height: 20px;
+	min-width: 20px;
+	min-height: 20px;
+	flex-basis: 20px;
+	margin-left: 6px;
+}
+
+.dashboard-messages {
+	flex: 0 0 100px;
+}
+
+.dashboard-messages .message-panel {
+	height: auto;
+	min-height: 0;
+	margin: 0;
+}
+
+.dashboard-messages .app-form-title {
+	display: block;
+}
+
+.dashboard-messages .success-message {
+	font-size: 14px;
+}
+
+.dashboard-messages .error-message {
+	font-size: 13px;
+}
+
+.chatbot-controls {
+	padding: 9px 12px;
+	position: relative;
+}
+
+.chatbot-controls .chatbot-controls-title {
+	margin: 0 0 7px;
+	padding: 0 0 6px;
+	font-size: 14px;
+}
+
+.dashboard-toolbar .bot-control-button-panel {
+	gap: 8px;
+	margin-top: 0;
+}
+
+.dashboard-toolbar .bot-control-button {
+	min-height: 36px;
+	padding: 7px 8px;
+	margin: 0;
+	font-size: 13px;
+}
+
+.analytics-controls .bot-control-button {
+	width: 100%;
+}
+
+.session-uptime {
+	position: absolute;
+	top: 10px;
+	right: 12px;
+	font-family: var(--fira-sans);
+	font-size: 12px;
+	color: var(--success-color);
+}
+
+.dashboard-accounts {
+	grid-column: 1;
+	grid-row: 1 / 3;
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+}
+
+.dashboard-preferences {
+	grid-column: 2;
+	grid-row: 1;
+}
+
+.dashboard-obs {
+	grid-column: 3;
+	grid-row: 1;
+	padding-bottom: 8px;
+}
+
+.dashboard-session-preferences {
+	grid-column: 2;
+	grid-row: 2;
+}
+
+.dashboard-messages {
+	grid-column: 3;
+	grid-row: 2;
+}
+
+.dashboard-preferences > section,
+.dashboard-session-preferences > section {
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+}
+
+.dashboard-preferences .toggle-field label {
+	flex: 1;
+}
+
+.dashboard-card {
+	-webkit-app-region: no-drag;
+}
+
+.dashboard-card input[type='text'],
+.dashboard-card input[type='password'],
+.dashboard-card input[type='number'] {
+	height: 25px;
+	padding: 3px 6px;
+	font-size: 13px;
+	border-color: #9a9a9a;
+	background: #292929;
+}
+
+.dashboard-card input[type='checkbox'] {
+	margin: 0;
+}
+
+.dashboard-toolbar .chatbot-controls {
+	padding: 9px 12px;
+}
+
+.linked-account-list {
+	display: flex;
+	flex-direction: column;
+	gap: 7px;
+}
+
+.linked-account {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	width: 100%;
+	height: 34px;
+	margin: 0;
+	padding: 4px 10px;
+	font-family: var(--fira-sans);
+	font-size: 13px;
+	border-color: var(--session-info-label-color);
+	background: #252929;
+}
+
+.linked-account-authorized {
+	border-color: var(--success-color);
+}
+
+.linked-account-name {
+	flex: 1;
+	text-align: left;
+	font-weight: 600;
+}
+
+.linked-account-state {
+	display: flex;
+	align-items: center;
+	gap: 7px;
+	min-width: 85px;
+}
+
+.linked-account-dot {
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background: var(--session-info-label-color);
+}
+
+.linked-account-authorized .linked-account-dot {
+	background: var(--success-color);
+}
+
+.linked-account-chevron {
+	color: var(--highlight-color);
+	font-size: 20px;
+}
+
+.dashboard-session-preferences .session-setting {
+	display: flex;
+	flex-direction: column;
+	gap: 3px;
+}
+
+.dashboard-session-preferences .session-pref-field label {
+	font-size: 12px;
+}
+
+.dashboard-messages .message-panel {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+}
+
+.message-content {
+	flex: 1;
+	min-height: 0;
+	overflow-y: auto;
+	padding: 9px;
+	border: 1px solid #555;
+	border-radius: 4px;
+	background: #272b2b;
+	font-family: var(--fira-sans);
+	font-size: 13px;
+	overflow-wrap: anywhere;
+}
+
+.welcome-message {
+	display: flex;
+	gap: 12px;
+	line-height: 1.5;
+}
+
+.welcome-message p {
+	margin: 10px 0 0;
+	color: #ddd;
+}
+
+.welcome-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex: 0 0 23px;
+	height: 23px;
+	border-radius: 50%;
+	background: white;
+	color: #313131;
+	font-weight: 700;
+}
+
+.dashboard-form input:focus-visible,
+.dashboard-form button:focus-visible,
+.header-update-button:focus-visible {
+	outline: 2px solid var(--highlight-color);
+	outline-offset: 2px;
+}
+
+.session-info-bottom {
+	margin-top: 7px;
+	font-size: 12px;
+}
+
+.session-info-heading-bottom {
+	font-size: 13px;
+}
+
+.session-info-inline {
+	gap: 6px;
+}

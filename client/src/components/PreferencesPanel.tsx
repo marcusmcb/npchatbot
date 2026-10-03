@@ -33,10 +33,6 @@ const PreferencesPanel: React.FC<PreferencesPanelProps> = (props) => {
 		setIsAutoIDEnabled,
 		isAutoIDCleanupEnabled,
 		setIsAutoIDCleanupEnabled,
-		isAutoIDDelayEnabled,
-		setIsAutoIDDelayEnabled,
-		autoIDDelaySeconds,
-		setAutoIDDelaySeconds,
 	} = useUserContext()
 
 	const isSpotifyToggleDisabled = !isSpotifyAuthorized || props.isBotConnected
@@ -45,23 +41,9 @@ const PreferencesPanel: React.FC<PreferencesPanelProps> = (props) => {
 	const isAutoIdToggleDisabled = !isTwitchAuthorized || props.isBotConnected
 	const isAutoIdCleanupDisabled =
 		!isTwitchAuthorized || !isAutoIDEnabled || props.isBotConnected
-	const isAutoIdDelayDisabled =
-		!isTwitchAuthorized || !isAutoIDEnabled || props.isBotConnected
-	const handleAutoIDDelayChange = (
-		event: React.ChangeEvent<HTMLInputElement>
-	) => {
-		if (event.target.value === '') {
-			setAutoIDDelaySeconds(0)
-			return
-		}
-		const nextValue = Number(event.target.value)
-		setAutoIDDelaySeconds(Math.max(0, Math.min(99, nextValue)))
-	}
-
-
 	return (
-		<div className='app-container-column'>
-			<div className='app-form-title'>Chatbot Preferences:</div>
+		<section className='app-container-column' aria-labelledby='preferences-heading'>
+			<h2 className='app-form-title' id='preferences-heading'>Chatbot Preferences</h2>
 
 			{/* Spotify Preferences */}
 			<div className='toggle-field spotify-prefs-element'>
@@ -208,59 +190,7 @@ const PreferencesPanel: React.FC<PreferencesPanelProps> = (props) => {
 				</span>
 			</div>
 
-			<div className='toggle-field interval-prefs-element'>
-				<input
-					type='checkbox'
-					disabled={isAutoIdDelayDisabled}
-					id='autoIDDelayEnabled'
-					checked={isAutoIDDelayEnabled}
-					onChange={() => setIsAutoIDDelayEnabled(!isAutoIDDelayEnabled)}
-					className={isAutoIdDelayDisabled ? 'disabled-toggle' : ''}
-				/>
-				<div className='auto-id-delay-control'>
-					<label
-						htmlFor='autoIDDelayEnabled'
-						className={
-							(!isAutoIDEnabled ||
-							!isAutoIDDelayEnabled ||
-							isAutoIdDelayDisabled
-								? 'disabled-label'
-								: '') +
-							(props.isBotConnected || !isAutoIDEnabled
-								? ' greyed-out-label'
-								: '')
-						}
-					>
-						Auto ID Delay
-					</label>
-					<input
-						type='number'
-						min='0'
-						max='99'
-						id='autoIDDelaySeconds'
-						value={autoIDDelaySeconds}
-						disabled={!isAutoIDDelayEnabled || isAutoIdDelayDisabled}
-						onChange={handleAutoIDDelayChange}
-						className='auto-id-delay-input'
-					/>
-				</div>
-				<span
-					className={`question-icon ${
-						props.showTooltip === 'autoIDDelayEnabled' ? 'active-icon' : ''
-					}`}
-					onClick={() =>
-						props.setShowTooltip(
-							props.showTooltip === 'autoIDDelayEnabled'
-								? null
-								: 'autoIDDelayEnabled'
-						)
-					}
-				>
-					?
-				</span>
-			</div>
-
-		</div>
+		</section>
 	)
 }
 

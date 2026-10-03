@@ -35,35 +35,24 @@ const SessionPanel: React.FC<SessionPanelProps> = (props) => {
 	}
 
 	return (
-		<div className='chatbot-controls'>
-			<div className='app-form-title chatbot-controls-title'>Chatbot Controls:</div>
+		<>
+		<section className='dashboard-card chatbot-controls' aria-labelledby='controls-heading'>
+			<h2 className='app-form-title chatbot-controls-title' id='controls-heading'>Chatbot Controls</h2>
 			<div className='bot-control-button-panel'>
 				<button
-					className={
-						props.isBotConnected
-							? 'bot-control-button default-button greyed-out-on-connect'
-							: 'bot-control-button default-button'
-					}
-					type='button'
-					onClick={props.handleConnect}
-					disabled={
-						props.isBotConnected || !isTwitchAuthorized || !isConnectionReady
-					}
-				>
-					{!props.isBotConnected ? 'Connect' : 'Connected'}
-				</button>
-				<button
 					className='bot-control-button default-button'
-					disabled={!props.isBotConnected}
 					type='button'
 					onClick={(event) => {
-						props.handleDisconnect(event)
-						setTimeout(() => {
-							resetUptime()
-						}, 500)
+						if (props.isBotConnected) {
+							props.handleDisconnect(event)
+							setTimeout(resetUptime, 500)
+						} else {
+							props.handleConnect(event)
+						}
 					}}
+					disabled={!props.isBotConnected && (!isTwitchAuthorized || !isConnectionReady)}
 				>
-					Disconnect
+					{props.isBotConnected ? 'Disconnect' : 'Connect'}
 				</button>
 				<button
 					className='bot-control-button default-button'
@@ -72,6 +61,13 @@ const SessionPanel: React.FC<SessionPanelProps> = (props) => {
 				>
 					Playlist Status
 				</button>
+			</div>
+			{props.isBotConnected && (
+				<div className='session-uptime'>Uptime: {formatUptime(uptimeSeconds)}</div>
+			)}
+		</section>
+		<section className='dashboard-card analytics-controls' aria-labelledby='analytics-heading'>
+			<h2 className='app-form-title' id='analytics-heading'>Analytics Controls</h2>
 				<button
 					className='bot-control-button default-button'
 					type='button'
@@ -98,27 +94,10 @@ const SessionPanel: React.FC<SessionPanelProps> = (props) => {
 					}}
 					disabled={!props.isReportReady || props.isBotConnected}
 				>
-					Analytics
+					Search Your Play Histories
 				</button>
-			</div>
-			<div className='session-info-bottom'>
-				<div className='session-info-heading-bottom'>Session Info</div>
-				<div className='session-info-inline'>
-					<span className='session-info-label-inline'>Status:</span>
-					<span className='session-info-status'>
-						{props.isBotConnected ? (
-							<span style={{ color: 'lightgreen' }}>connected</span>
-						) : (
-							<span>not connected</span>
-						)}
-					</span>
-					<span className='session-info-label-inline'>Uptime:</span>
-					<span className='session-info-status' style={{ color: 'lightgreen' }}>
-						{uptimeSeconds === 0 ? '' : formatUptime(uptimeSeconds)}
-					</span>
-				</div>
-			</div>
-		</div>
+		</section>
+		</>
 	)
 }
 

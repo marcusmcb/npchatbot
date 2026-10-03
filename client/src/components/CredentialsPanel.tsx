@@ -59,16 +59,10 @@ const InputField: React.FC<{
 	<div className='form-field'>
 		<label htmlFor={fieldConfig.id}>{fieldConfig.label}</label>
 		<input
-			type='text'
+			type={hideSensitiveFields ? 'password' : 'text'}
 			id={fieldConfig.id}
 			name={fieldConfig.name}
-			value={
-				hideSensitiveFields &&
-				(fieldConfig.name === 'obsWebsocketPassword' ||
-					fieldConfig.name === 'obsWebsocketAddress')
-					? '*'.repeat((value || '').length)
-					: value
-			}
+			value={value}
 			onChange={handleInputChange}
 			placeholder={fieldConfig.placeholder}
 			className={
@@ -102,43 +96,39 @@ const CredentialsPanel: React.FC<CredentialsPanelProps> = (props) => {
 		formData,
 		setFormData,
 		isObsResponseEnabled,
-		isTwitchAuthorized,
-		isFormModified,
 	} = useUserContext()
 
-	const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-		const { name, value } = event.target
-		setFormData({ [name]: value } as any)
-	}
+	const isObs = props.section === 'obs'
+	const visibleFields = fieldsConfig.filter((field) =>
+		isObs
+			? field.name === 'obsWebsocketAddress' || field.name === 'obsWebsocketPassword'
+			: field.name !== 'obsWebsocketAddress' && field.name !== 'obsWebsocketPassword'
+	)
 
 	return (
-		<div className='app-container-column creds-panel'>
-			<div className='app-form-title'>Enter your credentials below:</div>
-			<form className='app-form' onSubmit={props.handleSubmit}>
-				{fieldsConfig.map((field) => (
+		<section
+			className='app-container-column creds-panel'
+			aria-labelledby={`${props.section}-heading`}
+		>
+			<h2 className='app-form-title' id={`${props.section}-heading`}>
+				{isObs ? 'OBS' : 'Credentials'}
+			</h2>
+			<div className='app-form'>
+				{visibleFields.map((field) => (
 					<InputField
 						key={field.id}
 						fieldConfig={field}
-						value={(formData as any)[field.name]}
-						handleInputChange={handleInputChange}
+						value={formData[field.name]}
+						handleInputChange={(event) => setFormData({ [field.name]: event.target.value })}
 						showTooltip={props.showTooltip}
 						setShowTooltip={props.setShowTooltip}
-						hideSensitiveFields={hideSensitiveFields}
+						hideSensitiveFields={isObs && hideSensitiveFields}
 						isObsResponseEnabled={isObsResponseEnabled}
 						isBotConnected={props.isBotConnected}
 					/>
 				))}
 
-				<div className='button-row'>
-					<button
-						className={`default-button ${
-							isFormModified ? 'button-modified' : ''
-						}`}
-						disabled={props.isBotConnected || !isTwitchAuthorized}
-						type='submit'
-					>
-						Update
-					</button>
+				{isObs && (
 					<div className='toggle-field hide-sensitive-toggle'>
 						<input
 							type='checkbox'
@@ -153,9 +143,9 @@ const CredentialsPanel: React.FC<CredentialsPanelProps> = (props) => {
 							Hide Sensitive Fields
 						</label>
 					</div>
-				</div>
-			</form>
-		</div>
+				)}
+			</div>
+		</section>
 	)
 }
 

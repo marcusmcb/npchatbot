@@ -49,8 +49,18 @@ const MessagePanel: React.FC<MessagePanelProps> = ({
 	}
 
 	return (
-		<div className='message-panel'>
-			<div className='app-form-title'>More Info:</div>
+		<section className='message-panel' aria-labelledby='messages-heading'>
+			<h2 className='app-form-title' id='messages-heading'>Messages</h2>
+			<div className='message-content' aria-live='polite'>
+			{!message && !error && !showTooltip && (
+				<div className='welcome-message'>
+					<span className='welcome-icon' aria-hidden='true'>i</span>
+					<div>
+						<strong>Welcome to npChatbot!</strong>
+						<p>Connect to begin listening for now playing updates and interacting with your chat.</p>
+					</div>
+				</div>
+			)}
 			{message && <div className='success-message'>{message}</div>}
 			{error && <div className='error-message'>{error}</div>}
 			{showTooltip && (
@@ -59,7 +69,8 @@ const MessagePanel: React.FC<MessagePanelProps> = ({
 					dangerouslySetInnerHTML={{ __html: getTooltipContent(showTooltip) }} // Render HTML safely
 				/>
 			)}
-		</div>
+			</div>
+		</section>
 	)
 }
 
