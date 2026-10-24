@@ -2,6 +2,17 @@ const { FusesPlugin } = require("@electron-forge/plugin-fuses");
 const { FuseV1Options, FuseVersion } = require("@electron/fuses");
 const path = require("path");
 
+// Packager tests these against forward-slash paths relative to the project root.
+// Only client/build and client/public are needed at runtime; shipping client/node_modules
+// and client/src makes asar creation stall while crawling hundreds of thousands of files.
+const packagerIgnore = [
+  /^\/client\/(?!(build|public)(\/|$))/,
+  /^\/(__tests__|coverage|test-files|out|dist|\.github|\.vscode)(\/|$)/,
+  /\.test\.js$/,
+  /\.spec\.js$/,
+  /^\/jest\.setup\.js$/,
+];
+
 module.exports = {
   /* Dynamic packagerConfig based on platform */
   packagerConfig: (() => {
@@ -19,13 +30,7 @@ module.exports = {
         dir: "./",
         out: "./dist",
         overwrite: true,
-        ignore: [
-          /__tests__/,
-          /coverage/,
-          /\\.test\\.js$/,
-          /\\.spec\\.js$/,
-          /jest\\.setup\\.js$/,
-        ],
+        ignore: packagerIgnore,
       };
     } else if (process.platform === "darwin") {
       // MacOS-specific packagerConfig
@@ -42,12 +47,7 @@ module.exports = {
         dir: "./",
         icon: "./client/public/favicon/npicon.icns",
         overwrite: false, // Prevents app rebuild if just remaking the DMG
-        ignore: [
-          /__tests__/,
-          /coverage/,
-          /\\.test\\.js$/,
-          /\\.spec\\.js$/,
-        ],
+        ignore: packagerIgnore,
       };
     } else {
       // Default to an empty configuration for unsupported platforms
