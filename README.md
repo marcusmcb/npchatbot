@@ -173,3 +173,4 @@ This began as a simple Node script, running on a Raspberry Pi in my office to gi
 
 Marcus McBride, 2026.
 Built in Southern California 🐻✌️
+Version 2.0 in development
