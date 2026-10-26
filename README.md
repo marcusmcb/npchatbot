@@ -18,6 +18,58 @@ The app is built and packaged with Electron, utilizing NodeJS, React, custom CSS
 
 You can view the full command list <a href="https://www.npchatbot.com/commands">here</a>.
 
+#### `!np artist`
+
+Reports how many times the artist of the currently playing song appears in saved
+local play histories and the active stream during the rolling last 30 days:
+
+> TestDJ has played Daft Punk 23 times in the last 30 days. Daft Punk is currently the 16th most played artist in this channel over the last 30 days.
+
+Ranking uses the same 30-day plays and ownership rules as the count. The top
+artist is described as "the most played artist"; other ranks use ordinals such as
+"2nd" or "16th". Equal play counts share a rank and are described as "tied for":
+two artists tied for first are followed by third place (1, 1, 3). Artists with no
+qualifying plays are unranked.
+
+Each play counts, including repeats and the current song. Matching ignores case
+and extra whitespace, using the full artist credit before ` - ` in
+`Artist - Title`; collaborations and featured artists are not split into separate
+artists. Unidentifiable current artists produce an unavailable-data response.
+
+The window uses individual track timestamps, not playlist save dates. Entries
+with missing or invalid timestamps are excluded and logged. Seeded Serato times
+are approximate. Copies with the same title and timestamp across histories and
+the active stream count only once; repeated plays within a history remain counted.
+Resumed sets with different reconstructed timestamps cannot reliably be deduplicated.
+
+New histories record the Twitch channel. Older histories use their recorded Serato
+DJ name when available; histories without either owner identifier are treated as
+belonging to this app installation. Counts cover recorded local history only, not
+all plays on Serato or Spotify. Database errors produce an error response, not zero.
+
+#### `!np rank`
+
+Reports the current song's rank and play count across the same rolling 30-day
+history used by `!np artist`, including the current play:
+
+> One More Time by Daft Punk is the 16th most played song in this channel. It's been played 23 times in the past 30 days.
+
+The first ` - ` separates the artist from the title. Artist credits retain
+parentheses, brackets and internal hyphens. Parentheses/bracket tags are always
+removed from the title for ranking, even when Auto ID cleanup is disabled.
+For example, `Daft Punk - One More Time (Remix A)` and
+`Daft Punk - One More Time [Remix B]` count as two plays of the same song.
+Meaningful title subtitles are also removed; this is an accepted limitation.
+Matching otherwise requires the same artist and cleaned title, ignoring case
+and extra whitespace. Different artists or different cleaned titles stay separate.
+
+Each distinct version play counts; copies of a play with the same raw title and
+timestamp across snapshots count once. The existing resumed-history timestamp
+limitation applies. Ranking uses competition ties (1, 1, 3), with "tied for"
+wording, and first place is "the most played song". Songs with no qualifying plays
+are unranked. Missing artist/title data produces an unavailable-data response.
+Responses also appear in OBS when enabled.
+
 <hr>
 
 ### Authorizing via Twitch:

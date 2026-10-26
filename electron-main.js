@@ -423,8 +423,11 @@ ipcMain.on('stop-bot-script', async (event, arg) => {
 	const playlistData = await getCurrentPlaylistSummary()
 	console.log('Playlist data: ', playlistData)
 	if (playlistData && playlistData.total_tracks_played > 0) {
-		const finalPlaylistData = await createPlaylistSummary(playlistData)
 		const user = await getUserData(db)
+		const finalPlaylistData = await createPlaylistSummary(
+			playlistData,
+			user?.twitchChannelName
+		)
 		if (user) {
 			if (user.isSpotifyEnabled) {
 				finalPlaylistData.spotify_link = user.currentSpotifyPlaylistLink

@@ -95,7 +95,7 @@ const formatTime12Hour = (date) => {
 
 // add most played artists to the playlist summary
 
-const createPlaylistSummary = async (summaryData) => {    
+const createPlaylistSummary = async (summaryData, twitchChannelName) => {
 	const sessionDate = new Date()
 	// Choose a single canonical start date/time for this summary
 	// 1) If upstream provided a corrected ISO timestamp, prefer it (authoritative)
@@ -148,6 +148,7 @@ const createPlaylistSummary = async (summaryData) => {
 	const finalSummaryData = {
 		session_date: sessionDate,
 		dj_name: summaryData.dj_name,
+		twitch_channel_name: twitchChannelName,
 		set_start_time: correctedSetStartTime,
 		playlist_date: summaryData.playlist_date,
 		set_start_iso: canonicalStartDate ? canonicalStartDate.toISOString() : undefined,

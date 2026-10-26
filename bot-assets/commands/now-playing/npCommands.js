@@ -6,6 +6,16 @@ const {
 } = require('../now-playing/npCommandHelpers/npCommandHelpers')
 const { formatTimeSince } = require('./timeSinceHelpers')
 const { getCurrentPlaylistSummary } = require('../../command-use/commandUse')
+const {
+	getArtistPlayHistory,
+} = require('../../../database/helpers/playlistSummaries/getArtistPlayHistory')
+const {
+	extractArtist,
+	extractSong,
+	getArtistPlayStats,
+	getSongPlayStats,
+	formatOrdinal,
+} = require('./artistHistoryHelpers')
 
 const {
 	NO_LIVE_DATA_MESSAGE,
@@ -13,7 +23,7 @@ const {
 } = require('../../constants/constants')
 
 const NP_OPTIONS =
-	'npChatbot options: !np, !np previous, !np start, !np vibecheck, !dyp (query), !np stats, !np doubles, !np shortest, !np longest'
+	'npChatbot options: !np, !np artist, !np rank, !np previous, !np start, !np vibecheck, !dyp (query), !np stats, !np doubles, !np shortest, !np longest'
 // formatTimeSince is shared via ./timeSinceHelpers so !dyp, !np
 // vibecheck, and !np doubles all behave consistently.
 
@@ -318,8 +328,72 @@ const handlePlaylist = (channel, twitchClient, config) => {
 	}
 }
 
+const handleArtist = async (
+	channel,
+	twitchClient,
+	reportData,
+	obs,
+	obsClearDisplayTime,
+	config
+) => {
+	const trackLog = reportData.track_log
+	if (!Array.isArray(trackLog) || trackLog.length === 0) {
+		twitchClient.say(channel, NO_LIVE_DATA_MESSAGE)
+		return
+	}
+	const artist = extractArtist(trackLog[trackLog.length - 1])
+	if (!artist) {
+		const message = "npChatbot couldn't identify the artist of the current song."
+		twitchClient.say(channel, message)
+		updateOBSWithText(obs, message, obsClearDisplayTime, config)
+		return
+	}
+	const now = Date.now()
+	const playlists = await getArtistPlayHistory(config)
+	const { count, rank, tied } = getArtistPlayStats(artist, playlists, trackLog, now)
+	const ranking = rank === null
+		? `${artist} is currently unranked in this channel over the last 30 days.`
+		: `${artist} is currently ${tied ? 'tied for ' : ''}the ${rank === 1 ? '' : `${formatOrdinal(rank)} `}most played artist in this channel over the last 30 days.`
+	const message = `${config.twitchChannelName} has played ${artist} ${count} ${count === 1 ? 'time' : 'times'} in the last 30 days. ${ranking}`
+	twitchClient.say(channel, message)
+	updateOBSWithText(obs, message, obsClearDisplayTime, config)
+}
+
+const handleRank = async (
+	channel,
+	twitchClient,
+	reportData,
+	obs,
+	obsClearDisplayTime,
+	config
+) => {
+	const trackLog = reportData.track_log
+	if (!Array.isArray(trackLog) || trackLog.length === 0) {
+		twitchClient.say(channel, NO_LIVE_DATA_MESSAGE)
+		return
+	}
+	const song = extractSong(trackLog[trackLog.length - 1])
+	if (!song) {
+		const message = "npChatbot couldn't identify the artist and title of the current song."
+		twitchClient.say(channel, message)
+		updateOBSWithText(obs, message, obsClearDisplayTime, config)
+		return
+	}
+	const now = Date.now()
+	const playlists = await getArtistPlayHistory(config)
+	const { count, rank, tied } = getSongPlayStats(song, playlists, trackLog, now)
+	const ranking = rank === null
+		? 'is currently unranked in this channel'
+		: `is ${tied ? 'tied for ' : ''}the ${rank === 1 ? '' : `${formatOrdinal(rank)} `}most played song in this channel`
+	const message = `${song.title} by ${song.artist} ${ranking}. It's been played ${count} ${count === 1 ? 'time' : 'times'} in the past 30 days.`
+	twitchClient.say(channel, message)
+	updateOBSWithText(obs, message, obsClearDisplayTime, config)
+}
+
 const COMMAND_MAP = {
 	undefined: handleDefault,
+	artist: handleArtist,
+	rank: handleRank,
 	previous: handlePrevious,
 	start: handleStart,
 	vibecheck: handleVibeCheck,
@@ -366,7 +440,7 @@ const npCommands = async (
 
 		if (handler) {
 			console.log('np Command handler: ', handler)
-			handler(
+			await handler(
 				channel,
 				twitchClient,
 				reportData,
@@ -394,4 +468,6 @@ module.exports = {
 	handleLongest,
 	handleDoubles,
 	handleStats,
+	handleArtist,
+	handleRank,
 }
