@@ -11,7 +11,8 @@
     "scrollbars",
     "Segoe",
     "Serato",
-    "shortlong"
+    "shortlong",
+    "unranked"
   ],
   "typescript.tsdk": "client/node_modules/typescript/lib",
   "typescript.enablePromptUseWorkspaceTsdk": true
