@@ -45,7 +45,10 @@ test('routes rank, groups versions with cleanup disabled and sends the same resp
 	expect(client.say).toHaveBeenCalledTimes(1)
 	expect(client.say).toHaveBeenCalledWith('#testdj', message)
 	expect(obs.call).toHaveBeenCalledWith('SetInputSettings', {
-		inputName: 'npchatbot-response', inputSettings: { text: message },
+		inputName: 'npchatbot-response',
+		inputSettings: {
+			text: "One More Time by Daft Punk is the most played song\nin this channel. It's been played 2 times in the past 30 days.",
+		},
 	})
 	expect(clearOBSResponse).toHaveBeenCalledWith(obs, 5)
 })

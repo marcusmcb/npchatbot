@@ -351,12 +351,18 @@ const handleArtist = async (
 	const now = Date.now()
 	const playlists = await getArtistPlayHistory(config)
 	const { count, rank, tied } = getArtistPlayStats(artist, playlists, trackLog, now)
-	const ranking = rank === null
-		? `${artist} is currently unranked in this channel over the last 30 days.`
-		: `${artist} is currently ${tied ? 'tied for ' : ''}the ${rank === 1 ? '' : `${formatOrdinal(rank)} `}most played artist in this channel over the last 30 days.`
-	const message = `${config.twitchChannelName} has played ${artist} ${count} ${count === 1 ? 'time' : 'times'} in the last 30 days. ${ranking}`
+	const rankPhrase = rank === null
+		? 'unranked'
+		: `${tied ? 'tied for ' : ''}the ${rank === 1 ? '' : `${formatOrdinal(rank)} `}most played artist`
+	const playCount = `${config.twitchChannelName} has played ${artist} ${count} ${count === 1 ? 'time' : 'times'} in the last 30 days.`
+	const message = `${playCount} ${artist} is currently ${rankPhrase} in this channel over the last 30 days.`
 	twitchClient.say(channel, message)
-	updateOBSWithText(obs, message, obsClearDisplayTime, config)
+	updateOBSWithText(
+		obs,
+		`${playCount}\n${artist} is currently ${rankPhrase}\nin this channel over the last 30 days.`,
+		obsClearDisplayTime,
+		config
+	)
 }
 
 const handleRank = async (
@@ -382,12 +388,18 @@ const handleRank = async (
 	const now = Date.now()
 	const playlists = await getArtistPlayHistory(config)
 	const { count, rank, tied } = getSongPlayStats(song, playlists, trackLog, now)
-	const ranking = rank === null
-		? 'is currently unranked in this channel'
-		: `is ${tied ? 'tied for ' : ''}the ${rank === 1 ? '' : `${formatOrdinal(rank)} `}most played song in this channel`
-	const message = `${song.title} by ${song.artist} ${ranking}. It's been played ${count} ${count === 1 ? 'time' : 'times'} in the past 30 days.`
+	const rankPhrase = rank === null
+		? 'currently unranked'
+		: `${tied ? 'tied for ' : ''}the ${rank === 1 ? '' : `${formatOrdinal(rank)} `}most played song`
+	const playCount = `It's been played ${count} ${count === 1 ? 'time' : 'times'} in the past 30 days.`
+	const message = `${song.title} by ${song.artist} is ${rankPhrase} in this channel. ${playCount}`
 	twitchClient.say(channel, message)
-	updateOBSWithText(obs, message, obsClearDisplayTime, config)
+	updateOBSWithText(
+		obs,
+		`${song.title} by ${song.artist} is ${rankPhrase}\nin this channel. ${playCount}`,
+		obsClearDisplayTime,
+		config
+	)
 }
 
 const COMMAND_MAP = {

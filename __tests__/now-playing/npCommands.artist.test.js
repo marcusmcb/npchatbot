@@ -44,7 +44,10 @@ test('routes !np artist, awaits history, and reports exactly 23 plays in chat an
 	expect(client.say).toHaveBeenCalledTimes(1)
 	expect(client.say).toHaveBeenCalledWith('#testdj', message)
 	expect(obs.call).toHaveBeenCalledWith('SetInputSettings', {
-		inputName: 'npchatbot-response', inputSettings: { text: message },
+		inputName: 'npchatbot-response',
+		inputSettings: {
+			text: 'TestDJ has played Daft Punk 23 times in the last 30 days.\nDaft Punk is currently the most played artist\nin this channel over the last 30 days.',
+		},
 	})
 	expect(clearOBSResponse).toHaveBeenCalledWith(obs, 5)
 })
