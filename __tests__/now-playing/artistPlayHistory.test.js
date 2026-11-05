@@ -6,7 +6,7 @@ jest.mock('../../database/database', () => {
 const db = require('../../database/database')
 const { getArtistPlayHistory } = require('../../database/helpers/playlistSummaries/getArtistPlayHistory')
 const { createPlaylistSummary } = require('../../bot-assets/summary/createPlaylistSummary')
-const { getSongPlayStats } = require('../../bot-assets/commands/now-playing/artistHistoryHelpers')
+const { getSongPlayStats, getTopArtists } = require('../../bot-assets/commands/now-playing/artistHistoryHelpers')
 
 const config = { twitchChannelName: 'TestDJ', seratoDisplayName: 'Serato DJ' }
 const insert = (doc) => new Promise((resolve, reject) => {
@@ -65,6 +65,29 @@ test('song ranking uses only eligible NeDB histories and merges live versions', 
 		track('Daft Punk - One More Time (Remix A)'),
 		track('Daft Punk - One More Time (Remix C)'),
 	], now)).toEqual({ count: 3, rank: 1, tied: false })
+})
+
+test('top artists include owned and legacy histories but exclude other channels and DJs', async () => {
+	const now = Date.parse('2026-11-05T12:00:00.000Z')
+	const track = (artist, title) => ({
+		track_id: `${artist} - ${title}`, timestamp: new Date(now).toISOString(),
+	})
+	await insert({ twitch_channel_name: 'testdj', track_log: [track('Daft Punk', 'One')] })
+	await insert({ dj_name: 'serato_dj', track_log: [track('Daft Punk', 'Two')] })
+	await insert({ track_log: [track('Local Artist', 'One'), track('Local Artist', 'Two')] })
+	await insert({
+		twitch_channel_name: 'OtherStreamer', dj_name: 'Serato DJ',
+		track_log: Array.from({ length: 10 }, (_, index) => track('Other Channel', index)),
+	})
+	await insert({
+		dj_name: 'Other DJ',
+		track_log: [track('Other DJ', 'One'), track('Other DJ', 'Two')],
+	})
+	const histories = await getArtistPlayHistory(config)
+	expect(getTopArtists(histories, [track('Daft Punk', 'One')], now)).toEqual([
+		{ name: 'Daft Punk', count: 2, lastPlayed: now },
+		{ name: 'Local Artist', count: 2, lastPlayed: now },
+	])
 })
 
 test('rejects missing channel identity and database failures', async () => {

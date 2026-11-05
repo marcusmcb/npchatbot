@@ -13,6 +13,7 @@ const {
 	extractArtist,
 	extractSong,
 	getArtistPlayStats,
+	getTopArtists,
 	getSongPlayStats,
 	formatOrdinal,
 } = require('./artistHistoryHelpers')
@@ -23,7 +24,7 @@ const {
 } = require('../../constants/constants')
 
 const NP_OPTIONS =
-	'npChatbot options: !np, !np artist, !np rank, !np previous, !np start, !np vibecheck, !dyp (query), !np stats, !np doubles, !np shortest, !np longest'
+	'npChatbot options: !np, !np artist, !np artists, !np rank, !np previous, !np start, !np vibecheck, !dyp (query), !np stats, !np doubles, !np shortest, !np longest'
 // formatTimeSince is shared via ./timeSinceHelpers so !dyp, !np
 // vibecheck, and !np doubles all behave consistently.
 
@@ -365,6 +366,40 @@ const handleArtist = async (
 	)
 }
 
+const handleArtists = async (
+	channel,
+	twitchClient,
+	reportData,
+	obs,
+	obsClearDisplayTime,
+	config
+) => {
+	const now = Date.now()
+	const playlists = await getArtistPlayHistory(config)
+	const artists = getTopArtists(playlists, reportData?.track_log, now)
+	const owner = `@${config.twitchChannelName.trim().replace(/^[@#]/, '')}`
+	let message
+	let obsText
+	if (artists.length === 0) {
+		message = `No artists have been played at least twice in ${owner}'s streams over the past 30 days.`
+		obsText = message
+	} else {
+		const names = artists.map(({ name }) => name)
+		const artistList = names.length === 1
+			? names[0]
+			: names.length === 2
+				? names.join(' and ')
+				: `${names.slice(0, -1).join(', ')}, and ${names[names.length - 1]}`
+		const introduction = names.length === 1
+			? `The most played artist in ${owner}'s streams for the past 30 days is`
+			: `The ${names.length} most played artists in ${owner}'s streams for the past 30 days are`
+		message = `${introduction} ${artistList}.`
+		obsText = `${introduction}\n${names.join('\n')}`
+	}
+	twitchClient.say(channel, message)
+	updateOBSWithText(obs, obsText, obsClearDisplayTime, config)
+}
+
 const handleRank = async (
 	channel,
 	twitchClient,
@@ -405,6 +440,7 @@ const handleRank = async (
 const COMMAND_MAP = {
 	undefined: handleDefault,
 	artist: handleArtist,
+	artists: handleArtists,
 	rank: handleRank,
 	previous: handlePrevious,
 	start: handleStart,
@@ -445,7 +481,7 @@ const npCommands = async (
 		
 		const reportData = getCurrentPlaylistSummary()
 		// const reportData = await createLiveReport(url)
-		if (reportData === undefined) {
+		if (reportData === undefined && args[0] !== 'artists') {
 			twitchClient.say(channel, NO_LIVE_DATA_MESSAGE)
 			return
 		}
@@ -481,5 +517,6 @@ module.exports = {
 	handleDoubles,
 	handleStats,
 	handleArtist,
+	handleArtists,
 	handleRank,
 }

@@ -47,6 +47,28 @@ DJ name when available; histories without either owner identifier are treated as
 belonging to this app installation. Counts cover recorded local history only, not
 all plays on Serato or Spotify. Database errors produce an error response, not zero.
 
+#### `!np artists`
+
+Lists up to five most played artists in the channel's recorded local history over
+the rolling past 30 days:
+
+> The 5 most played artists in @TestDJ's streams for the past 30 days are Daft Punk, Beastie Boys, Missy Elliott, The Chemical Brothers, and Busta Rhymes.
+
+Only artists played at least twice qualify. Results are ordered by play count,
+then most recent qualifying play for ties, with alphabetical order as a final
+fallback. The list never exceeds five artists, even when counts are tied.
+Responses contain names only and use the actual number returned, with singular
+wording for one artist. If none qualify:
+
+> No artists have been played at least twice in @TestDJ's streams over the past 30 days.
+
+Uses the same full-credit artist matching, timestamp filtering, channel ownership
+and snapshot deduplication rules as `!np artist`. Saved histories and the active
+stream (including the current song) contribute, but no active playlist is required.
+Artist display names use the spelling from their latest qualifying play. Database
+errors produce an error response rather than an empty list. When OBS responses
+are enabled, artist names appear on separate lines.
+
 #### `!np rank`
 
 Reports the current song's rank and play count across the same rolling 30-day
